@@ -1,4 +1,7 @@
+import math
 from collections import defaultdict
+from datetime import datetime
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -53,9 +56,14 @@ class InvertedIndex:
 
 
 class TextSimilarity:
+    """Вычисляет косинусное сходство между текстами с использованием TF-IDF"""
 
     def __init__(self, movies):
-        """movies — список фильмов ORM"""
+        """
+        Инициализация атрибутов класса:
+        movies — список фильмов ORM
+        texts — список кортежей для каждого фильма(id, описание, ключевой тэг)
+        """
         texts = [
             (m.id, (m.overview or "") + " " + (m.tagline or ""))
             for m in movies
@@ -63,16 +71,52 @@ class TextSimilarity:
         self.ids = [m[0] for m in texts]
         corpus = [m[1] for m in texts]
 
-        self.vectorizer = TfidfVectorizer(max_features=5000)
-        self.matrix = self.vectorizer.fit_transform(corpus)
+        self.vectorizer = TfidfVectorizer(max_features=5000)  # преобразует тексты в TF-IDF векторы
+        self.matrix = self.vectorizer.fit_transform(corpus)  # матрица веса слов в текстах
 
     def similarity(self, id_a, id_b):
+        """Вычисляет косинусное сходство между двумя текстами"""
         try:
-            idx_a = self.ids.index(id_a)
+            idx_a = self.ids.index(id_a)  # индексная позиция конкретного текста
             idx_b = self.ids.index(id_b)
         except ValueError:
             return 0
 
-        v1 = self.matrix[idx_a]
+        v1 = self.matrix[idx_a]   # матрица веса слов конкретного текста по индексной позиции
         v2 = self.matrix[idx_b]
-        return cosine_similarity(v1, v2)[0][0]
+        return cosine_similarity(v1, v2)[0][0]  # косинусное сходство между двумя текстами
+
+
+FEATURE_WEIGHTS = {
+    "director": 3.0,
+    "actor": 2.0,
+    "genre": 1.5,
+    "keyword": 1.0,
+}
+
+def feature_weight(f):
+    """ """
+    f_type = f.split(":", 1)[0]
+    return FEATURE_WEIGHTS.get(f_type, 1)
+
+
+def jaccard_weighted(A, B):
+    """ """
+    inter = A & B
+    union = A | B
+
+    inter_w = sum(feature_weight(f) for f in inter)
+    union_w = sum(feature_weight(f) for f in union)
+
+    return inter_w / union_w if union_w else 0
+
+
+def normalize_rating(r):
+    """Нормализация рейтинга пользователя от 1..10 -> 0..1"""
+    return (r - 1) / 9
+
+
+def recency_boost(date_watched):
+    """Свежие фильмы важнее"""
+    days = (datetime.now().date() - date_watched).days
+    return 1 / (1 + math.log1p(days))   # 1/(1+ln(1+days))
