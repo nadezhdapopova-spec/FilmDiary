@@ -6,6 +6,11 @@ import datetime
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
+from config import settings
+
+
+FEATURE_WEIGHTS = getattr(settings, "RECOMMENDER_FEATURE_WEIGHTS", {})
+
 
 class FeatureCache:
     """Кэширование признаков фильмов, чтобы не вычислять заново"""
@@ -15,7 +20,8 @@ class FeatureCache:
 
     def get(self, movie):
         if movie.id not in self.cache:
-            self.cache[movie.id] = set(movie.feature_set)
+            features = set(movie.feature_set or [])
+            self.cache[movie.id] = features
         return self.cache[movie.id]
 
 
@@ -41,6 +47,8 @@ class InvertedIndex:
                       "director:Nolan": {1, 2}, "genre:Drama": {2},
                       "actor:DiCaprio": {2,3}, "genre:Comedy": {4},...}
         """
+        if not feature_set:
+            return
         for f in feature_set:
             self.index[f].add(movie_id)
 
@@ -50,6 +58,8 @@ class InvertedIndex:
         Оператор |= (in-place union) добавляет все id из self.index[f] в cand:
         {1,2,3}
         """
+        if not feature_set:
+            return set()
         cand = set()
         for f in feature_set:
             cand |= self.index.get(f, set())
@@ -66,42 +76,71 @@ class TextSimilarity:
         texts — список кортежей для каждого фильма(id, описание, ключевой тэг)
         """
         texts = [
-            (m.id, (m.overview or "") + " " + (m.tagline or ""))
+            (m.id, ((m.overview or "") + " " + (m.tagline or "")).strip())
             for m in movies
         ]
         self.ids = [m[0] for m in texts]
-        content = [m[1] for m in texts]
+        content = [m[1] or "empty" for m in texts]
 
-        self.vectorizer = TfidfVectorizer(max_features=5000)  # преобразует тексты в TF-IDF векторы
+        self.vectorizer = TfidfVectorizer(max_features=getattr(settings, "RECOMMENDER_TFIDF_MAX_FEATURES", 5000))  # преобразует тексты в TF-IDF векторы
         self.matrix = self.vectorizer.fit_transform(content)  # матрица веса слов в текстах
 
-    def similarity(self, id_a: str, id_b: str) -> int | float:
+    def similarity(self, id_a: str, id_b: str) -> float:
         """Вычисляет косинусное сходство между двумя текстами"""
         try:
             idx_a = self.ids.index(id_a)  # индексная позиция конкретного текста
             idx_b = self.ids.index(id_b)
         except ValueError:
-            return 0
+            return 0.0
 
         v1 = self.matrix[idx_a]   # матрица веса слов конкретного текста по индексной позиции
         v2 = self.matrix[idx_b]
+
+        if v1.nnz == 0 or v2.nnz == 0:
+            return 0.0  # если тексты пустые
+
         return cosine_similarity(v1, v2)[0][0]  # косинусное сходство между двумя текстами
 
-
-FEATURE_WEIGHTS = {
-    "director": 3.0,
-    "actor": 2.0,
-    "genre": 1.5,
-    "keyword": 1.0,
-}
 
 def feature_weight(f: str) -> float:
     """
     Принимает строку формата '<тип>:<значение>'(например 'actor:Tom Hardy'
     Возвращает вес из FEATURE_WEIGHTS по типу признака (actor/genre/director) или дефолтный(1)"""
-    if not f: return 1
+    if not f:
+        return 1
     f_type = f.split(":", 1)[0]
     return FEATURE_WEIGHTS.get(f_type, 1)
+
+
+def top_k_candidates_by_feature_weight(user_features, inverted_index, k=200):
+    """
+    Возвращает top-K кандидатов на основе суммы весов совпавших признаков
+    """
+    if not user_features:
+        return set()
+
+    candidate_weights = defaultdict(float)  # dict, где ключ - id фильма, значение - общий вес по критериям
+
+    for f in user_features:  # достаем всех кандидатов из инвертированного индекса
+        weight_f = feature_weight(f)  # "actor:Tom Hardy"
+        movie_ids = inverted_index.index.get(f, ())  # {13, 44, 88}
+
+        for mid in movie_ids:  # для каждого фильма-кандидата суммируется общий вес по критериям
+            candidate_weights[mid] += weight_f
+
+    if not candidate_weights:
+        return set()
+
+    if len(candidate_weights) > k: # выделяем top-K по сумме весов
+        top_candidates = sorted(  # берём только K самых больших элементов
+            candidate_weights.items(),
+            key=lambda x: x[1],
+            reverse=True
+        )[:k]
+
+        return {mid for mid, w in top_candidates} # set из id фильмов с наибольшим весом
+
+    return set(candidate_weights.keys())  # set из id фильмов с наибольшим весом
 
 
 def jaccard_weighted(set_a: set, set_b: set) -> float:
@@ -109,19 +148,28 @@ def jaccard_weighted(set_a: set, set_b: set) -> float:
     Принимает множество признаков set_a(фильм_А) и set_b(фильм_B), каждый признак — строка типа 'actor:Tom Hardy'.
     Возвращает взвешенный Jaccard (суммарный вес общих признаков делённый на суммарный вес всех признаков)
     """
+    if not set_a or not set_b:
+        return 0.0
+
     inter = set_a & set_b  # пересечения
     union = set_a | set_b  # уникальные признаки
+
+    if not union:
+        return 0.0
 
     inter_w = sum(feature_weight(f) for f in inter)  # сумма весов всех пересечений
     union_w = sum(feature_weight(f) for f in union)  # сумма весов всех уникальных признаков
 
-    return inter_w / union_w if union_w else 0
+    return inter_w / union_w if union_w else 0.0
 
 
 def normalize_rating(rating: int) -> float:
     """Нормализация рейтинга пользователя от 1..10 -> 0..1"""
-    rating = max(1, min(10, rating))
-    return (rating - 1) / 9
+    r_min = getattr(settings, "RECOMMENDER_RATING_MIN", 1)
+    r_max = getattr(settings, "RECOMMENDER_RATING_MAX", 10)
+
+    rating = max(r_min, min(r_max, rating))
+    return (rating - r_min) / (r_max - r_min)
 
 
 def recency_boost(date_watched: datetime.date) -> float:
@@ -130,11 +178,15 @@ def recency_boost(date_watched: datetime.date) -> float:
     Логарифмическая декрементация: даёт умеренно-быстрое уменьшение влияния старых оценок,
     но не экспоненциальное и не слишком резкое.
     """
-    days = (datetime.now().date() - date_watched).days if date_watched <= datetime.now() else 0
+    if not date_watched:
+        return 1.0
+
+    days = (datetime.now().date() - date_watched).days
+    days = max(0, days)
     return 1 / (1 + math.log1p(days))   # 1/(1+ln(1+days))
 
 
-def build_recommendations(user, all_movies: list):
+def build_recommendations(user, all_movies: list) -> list[dict]:
     """
     Основной алгоритм рекомендаций, формирует персональные рекомендации для user на основе:
     - признаков просмотренных фильмов (genre / actor / director / keywords и т.д.),
@@ -149,6 +201,7 @@ def build_recommendations(user, all_movies: list):
                                     # чтобы не пересчитывать признаки для одного фильма многократно
 
     watched = {r.film_id for r in user.reviews.all()}  # собирает id просмотренных фильмов (watched: set)
+    movie_by_id = {m.id: m for m in all_movies}  # доступ к объектам фильмов создается сразу и один раз
 
     inv = InvertedIndex()  # создает инвертированный индекс (feature → множество movie_id)
     for movie in all_movies:
@@ -157,27 +210,33 @@ def build_recommendations(user, all_movies: list):
     textsim = TextSimilarity(all_movies)  # вызван TF-IDF модуль
 
     scores = defaultdict(float)  # словарь movie_id -> накопленный score (float)
-    reasons = defaultdict(list)  # словарь movie_id -> list of dict: id фильма и объяснение, почему рекомендует его по вкладу
+    reasons = defaultdict(list) # словарь movie_id -> list of dict: id фильма и объяснение, почему рекомендует его по вкладу
+    w_struct = getattr(settings, "RECOMMENDER_WEIGHT_STRUCT", 0.7)
+    w_text = getattr(settings, "RECOMMENDER_WEIGHT_TEXT", 0.3)
 
     for review in user.reviews.all():  # цикл по всем просмотренным фильмам
         film = review.film
         user_features = feature_cache.get(film)
+        if not user_features:
+            continue
 
         nr = normalize_rating(review.rating)  # нормализованная оценка пользователя в диапазон [0,1]
         rec = recency_boost(review.created_at.date()) # коэффициент свежести
 
-        cand_ids = inv.candidates_for(user_features)  # кандидаты: фильмы, совпадающие по признакам
+        k = max(100, len(user_features) * 20)
+        cand_ids = top_k_candidates_by_feature_weight(user_features, inv, k)  # отбор лучших кандидатов, совпадающих по признакам
         cand_ids -= watched  # исключить уже просмотренные
+        if not cand_ids:
+            continue
 
         for cid in cand_ids:
-            candidate = next(m for m in all_movies if m.id == cid)  # для id кандидата cid получаем сам объект candidate: линейный поиск next(...) по all_movies
+            candidate = movie_by_id[cid]  # для id кандидата cid получаем сам объект candidate из movie_by_id
             cand_features = feature_cache.get(candidate)  # feature_set для кандидата
 
             sim_struct = jaccard_weighted(user_features, cand_features) # вес кандидата по отношению к просмотренному фильму, чем больше совпадающих (и редких/важных) признаков — тем выше sim_struct
-
             sim_text = textsim.similarity(film.id, cid)  # TF-IDF similarity: косинусное сходство между двумя фильмами (id просмотренный и id кандидата) -> float
 
-            score = (0.7 * sim_struct + 0.3 * sim_text) * nr * rec  # общий вклад кандидата: гибридное весовое смешение (70% фичи, 30% текст)
+            score = (w_struct * sim_struct + w_text * sim_text) * nr * rec  # общий вклад кандидата: гибридное весовое смешение (70% фичи, 30% текст)
             scores[cid] += score  # сумма вкладов кандидата: каждый просмотренный фильм голосует за кандидата
 
             reasons[cid].append({  # детали кандидата: от какого просмотренного фильма пришёл вклад, какие значения сходства, и воздействие рейтинга и свежести
@@ -190,8 +249,9 @@ def build_recommendations(user, all_movies: list):
 
     if scores:
         max_score = max(scores.values())  # нормализация итоговых баллов, наибольшее значение = 1.0, остальные - процент от наибольшего значения
-        for k in scores:
-            scores[k] = scores[k] / max_score
+        if max_score > 0:
+            for k in scores:
+                scores[k] = scores[k] / max_score
 
     result = sorted(scores.items(), key=lambda x: x[1], reverse=True)  # итог: список кортежей, cортируем пары (movie_id, score) по убыванию score
 

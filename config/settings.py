@@ -164,3 +164,23 @@ if CACHE_ENABLED:
 
 
 # Logging settings
+
+# recommendations.py
+# Вес признаков
+RECOMMENDER_FEATURE_WEIGHTS = {
+    "director": 3.0,
+    "actor": 2.0,
+    "genre": 1.5,
+    "keyword": 1.0,
+}
+
+# Весовое соотношение content / text
+RECOMMENDER_WEIGHT_STRUCT = 0.7
+RECOMMENDER_WEIGHT_TEXT = 0.3
+
+# Максимальный порог количества фич в TF-IDF
+RECOMMENDER_TFIDF_MAX_FEATURES = 5000
+
+# Параметры нормализации рейтинга
+RECOMMENDER_RATING_MIN = 1
+RECOMMENDER_RATING_MAX = 10
