@@ -44,14 +44,14 @@ class InvertedIndex:
         for f in feature_set:
             self.index[f].add(movie_id)
 
-    def candidates_for(self, features: dict) -> set:
+    def candidates_for(self, feature_set: set) -> set:
         """
         Возвращает set кандидатов, которые совпадают хотя бы по одному признаку.
         Оператор |= (in-place union) добавляет все id из self.index[f] в cand:
         {1,2,3}
         """
         cand = set()
-        for f in features:
+        for f in feature_set:
             cand |= self.index.get(f, set())
         return cand
 
@@ -157,35 +157,30 @@ def build_recommendations(user, all_movies: list):
     textsim = TextSimilarity(all_movies)  # вызван TF-IDF модуль
 
     scores = defaultdict(float)  # словарь movie_id -> накопленный score (float)
-    reasons = defaultdict(list)  # словарь movie_id -> list of explanation entries - объяснение, почему рекомендует по вкладу
+    reasons = defaultdict(list)  # словарь movie_id -> list of dict: id фильма и объяснение, почему рекомендует его по вкладу
 
     for review in user.reviews.all():  # цикл по всем просмотренным фильмам
         film = review.film
         user_features = feature_cache.get(film)
 
-        nr = normalize_rating(review.rating)
-        rec = recency_boost(review.created_at.date())
+        nr = normalize_rating(review.rating)  # нормализованная оценка пользователя в диапазон [0,1]
+        rec = recency_boost(review.created_at.date()) # коэффициент свежести
 
-        # кандидаты: фильмы, совпадающие по признакам
-        cand_ids = inv.candidates_for(user_features)
+        cand_ids = inv.candidates_for(user_features)  # кандидаты: фильмы, совпадающие по признакам
         cand_ids -= watched  # исключить уже просмотренные
 
         for cid in cand_ids:
-            candidate = next(m for m in all_movies if m.id == cid)
-            cand_features = feature_cache.get(candidate)
+            candidate = next(m for m in all_movies if m.id == cid)  # для id кандидата cid получаем сам объект candidate: линейный поиск next(...) по all_movies
+            cand_features = feature_cache.get(candidate)  # feature_set для кандидата
 
-            # feature-based similarity
-            sim_struct = jaccard_weighted(user_features, cand_features)
+            sim_struct = jaccard_weighted(user_features, cand_features) # вес кандидата по отношению к просмотренному фильму, чем больше совпадающих (и редких/важных) признаков — тем выше sim_struct
 
-            # TF-IDF similarity
-            sim_text = textsim.similarity(film.id, cid)
+            sim_text = textsim.similarity(film.id, cid)  # TF-IDF similarity: косинусное сходство между двумя фильмами (id просмотренный и id кандидата) -> float
 
-            # общий вклад
-            score = (0.7 * sim_struct + 0.3 * sim_text) * nr * rec
-            scores[cid] += score
+            score = (0.7 * sim_struct + 0.3 * sim_text) * nr * rec  # общий вклад кандидата: гибридное весовое смешение (70% фичи, 30% текст)
+            scores[cid] += score  # сумма вкладов кандидата: каждый просмотренный фильм голосует за кандидата
 
-            # explainability
-            reasons[cid].append({
+            reasons[cid].append({  # детали кандидата: от какого просмотренного фильма пришёл вклад, какие значения сходства, и воздействие рейтинга и свежести
                 "from_film": film.title,
                 "similarity_features": round(sim_struct, 3),
                 "similarity_text": round(sim_text, 3),
@@ -193,20 +188,18 @@ def build_recommendations(user, all_movies: list):
                 "recency_influence": round(rec, 3),
             })
 
-    # 7. нормализация итоговых баллов
     if scores:
-        max_score = max(scores.values())
+        max_score = max(scores.values())  # нормализация итоговых баллов, наибольшее значение = 1.0, остальные - процент от наибольшего значения
         for k in scores:
             scores[k] = scores[k] / max_score
 
-    # 8. итог
-    result = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    result = sorted(scores.items(), key=lambda x: x[1], reverse=True)  # итог: список кортежей, cортируем пары (movie_id, score) по убыванию score
 
-    return [
+    return [   # возвращаем список словарей
         {
-            "movie_id": mid,
-            "score": score,
-            "reasons": reasons[mid]   # объяснения
+            "movie_id": mid,  # id фильма-рекомендации
+            "score": score,  # нормализованный score (вес) фильма-рекомендации
+            "reasons": reasons[mid]   # объяснения, почему этот фильм
         }
         for mid, score in result
     ]
