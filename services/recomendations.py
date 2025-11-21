@@ -29,19 +29,19 @@ class InvertedIndex:
     def __init__(self) -> None:
         self.index = defaultdict(set)
 
-    def add_movie(self, movie_id: str, features: dict) -> None:
+    def add_movie(self, movie_id: str, feature_set: set) -> None:
         """
         Фильмы:
-        movie 1: features = {"genre:Sci-Fi", "actor:Tom Hardy", "director:Nolan"}
-        movie 2: features = {"genre:Drama", "actor:DiCaprio", "director:Nolan"}
-        movie 3: features = {"genre:Sci-Fi", "actor:DiCaprio", "director:Somebody"}
-        movie 4: features = {"genre:Comedy", "actor:Someone", "director:SomeoneElse"}
+        movie 1: feature_set = {"genre:Sci-Fi", "actor:Tom Hardy", "director:Nolan"}
+        movie 2: feature_set = {"genre:Drama", "actor:DiCaprio", "director:Nolan"}
+        movie 3: feature_set = {"genre:Sci-Fi", "actor:DiCaprio", "director:Somebody"}
+        movie 4: feature_set = {"genre:Comedy", "actor:Someone", "director:SomeoneElse"}
         Просмотрен movie 1 ->
         self.index = {"genre:Sci-Fi": {1, 3}, "actor:Tom Hardy": {1},
                       "director:Nolan": {1, 2}, "genre:Drama": {2},
                       "actor:DiCaprio": {2,3}, "genre:Comedy": {4},...}
         """
-        for f in features:
+        for f in feature_set:
             self.index[f].add(movie_id)
 
     def candidates_for(self, features: dict) -> set:
@@ -70,10 +70,10 @@ class TextSimilarity:
             for m in movies
         ]
         self.ids = [m[0] for m in texts]
-        corpus = [m[1] for m in texts]
+        content = [m[1] for m in texts]
 
         self.vectorizer = TfidfVectorizer(max_features=5000)  # преобразует тексты в TF-IDF векторы
-        self.matrix = self.vectorizer.fit_transform(corpus)  # матрица веса слов в текстах
+        self.matrix = self.vectorizer.fit_transform(content)  # матрица веса слов в текстах
 
     def similarity(self, id_a: str, id_b: str) -> int | float:
         """Вычисляет косинусное сходство между двумя текстами"""
@@ -148,20 +148,18 @@ def build_recommendations(user, all_movies: list):
     feature_cache = FeatureCache()  # Создаётся экземпляр кэша признаков, хранит в памяти movie_id -> feature_set,
                                     # чтобы не пересчитывать признаки для одного фильма многократно
 
-    watched = {r.film_id for r in user.reviews.all()}  # собирает просмотренные фильмы (watched: set)
+    watched = {r.film_id for r in user.reviews.all()}  # собирает id просмотренных фильмов (watched: set)
 
     inv = InvertedIndex()  # создает инвертированный индекс (feature → множество movie_id)
     for movie in all_movies:
         inv.add_movie(movie.id, feature_cache.get(movie))
 
-    # 3. подготовить TF-IDF модуль
-    textsim = TextSimilarity(all_movies)
+    textsim = TextSimilarity(all_movies)  # вызван TF-IDF модуль
 
-    scores = defaultdict(float)
-    reasons = defaultdict(list)
+    scores = defaultdict(float)  # словарь movie_id -> накопленный score (float)
+    reasons = defaultdict(list)  # словарь movie_id -> list of explanation entries - объяснение, почему рекомендует по вкладу
 
-    # 4. пройти по всем просмотренным фильмам
-    for review in user.reviews.all():
+    for review in user.reviews.all():  # цикл по всем просмотренным фильмам
         film = review.film
         user_features = feature_cache.get(film)
 
