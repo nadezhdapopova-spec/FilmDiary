@@ -7,7 +7,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from config import settings
-
+from services.tmdb import Tmdb
 
 FEATURE_WEIGHTS = getattr(settings, "RECOMMENDER_FEATURE_WEIGHTS", {})
 
@@ -186,7 +186,70 @@ def recency_boost(date_watched: datetime.date) -> float:
     return 1 / (1 + math.log1p(days))   # 1/(1+ln(1+days))
 
 
-def build_recommendations(user, all_movies: list) -> list[dict]:
+def build_user_genre_profile(user, feature_cache: FeatureCache) -> dict:
+    """Строит профиль предпочтений жанров пользователя"""
+    profile = defaultdict(float)
+
+    for review in user.reviews.all():
+        features = feature_cache.get(review.film)
+        if not features:
+            continue
+
+        nr = normalize_rating(review.rating)
+        rec = recency_boost(review.created_at.date())
+
+        for f in features:
+            if f.startswith("genre:"):
+                profile[f] += nr * rec
+
+    if not profile:
+        return {}
+
+    max_val = max(profile.values())
+    if max_val > 0:
+        for g in profile:
+            profile[g] /= max_val  # нормализация [0..1], процент относительно максимального веса жанра
+
+    return dict(profile)
+
+
+def genre_similarity(features_a: set, features_b: set) -> float:
+    """Простое Jaccard-сходство только по жанрам"""
+    ga = {f for f in features_a if f.startswith("genre:")}
+    gb = {f for f in features_b if f.startswith("genre:")}
+
+    if not ga or not gb:
+        return 0.0
+
+    inter = ga & gb
+    union = ga | gb
+
+    return len(inter) / len(union) if union else 0.0
+
+
+def api_genre_candidates(user_genre_profile: dict, api_client: Tmdb, limit: int = 300) -> set:
+    """Возвращает множество кандидатов через API TMDB на основе любимых жанров"""
+    result = set()
+
+    sorted_genres = sorted(
+        user_genre_profile.items(),
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    for genre, weight in sorted_genres[:3]:
+        genre_name = genre.split(":", 1)[1]
+
+        movies = api_client.get_movies_by_genre(genre_name)
+        result.update(m.id for m in movies)
+
+        if len(result) >= limit:
+            break
+
+    return result
+
+
+def build_recommendations(user, all_movies: list, api_client=None) -> list[dict]:
     """
     Основной алгоритм рекомендаций, формирует персональные рекомендации для user на основе:
     - признаков просмотренных фильмов (genre / actor / director / keywords и т.д.),
@@ -209,6 +272,18 @@ def build_recommendations(user, all_movies: list) -> list[dict]:
 
     textsim = TextSimilarity(all_movies)  # вызван TF-IDF модуль
 
+    genre_profile = build_user_genre_profile(user, feature_cache)  # формируем профиль любимых жанров пользователя
+    w_profile = getattr(settings, "RECOMMENDER_GENRE_PROFILE_WEIGHT", 0.25)  # вес жанра из профиля любимых жанров пользователя = 0.25
+    w_genre_sim = getattr(settings, "RECOMMENDER_GENRE_SIMILARITY_WEIGHT", 0.2)  # вес Jaccard-сходства похожих фильмов по жанрам пользователя = 0.2
+
+    api_genre_prior = set()  # множество кандидатов через API TMDB на основе профиля любимых жанров
+    if api_client and genre_profile:
+        api_genre_prior = api_genre_candidates(genre_profile, api_client)
+
+    w_api_genre = getattr(settings, "RECOMMENDER_API_GENRE_PRIOR_WEIGHT", 0.1)  # вес жанра рекомендаций по жанру API TMDB
+    w_api_similar = getattr(settings, "RECOMMENDER_API_SIMILAR_WEIGHT", 0.15)  # вес жанра рекомендаций похожих фильмов API TMDB
+    w_api_recommended = getattr(settings, "RECOMMENDER_API_RECOMMENDED_WEIGHT", 0.2)  # вес жанра рекомендуемых фильмов API TMDB
+
     scores = defaultdict(float)  # словарь movie_id -> накопленный score (float)
     reasons = defaultdict(list) # словарь movie_id -> list of dict: id фильма и объяснение, почему рекомендует его по вкладу
     w_struct = getattr(settings, "RECOMMENDER_WEIGHT_STRUCT", 0.7)
@@ -226,18 +301,47 @@ def build_recommendations(user, all_movies: list) -> list[dict]:
         k = max(100, len(user_features) * 20)
         cand_ids = top_k_candidates_by_feature_weight(user_features, inv, k)  # отбор лучших кандидатов, совпадающих по признакам
         cand_ids -= watched  # исключить уже просмотренные
-        if not cand_ids:
-            continue
 
-        for cid in cand_ids:
-            candidate = movie_by_id[cid]  # для id кандидата cid получаем сам объект candidate из movie_by_id
+        cand_ids |= api_genre_prior
+        cand_ids -= watched
+
+        if api_client:
+            api_similar = {m.id for m in api_client.get_similar_movies(film.id)}  # множество id похожих фильмов из API TMDB
+            api_recommended = {m.id for m in api_client.get_recommended_movies(film.id)}  # множество id рекомендованных фильмов из API TMDB
+        else:
+            api_similar = api_recommended = set()
+
+        for cid in cand_ids:  # для id кандидата cid получаем сам объект candidate из movie_by_id
+            candidate = movie_by_id.get(cid)
+            if not candidate:
+                continue
             cand_features = feature_cache.get(candidate)  # feature_set для кандидата
 
             sim_struct = jaccard_weighted(user_features, cand_features) # вес кандидата по отношению к просмотренному фильму, чем больше совпадающих (и редких/важных) признаков — тем выше sim_struct
             sim_text = textsim.similarity(film.id, cid)  # TF-IDF similarity: косинусное сходство между двумя фильмами (id просмотренный и id кандидата) -> float
 
-            score = (w_struct * sim_struct + w_text * sim_text) * nr * rec  # общий вклад кандидата: гибридное весовое смешение (70% фичи, 30% текст)
-            scores[cid] += score  # сумма вкладов кандидата: каждый просмотренный фильм голосует за кандидата
+            score = (w_struct * sim_struct + w_text * sim_text)  # общий вклад кандидата: гибридное весовое смешение (70% фичи, 30% текст)
+
+            if genre_profile:  # добавляет вес жанровых предпочтений пользователя
+                score += w_profile * sum(
+                    genre_profile.get(g, 0.0)
+                    for g in cand_features if g.startswith("genre:")
+                )
+
+            g_sim = genre_similarity(user_features, cand_features)  # жанровое сходство
+            score += w_genre_sim * g_sim  # c учетом веса Jaccard сходства
+
+            if cid in api_genre_prior:
+                score += w_api_genre  # c учетом веса жанра рекомендаций по жанру API TMDB
+
+            if cid in api_similar:
+                score += w_api_similar  # c учетом веса жанра рекомендаций похожих фильмов API TMDB
+
+            if cid in api_recommended:
+                score += w_api_recommended  # c учетом веса жанра рекомендуемых фильмов API TMDB
+
+            score *= nr * rec  # c учетом нормализации оценки и коэффициента свежести
+            scores[cid] += score  # финальный вклад
 
             reasons[cid].append({  # детали кандидата: от какого просмотренного фильма пришёл вклад, какие значения сходства, и воздействие рейтинга и свежести
                 "from_film": film.title,
@@ -250,8 +354,8 @@ def build_recommendations(user, all_movies: list) -> list[dict]:
     if scores:
         max_score = max(scores.values())  # нормализация итоговых баллов, наибольшее значение = 1.0, остальные - процент от наибольшего значения
         if max_score > 0:
-            for k in scores:
-                scores[k] = scores[k] / max_score
+            for cid in scores:
+                scores[cid] /= max_score
 
     result = sorted(scores.items(), key=lambda x: x[1], reverse=True)  # итог: список кортежей, cортируем пары (movie_id, score) по убыванию score
 
