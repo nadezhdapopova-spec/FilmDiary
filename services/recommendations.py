@@ -1,7 +1,6 @@
 import math
 from collections import defaultdict
 from datetime import datetime
-import datetime
 from heapq import nlargest
 from typing import Dict, Tuple, Set, List, Iterable, Optional
 
@@ -35,6 +34,16 @@ _FEATURE_WEIGHT_CACHE: Dict[str, float] = {}  # Быстрый кэш весов
 _FEATURE_TYPE_WEIGHT_CACHE: Dict[str, float] = {}  # Быстрый кэш весов по типу ("genre")
 
 
+def get_local_id(film) -> int:
+    """Единая точка получения локального ID ORM-модели"""
+    return getattr(film, "id")
+
+
+def get_tmdb_id(film) -> Optional[int]:
+    """Единая точка получения TMDB ID ORM-модели"""
+    return getattr(film, "tmdb_id", None)
+
+
 def fast_feature_weight(feature: str) -> float:
     """Возвращает вес признака. Кэширует результат для скорости"""
     if not feature:
@@ -42,10 +51,7 @@ def fast_feature_weight(feature: str) -> float:
     if feature in _FEATURE_WEIGHT_CACHE:  # если уже считали полный ключ — вернуть
         return _FEATURE_WEIGHT_CACHE[feature]
 
-    if ":" in feature:  # извлекаем тип (до первого ':')
-        ftype, _ = feature.split(":", 1)
-    else:
-        ftype = feature
+    ftype = feature.split(":", 1)[0]  # извлекаем тип (до первого ':')
 
     if ftype in _FEATURE_TYPE_WEIGHT_CACHE:  # кэш по типу
         w = _FEATURE_TYPE_WEIGHT_CACHE[ftype]  # извлекаем кэш по типу
@@ -58,65 +64,54 @@ def fast_feature_weight(feature: str) -> float:
 
 
 class FeatureCache:
-    """Кэширование признаков фильмов, чтобы не вычислять заново"""
+    """Кэширование признаков фильмов, чтобы не вычислять заново (ключи — локальные ID)"""
 
     def __init__(self):
         self.features_map: Dict[int, Tuple[str, ...]] = {}  # словарь {123: ("actor:tom hardi": None, "director:nolan": None), ...}
         self.genres_map: Dict[int, Set[str]] = {}  # словарь {123: ("genre:sci-fi": None, "genre:triller": None), ...}
-        self._prepared = False
 
-    def prepare_movie(self, movie) -> None:
+    def prepare_film(self, film) -> None:
         """Собирает и кэширует признаки для одного movie"""
-        m_id = movie.id
-        if m_id in self.features_map:
+        f_id = get_local_id(film)
+        if f_id in self.features_map:
             return
 
         feats: List[str] = [] # список признаков фильма
-        try:
-            for g in getattr(movie, "genres", []) or []:
-                name = g.name if hasattr(g, "name") else str(g)
-                feats.append(f"genre:{name.strip().lower()}")  # добавляем в feats жанры фильма
-        except Exception:
-            pass
+        for g in getattr(film, "genres", []) or []:
+            name = getattr(g, "name", str(g))
+            feats.append(f"genre:{name.strip().lower()}")  # добавляем в feats жанры фильма
 
-        try:
-            for a in getattr(movie, "actors", []) or []:
-                name = a.name if hasattr(a, "name") else str(a)
-                feats.append(f"actor:{name.strip().lower()}")  # добавляем в feats актеров фильма
-        except Exception:
-            pass
+        for a in getattr(film, "actors", []) or []:
+            name = getattr(a, "name", str(a))
+            feats.append(f"actor:{name.strip().lower()}")  # добавляем в feats актеров фильма
 
-        try:
-            d = getattr(movie, "director", None)
-            if d:
-                name = d.name if hasattr(d, "name") else str(d)
-                feats.append(f"director:{name.strip().lower()}")  # добавляем в feats режиссера
-        except Exception:
-            pass
+        d = getattr(film, "director", None)
+        if d:
+            feats.append(f"director:{getattr(d, 'name', str(d)).strip().lower()}")  # добавляем в feats режиссера
 
         feats_tuple = tuple(dict.fromkeys(feats))  # remove duplicates, keep order
-        self.features_map[m_id] = feats_tuple
-        self.genres_map[m_id] = {f for f in feats_tuple if f.startswith("genre:")}
+        self.features_map[f_id] = feats_tuple
+        self.genres_map[f_id] = {f for f in feats_tuple if f.startswith("genre:")}
 
-    def get_features(self, movie) -> Tuple[str, ...]:
+    def get_features(self, film) -> Tuple[str, ...]:
         """Возвращает признаки фильма из кэша, если нет - вычисляет заново"""
-        mi_d = movie.id
-        if mi_d not in self.features_map:
-            self.prepare_movie(movie)
-        return self.features_map.get(mi_d, ())
+        f_id = get_local_id(film)
+        if f_id not in self.features_map:
+            self.prepare_film(film)
+        return self.features_map.get(f_id, ())
 
-    def get_features_by_id(self, movie_id: int) -> Tuple[str, ...]:
+    def get_features_by_id(self, f_id: int) -> Tuple[str, ...]:
         """Возвращает признаки фильма из кэша по id фильма"""
-        return self.features_map.get(movie_id, ())
+        return self.features_map.get(f_id, ())
 
-    def get_genres_by_id(self, movie_id: int) -> Set[str]:
+    def get_genres_by_id(self, f_id: int) -> Set[str]:
         """Возвращает жанры фильма из кэша по id фильма"""
-        return self.genres_map.get(movie_id, set())
+        return self.genres_map.get(f_id, set())
 
 
-class InvertedIndex:
+class FilmIndex:
     """
-    Обратный индекс: feature -> {movie_ids}.
+    Обратный индекс: feature -> set(local_film_ids).
     Находит все фильмы, которые имеют хотя бы один заданный признак, не перебирая весь каталог:
     сопоставляет каждый признак (feature) со множеством идентификаторов фильмов, которые содержат этот признак
     """
@@ -124,14 +119,14 @@ class InvertedIndex:
     def __init__(self) -> None:
         self.index: Dict[str, Set[int]] = defaultdict(set)
 
-    def add_movie(self, movie_id: int, features: Iterable[str]) -> None:
+    def add_film(self, film_id: int, features: Iterable[str]) -> None:
         """
         Фильмы:
-        movie 1: feature_set = {"genre:Sci-Fi", "actor:Tom Hardy", "director:Nolan"}
-        movie 2: feature_set = {"genre:Drama", "actor:DiCaprio", "director:Nolan"}
-        movie 3: feature_set = {"genre:Sci-Fi", "actor:DiCaprio", "director:Somebody"}
-        movie 4: feature_set = {"genre:Comedy", "actor:Someone", "director:SomeoneElse"}
-        Просмотрен movie 1 ->
+        film 1: feature_set = {"genre:Sci-Fi", "actor:Tom Hardy", "director:Nolan"}
+        film 2: feature_set = {"genre:Drama", "actor:DiCaprio", "director:Nolan"}
+        film 3: feature_set = {"genre:Sci-Fi", "actor:DiCaprio", "director:Somebody"}
+        film 4: feature_set = {"genre:Comedy", "actor:Someone", "director:SomeoneElse"}
+        Просмотрен film 1 ->
         self.index = {"genre:Sci-Fi": {1, 3}, "actor:Tom Hardy": {1},
                       "director:Nolan": {1, 2}, "genre:Drama": {2},
                       "actor:DiCaprio": {2,3}, "genre:Comedy": {4},...}
@@ -139,7 +134,7 @@ class InvertedIndex:
         if not features:
             return
         for f in features:
-            self.index[f].add(movie_id)
+            self.index[f].add(film_id)
 
     def candidates_for(self, features: Iterable[str]) -> Set[int]:
         """
@@ -158,7 +153,7 @@ class InvertedIndex:
 class TextSimilarity:
     """Вычисляет косинусное сходство между текстами с использованием TF-IDF"""
 
-    def __init__(self, movies: List) -> None:
+    def __init__(self, films: List) -> None:
         """
         Инициализация атрибутов класса:
         movies — список фильмов ORM
@@ -166,12 +161,13 @@ class TextSimilarity:
         """
         texts = []
         self.id_to_idx: Dict[int, int] = {}  # нелинейный поиск, быстрее, моментально находит позиции в матрице
-        for idx, m in enumerate(movies):
-            txt = ((getattr(m, "overview", "") or "") + " " + (getattr(m, "tagline", "") or "")).strip()
-            if not txt:
-                txt = " "  # placeholder
+        for idx, film in enumerate(films):
+            f_id = get_local_id(film)
+            ov = getattr(film, "overview", "") or ""
+            tg = getattr(film, "tagline", "") or ""
+            txt = (ov + " " + tg).strip() or " "
             texts.append(txt)
-            self.id_to_idx[m.id] = idx  # матрица веса слов в текстах
+            self.id_to_idx[f_id] = idx  # матрица веса слов в текстах
         self.vectorizer = TfidfVectorizer(max_features=TFIDF_MAX_FEATURES)
         self.matrix = self.vectorizer.fit_transform(texts)
 
@@ -203,13 +199,10 @@ def feature_weight(f: str) -> float:
 
 def normalize_rating(rating: float) -> float:
     """Нормализация рейтинга пользователя от 1..10 -> 0..1"""
-    r_min = RATING_MIN
-    r_max = RATING_MAX
-
-    rating = max(float(r_min), min(float(r_max), rating))
-    if r_max == r_min:
+    rating = max(float(RATING_MIN), min(float(RATING_MAX), rating))
+    if RATING_MAX == RATING_MIN:
         return 0.0
-    return (rating - r_min) / (r_max - r_min)
+    return (rating - RATING_MIN) / (RATING_MAX - RATING_MIN)
 
 
 def recency_boost(date_watched: Optional[datetime.date]) -> float:
@@ -230,8 +223,7 @@ def weighted_jaccard_by_features(feats_a: Iterable[str], feats_b: Iterable[str])
     Принимает множество признаков feats_a(фильм_А) и feats_a(фильм_B), каждый признак — строка типа 'actor:Tom Hardy'.
     Возвращает взвешенный Jaccard (суммарный вес общих признаков делённый на суммарный вес всех признаков)
     """
-    sa = set(feats_a)
-    sb = set(feats_b)
+    sa, sb = set(feats_a), set(feats_b)
     if not sa or not sb:
         return 0.0
 
@@ -258,7 +250,7 @@ def genre_similarity(feats_a: Iterable[str], feats_b: Iterable[str]) -> float:
     return len(inter) / len(union) if union else 0.0
 
 
-def top_k_candidates_by_feature_weight(user_features: Iterable[str], inv: InvertedIndex, k: int = 200) -> Set[int]:
+def top_k_candidates_by_feature_weight(user_features: Iterable[str], inv: FilmIndex, k: int = 200) -> Set[int]:
     """
     Возвращает top-K кандидатов на основе суммы весов совпавших признаков
     """
@@ -269,8 +261,8 @@ def top_k_candidates_by_feature_weight(user_features: Iterable[str], inv: Invert
 
     for f in user_features:  # для каждого признака фильма пользователя
         weight_f = fast_feature_weight(f)  # достаем вес признака фильма из кэша
-        for m_id in inv.index.get(f, ()):  # берем из словаря self.index = {"genre:Sci-Fi": {1, 3}, "actor:Tom Hardy": {1},...} по очереди id фильма из f признака
-            candidate_weights[m_id] += weight_f  # в словаре candidate_weights к фильму по id прибавляем вес
+        for f_id in inv.index.get(f, ()):  # берем из словаря self.index = {"genre:Sci-Fi": {1, 3}, "actor:Tom Hardy": {1},...} по очереди id фильма из f признака
+            candidate_weights[f_id] += weight_f  # в словаре candidate_weights к фильму по id прибавляем вес
 
     if not candidate_weights:
         return set()
@@ -279,7 +271,7 @@ def top_k_candidates_by_feature_weight(user_features: Iterable[str], inv: Invert
         return set(candidate_weights.keys())
 
     top = nlargest(k, candidate_weights.items(), key=lambda x: x[1])
-    return {mid for mid, _ in top} # иначе возвращаем множество id фильмов в количестве k с наибольшим весом
+    return {f_id for f_id, _ in top} # иначе возвращаем множество id фильмов в количестве k с наибольшим весом
 
 
 def build_user_genre_profile(user, feature_cache: FeatureCache) -> Dict[str, float]:
@@ -304,34 +296,38 @@ def build_user_genre_profile(user, feature_cache: FeatureCache) -> Dict[str, flo
 
     max_val = max(profile.values())
     if max_val > 0:
-        for g in list(profile.keys()):
-            profile[g] /= max_val  # нормализация [0..1], процент относительно максимального веса жанра
-
+        return {g: v / max_val for g, v in profile.items()}  # нормализация [0..1], процент относительно максимального веса жанра
     return dict(profile)
 
 
-def api_genre_candidates(user_genre_profile: Dict[str, float], api_client: Tmdb, limit: int = 300) -> Set[int]:
+def resolve_tmdb_to_local(tmdb_ids: Iterable[int], local_by_tmdb: Dict[int, int]) -> Set[int]:
+    """Преобразует список TMDB id → локальные ORM id"""
+    return {local_by_tmdb[t] for t in tmdb_ids if t in local_by_tmdb}
+
+
+def api_genre_candidates(user_genre_profile: Dict[str, float], api: Tmdb, local_by_tmdb: Dict[int, int], limit: int = 300) -> Set[int]:
     """Возвращает множество кандидатов через API TMDB на основе любимых жанров"""
-    if not api_client or not user_genre_profile:
+    if not user_genre_profile:
         return set()
     result: Set[int] = set()
-
     top_genres = sorted(user_genre_profile.items(), key=lambda x: x[1], reverse=True)[:3]  # топ-3 любимых жанра
 
     for genre, _ in top_genres:
         _, genre_name = genre.split(":", 1)
         try:
-            movies = api_client.get_movies_by_genre(genre_name)
-            for movie in movies:
-                result.add(movie.id)
-            if len(result) >= limit:
-                break
+            movies = api.get_movies_by_genre(genre_name)
+            tmdb_ids = [m.tmdb_id for m in movies]
+            result |= resolve_tmdb_to_local(tmdb_ids, local_by_tmdb)
+
         except Exception:
             continue
+        if len(result) >= limit:
+            break
+
     return result
 
 
-def build_recommendations(user, all_movies: List, api_client: Optional[Tmdb] = None, top_k_base: int = 200) -> List[Dict]:
+def build_recommendations(user, all_films: List, api_client: Optional[Tmdb] = None, top_k_base: int = 200) -> List[Dict]:
     """
     Основной алгоритм рекомендаций, формирует персональные рекомендации для user на основе:
     - признаков просмотренных фильмов (genre / actor / director / keywords и т.д.),
@@ -345,20 +341,28 @@ def build_recommendations(user, all_movies: List, api_client: Optional[Tmdb] = N
     """
     feature_cache = FeatureCache()  # создаётся экземпляр кэша признаков, хранит в памяти movie_id -> feature_set,
                                     # чтобы не пересчитывать признаки для одного фильма многократно
-    movie_by_id: Dict[int, object] = {}  # доступ к объектам фильмов создается сразу и один раз
-    for m in all_movies:
-        movie_by_id[m.id] = m
-        feature_cache.prepare_movie(m)  # собирает и кэширует признаки для каждого movie
+    film_by_local: Dict[int, object] = {}  # доступ к объектам фильмов создается сразу и один раз
+    local_by_tmdb: Dict[int, int] = {}
+
+    for film in all_films:
+        f_id = get_local_id(film)
+        tm_id = get_tmdb_id(film)
+
+        film_by_local[f_id] = film
+        if tm_id:
+            local_by_tmdb[tm_id] = f_id
+
+        feature_cache.prepare_film(film)  # собирает и кэширует признаки для каждого movie
     watched: Set[int] = {r.film_id for r in user.reviews.all()}  # собирает id просмотренных фильмов (watched: set)
 
-    inv = InvertedIndex()  # создает инвертированный индекс (feature → множество movie_id)
-    for m_id, feats in feature_cache.features_map.items():
-        inv.add_movie(m_id, feats)
+    inv = FilmIndex()  # создает инвертированный индекс (feature → множество movie_id)
+    for f_id, feats in feature_cache.features_map.items():
+        inv.add_film(f_id, feats)
 
-    textsim = TextSimilarity(all_movies)  # вызван TF-IDF модуль
+    textsim = TextSimilarity(all_films)  # вызван TF-IDF модуль
 
     user_genre_profile = build_user_genre_profile(user, feature_cache)  # формируем профиль любимых жанров пользователя
-    api_genre_prior = api_genre_candidates(user_genre_profile, api_client) if api_client else set()
+    api_genre_prior = api_genre_candidates(user_genre_profile, api_client, local_by_tmdb) if api_client else set()
 
     scores: Dict[int, float] = defaultdict(float)  # movie_id: накопленный вес фильма (score)
     reasons: Dict[int, List[Dict]] = defaultdict(list) # movie_id: id фильма и объяснение, почему рекомендует его по вкладу
@@ -369,9 +373,28 @@ def build_recommendations(user, all_movies: List, api_client: Optional[Tmdb] = N
         if not user_feats:
             continue
 
-        nr = normalize_rating(review.rating)  # нормализованная оценка пользователя в диапазон [0,1]
-        rec = recency_boost(getattr(review, "created_at", None).date() if getattr(review, "created_at", None) else None) # коэффициент свежести
+        api_similar: Set[int] = set()
+        api_recommended: Set[int] = set()
+        if api_client:
+            tmdb_id = get_tmdb_id(film)
+            if tmdb_id:
+                try:
+                    similar_movies = api_client.get_similar_movies(tmdb_id)  # множество id похожих фильмов из API TMDB
+                    tmdb_ids = [m.tmdb_id for m in similar_movies]
+                    api_similar = resolve_tmdb_to_local(tmdb_ids, local_by_tmdb)
+                except Exception:
+                    api_similar = set()
 
+                try:
+                    recs = api_client.get_recommended_movies(tmdb_id)
+                    tmdb_ids = [m.tmdb_id for m in recs]
+                    api_recommended = resolve_tmdb_to_local(tmdb_ids, local_by_tmdb)  # множество id рекомендованных фильмов из API TMDB
+                except Exception:
+                    api_recommended = set()
+
+        nr = normalize_rating(review.rating)  # нормализованная оценка пользователя в диапазон [0,1]
+        created = getattr(review, "created_at", None)
+        rec = recency_boost(created.date() if created else None) # коэффициент свежести
         k = max(top_k_base, len(user_feats) * 20)
         cand_ids = top_k_candidates_by_feature_weight(user_feats, inv, k)  # отбор лучших кандидатов, совпадающих по признакам
         cand_ids -= watched  # исключить уже просмотренные
@@ -379,20 +402,8 @@ def build_recommendations(user, all_movies: List, api_client: Optional[Tmdb] = N
         cand_ids |= api_genre_prior  # быстрое объединение с кандидатами по жанру
         cand_ids -= watched
 
-        api_similar: Set[int] = set()
-        api_recommended: Set[int] = set()
-        if api_client:
-            try:
-                api_similar = {m.id for m in api_client.get_similar_movies(film.id)}  # множество id похожих фильмов из API TMDB
-            except Exception:
-                api_similar = set()
-            try:
-                api_recommended = {m.id for m in api_client.get_recommended_movies(film.id)}  # множество id рекомендованных фильмов из API TMDB
-            except Exception:
-                api_recommended = set()
-
-        for c_id in cand_ids:  # для id кандидата cid получаем сам объект candidate из movie_by_id
-            candidate = movie_by_id.get(c_id)
+        for c_id in cand_ids:  # для id кандидата c_id получаем сам объект candidate из movie_by_id
+            candidate = film_by_local.get(c_id)
             if not candidate:
                 continue
             cand_feats = feature_cache.get_features_by_id(c_id)  # feature_set для кандидата
@@ -446,9 +457,9 @@ def build_recommendations(user, all_movies: List, api_client: Optional[Tmdb] = N
 
     return [   # возвращаем список словарей
         {
-            "movie_id": m_id,  # id фильма-рекомендации
+            "movie_id": c_id,  # id фильма-рекомендации
             "score": score,  # нормализованный score (вес) фильма-рекомендации
-            "reasons": reasons[m_id]   # объяснения, почему этот фильм
+            "reasons": reasons[c_id]   # объяснения, почему этот фильм
         }
-        for m_id, score in result
+        for c_id, score in result
     ]
