@@ -181,13 +181,23 @@ RECOMMENDER_WEIGHT_TEXT = 0.3
 # Максимальный порог количества фич в TF-IDF
 RECOMMENDER_TFIDF_MAX_FEATURES = 5000
 
+# Отбор кандидатов: рекомендуемое оптимальное количество
+RECOMMENDER_TOP_K_BASE = 200
+
 # Параметры нормализации рейтинга
 RECOMMENDER_RATING_MIN = 1
 RECOMMENDER_RATING_MAX = 10
 
-# Параметры весов жанров
+# Параметры весов жанров профиля
+RECOMMENDER_GENRE_BOOST_STRATEGY = "max"
 RECOMMENDER_GENRE_PROFILE_WEIGHT = 0.25
 RECOMMENDER_GENRE_SIMILARITY_WEIGHT = 0.2
+
+# Параметры весов жанров API
 RECOMMENDER_API_GENRE_PRIOR_WEIGHT = 0.1
 RECOMMENDER_API_SIMILAR_WEIGHT = 0.15
 RECOMMENDER_API_RECOMMENDED_WEIGHT = 0.2
+
+# Окончательное масштабирование: параметры мягкости, чтобы избежать полного обнуления
+RECOMMENDER_RATING_SOFTNESS = 0.5
+RECOMMENDER_RECENCY_SOFTNESS = 0.5
