@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     "django_celery_beat",
     "corsheaders",
     "rest_framework_simplejwt",
-    # "users",
+    "users",
 ]
 
 # CRISPY_ALLOWED_TEMPLATE_PACKS = ["bootstrap5"]
@@ -136,7 +136,7 @@ MESSAGE_TAGS = {
 
 # Users settings
 
-# AUTH_USER_MODEL = "users.CustomUser"
+AUTH_USER_MODEL = "users.CustomUser"
 # LOGIN_REDIRECT_URL = "reports:home"
 # LOGOUT_REDIRECT_URL = "reports:home"
 # LOGIN_URL = "users:login"
@@ -169,6 +169,7 @@ REST_FRAMEWORK = {
         "django_filters.rest_framework.DjangoFilterBackend",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.SessionAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
