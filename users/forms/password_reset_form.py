@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from django.core.exceptions import ValidationError
 
+
 User = get_user_model()
 
 
@@ -27,5 +28,5 @@ class CustomPasswordResetForm(PasswordResetForm):
 class CustomSetPasswordForm(SetPasswordForm):
     """Класс для создания и сохранения нового пароля пользователя"""
 
-    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}))
-    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control"}))
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Новый пароль"}))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Подтвердите пароль"}))

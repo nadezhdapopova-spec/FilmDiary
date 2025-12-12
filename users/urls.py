@@ -3,7 +3,7 @@ from django.contrib.auth.views import LogoutView, PasswordResetView, PasswordRes
 from django.urls import path, reverse_lazy
 
 from users.forms.password_reset_form import CustomPasswordResetForm, CustomSetPasswordForm
-from users.views.web import RegisterView, ActivateAccountView, ResendActivationView, UserLoginView, UserProfileView, \
+from users.views import RegisterView, ActivateAccountView, ResendActivationView, UserLoginView, UserProfileView, \
     ActivationSentView
 
 app_name = "users_web"
@@ -47,5 +47,4 @@ urlpatterns = [
         PasswordResetCompleteView.as_view(template_name="users/password_reset_complete.html"),
         name="password_reset_complete",
     ),
-
 ]

@@ -5,18 +5,18 @@ from django.contrib.auth import get_user_model
 from config import settings
 
 
+User = get_user_model()
+
+
 @shared_task(bind=True, max_retries=3)
 def send_activation_email_task(self, user_id, email, activation_url):
     """Асинхронная отправка письма активации аккаунта"""
-
     try:
-        User = get_user_model()
         user = User.objects.get(pk=user_id)
         html_message = render_to_string(
             "users/email_activation.html",
             {"activation_url": activation_url, "user": user},
         )
-
         send_mail(
             subject="Подтверждение регистрации",
             message=f"Активируйте ваш аккаунт: {activation_url}",

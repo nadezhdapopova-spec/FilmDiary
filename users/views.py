@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model, login, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView
@@ -10,8 +10,10 @@ from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
+
+from users.forms.profile_form import UserProfileForm, UserPasswordForm
 from users.forms.register_form import RegisterForm
-from users.forms.authentication_form import AuthenticationForm, CustomAuthenticationForm
+from users.forms.authentication_form import CustomAuthenticationForm
 from users.tasks import send_activation_email_task
 
 
@@ -68,6 +70,7 @@ class ActivateAccountView(View):
             user.is_active = True
             user.save()
             messages.success(request, "Аккаунт успешно активирован!")
+            request.session.pop("resend_user_id", None)
             return redirect("users_web:login")
 
         messages.error(request, "Неверная или устаревшая ссылка активации аккаунта")
@@ -124,7 +127,7 @@ class UserLoginView(SuccessMessageMixin, LoginView):
     success_message = "Вы успешно вошли!"
     redirect_authenticated_user = True
 
-    def form_valid(self, form):
+    def form_valid(self, form: CustomAuthenticationForm):
         """
         Если аккаунт не активирован, перенаправляет на страницу активации.
         При успешной валидации логина(email) и пароля сообщение о входе в аккаунт
@@ -147,10 +150,37 @@ class UserLoginView(SuccessMessageMixin, LoginView):
 
 
 class UserProfileView(LoginRequiredMixin, TemplateView):
-    """Личный кабинет пользователя"""
+    """Профиль пользователя"""
 
     template_name = "users/profile.html"
 
-    def form_valid(self, form):
-        login(self.request, form.user)
-        return super().form_valid(form)
+    def get_context_data(self, **kwargs):
+        """Добавляет формы для личных данных и смены пароля в контекст"""
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        context["profile_form"] = kwargs.get("profile_form") or UserProfileForm(instance=user)
+        context["password_form"] = kwargs.get("password_form") or UserPasswordForm(user=user)
+        return context
+
+    def post(self, request, *args, **kwargs):
+        """Обновляет данные пользователя"""
+        user = request.user
+
+        if "save_profile" in request.POST:
+            profile_form = UserProfileForm(request.POST, request.FILES, instance=user)
+            if profile_form.is_valid():
+                profile_form.save()
+                messages.success(request, "Профиль успешно обновлён")
+                return redirect("users:account")
+            return self.render_to_response(self.get_context_data(profile_form=profile_form))
+
+        elif "change_password" in request.POST:
+            password_form = UserPasswordForm(user=request.user, data=request.POST)
+            if password_form.is_valid():
+                password_form.save()
+                messages.success(request, "Профиль успешно обновлён")
+                update_session_auth_hash(request, password_form.user)
+                return redirect("users:account")
+            return self.render_to_response(self.get_context_data(password_form=password_form))
+
+        return self.get(request, *args, **kwargs)

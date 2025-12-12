@@ -2,6 +2,7 @@ from django.contrib.auth import get_user_model
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
+from users.validators import validate_avatar
 
 User = get_user_model()
 
@@ -18,6 +19,8 @@ class RegisterForm(UserCreationForm):
     username = forms.CharField(
         max_length=150, help_text="Не более 150 символов. Только буквы, цифры и символы @/./+/-/_."
     )
+    avatar = forms.ImageField(required=False, validators=[validate_avatar])
+    tg_chat_id = forms.IntegerField(required=False)
 
     class Meta(UserCreationForm.Meta):
         model = User
@@ -39,22 +42,3 @@ class RegisterForm(UserCreationForm):
             "password1": forms.PasswordInput(attrs={"class": "form-control"}),
             "password2": forms.PasswordInput(attrs={"class": "form-control"}),
         }
-
-    def clean_avatar(self):
-        """Метод валидации поля формы 'аватар' на формат и размер файла"""
-        avatar = self.cleaned_data.get("avatar")
-        if not avatar or isinstance(avatar, str):
-            return avatar
-        valid_content_types = ["image/jpeg", "image/png"]
-        if avatar.content_type not in valid_content_types:
-            raise forms.ValidationError("Файл должен быть в формате JPEG или PNG")
-        valid_extensions = [".jpg", ".jpeg", ".png"]
-        import os
-
-        ext = os.path.splitext(avatar.name)[1].lower()
-        if ext not in valid_extensions:
-            raise forms.ValidationError("Недопустимое расширение файла. Используйте JPG или PNG")
-        max_size_mb = 5
-        if avatar.size > max_size_mb * 1024 * 1024:
-            raise forms.ValidationError(f"Размер файла не должен превышать {max_size_mb} МБ")
-        return avatar
