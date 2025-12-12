@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView
@@ -11,7 +11,7 @@ from django.views import View
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 from users.forms.register_form import RegisterForm
-from users.forms.authentication_form import AuthenticationForm
+from users.forms.authentication_form import AuthenticationForm, CustomAuthenticationForm
 from users.tasks import send_activation_email_task
 
 
@@ -119,7 +119,7 @@ class ResendActivationView(View):
 class UserLoginView(SuccessMessageMixin, LoginView):
     """Авторизация пользователя"""
 
-    authentication_form = AuthenticationForm
+    authentication_form = CustomAuthenticationForm
     template_name = "users/login.html"
     success_message = "Вы успешно вошли!"
     redirect_authenticated_user = True
@@ -131,11 +131,11 @@ class UserLoginView(SuccessMessageMixin, LoginView):
         """
         user = form.get_user()
         if not user.is_active:
+            self.request.session["resend_user_id"] = user.pk
             messages.warning(
                 self.request,
                 "Ваш аккаунт не активирован. Проверьте почту или запросите письмо повторно"
             )
-            self.request.session["resend_user_id"] = user.pk
             return redirect("users_web:activation_sent")
 
         messages.success(self.request, self.success_message)
@@ -150,3 +150,7 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
     """Личный кабинет пользователя"""
 
     template_name = "users/profile.html"
+
+    def form_valid(self, form):
+        login(self.request, form.user)
+        return super().form_valid(form)

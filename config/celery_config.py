@@ -8,7 +8,7 @@ app = Celery("config")
 
 app.config_from_object("django.conf:settings", namespace="CELERY")
 
-app.autodiscover_tasks([])
+app.autodiscover_tasks(["users"])
 
 app.conf.enable_utc = False
 app.conf.timezone = "Europe/Moscow"
