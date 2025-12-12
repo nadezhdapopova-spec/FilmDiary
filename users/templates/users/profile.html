@@ -1,10 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
 
-</body>
-</html>
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4">Личный кабинет</h2>
+
+    <div class="card shadow-sm p-4">
+        <p><strong>Логин:</strong> {{ request.user.username }}</p>
+        <p><strong>Email:</strong> {{ request.user.email }}</p>
+
+        <a href="{% url 'users_web:logout' %}" class="btn btn-danger mt-3">Выйти</a>
+    </div>
+</div>
+{% endblock %}

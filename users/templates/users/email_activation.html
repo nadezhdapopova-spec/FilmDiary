@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Активация аккаунта</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 500px;
+            margin: 40px auto;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 5px 18px rgba(0,0,0,0.1);
+        }
+        h2 {
+            color: #333333;
+            text-align: center;
+        }
+        p {
+            color: #555555;
+            line-height: 1.6;
+        }
+        .button {
+            display: block;
+            width: max-content;
+            background: #cb6518;
+            color: #ffffff !important;
+            padding: 12px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            margin: 25px auto;
+            font-weight: bold;
+        }
+        .footer {
+            margin-top: 25px;
+            font-size: 12px;
+            color: #999999;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Подтверждение регистрации</h2>
+
+    <p>Здравствуйте, {{ user.username }}!</p>
+
+    <p>Спасибо за регистрацию. Чтобы активировать ваш аккаунт, нажмите кнопку ниже:</p>
+
+    <a href="{{ activation_url }}" class="button">Активировать аккаунт</a>
+
+    <p>Если кнопка не работает, скопируйте ссылку и вставьте в браузер:</p>
+
+    <p style="word-break: break-all; font-size: 12px;">
+        {{ activation_url }}
+    </p>
+
+    <div class="footer">
+        Это письмо отправлено автоматически. Пожалуйста, не отвечайте на него.
+    </div>
+</div>
+
+</body>
+</html>

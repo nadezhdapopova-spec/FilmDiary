@@ -1,10 +1,21 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
 
-</body>
-</html>
+{% block content %}
+<div class="container py-5">
+    <h2 class="mb-4 text-center">Регистрация</h2>
+
+    <div class="card shadow-sm p-4 mx-auto" style="max-width: 450px;">
+        <form method="post">
+            {% csrf_token %}
+            {{ form|crispy }}
+
+            <button class="btn btn-primary w-100 mt-3" type="submit">Создать аккаунт</button>
+        </form>
+
+        <p class="text-center mt-3">
+            Уже есть аккаунт? <a href="{% url 'users_web:login' %}">Войти</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
