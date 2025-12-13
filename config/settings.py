@@ -138,10 +138,15 @@ MESSAGE_TAGS = {
 
 # Users settings
 
+AUTHENTICATION_BACKENDS = [
+    "users.backends.EmailBackendAllowInactive",  # к кастомному backend
+    "django.contrib.auth.backends.ModelBackend", # для админки
+]
+
 AUTH_USER_MODEL = "users.CustomUser"
-# LOGIN_REDIRECT_URL = "reports:home"
-# LOGOUT_REDIRECT_URL = "reports:home"
-# LOGIN_URL = "users:login"
+LOGIN_REDIRECT_URL = "users:profile"
+LOGOUT_REDIRECT_URL = "users:login"
+LOGIN_URL = "users:login"
 
 # Настройки срока действия токенов
 

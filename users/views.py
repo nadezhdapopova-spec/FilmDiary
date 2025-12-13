@@ -14,6 +14,7 @@ from django.views.generic.edit import FormView
 from users.forms.profile_form import UserProfileForm, UserPasswordForm
 from users.forms.register_form import RegisterForm
 from users.forms.authentication_form import CustomAuthenticationForm
+from users.forms.resend_activation_form import ResendActivationForm
 from users.tasks import send_activation_email_task
 
 
@@ -81,36 +82,28 @@ class ActivationErrorView(TemplateView):
     template_name = "users/activation_error.html"
 
 
-class ResendActivationView(View):
+class ResendActivationView(FormView):
     """Повторная попытка активации аккаунта"""
 
-    def post(self, request):
+    template_name = "users/resend_activation.html"
+    form_class = ResendActivationForm
+
+
+    def form_valid(self, form):
         """
-        Получает user_id из сессии. Если аккаунт пользователя не активирован,
+        Если аккаунт пользователя не активирован,
         отправляет повторное письмо для активации (не чаще одного паза в две минуты)
         """
-        user_id = request.session.get("resend_user_id")
-        if not user_id:
-            return redirect("users:activation_error")
-
-        try:
-            user = User.objects.get(pk=user_id)
-        except User.DoesNotExist:
-            return redirect("users:activation_error")
-
-        if user.is_active:
-            messages.info(request, "Ваш аккаунт уже активирован")
-            return redirect("users:login")
-
-        last = request.session.get("last_resend")
+        user = form.user
+        last = self.request.session.get(f"last_resend_{user.pk}")
         now = timezone.now().timestamp()
         if last and now - last < 120:
-            messages.error(request, "Попробуйте снова через 2 минуты")
-            return redirect("users:activation_sent")
-        request.session["last_resend"] = now
+            messages.error(self.request, "Попробуйте снова через 2 минуты")
+            return super().form_valid(form)
+        self.request.session[f"last_resend_{user.pk}"] = now
 
         token = default_token_generator.make_token(user)
-        activation_url = request.build_absolute_uri(
+        activation_url = self.request.build_absolute_uri(
             reverse("users:activate", kwargs={"user_id": user.pk, "token": token})
         )
 
@@ -120,7 +113,7 @@ class ResendActivationView(View):
             activation_url=activation_url,
         )
 
-        messages.success(request, "Письмо отправлено повторно!")
+        messages.success(self.request, "Письмо отправлено повторно!")
         return redirect("users:activation_sent")
 
 
@@ -131,23 +124,6 @@ class UserLoginView(SuccessMessageMixin, LoginView):
     template_name = "users/login.html"
     success_message = "Вы успешно вошли!"
     redirect_authenticated_user = True
-
-    def form_valid(self, form: CustomAuthenticationForm):
-        """
-        Если аккаунт не активирован, перенаправляет на страницу активации.
-        При успешной валидации логина(email) и пароля сообщение о входе в аккаунт
-        """
-        user = form.get_user()
-        if not user.is_active:
-            self.request.session["resend_user_id"] = user.pk
-            messages.warning(
-                self.request,
-                "Ваш аккаунт не активирован. Проверьте почту или запросите письмо повторно"
-            )
-            return redirect("users:activation_sent")
-
-        messages.success(self.request, self.success_message)
-        return super().form_valid(form)
 
     def get_success_url(self):
         """При входе в аккаунт перенаправляет в личный кабинет пользователя"""

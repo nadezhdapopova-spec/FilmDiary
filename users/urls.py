@@ -16,7 +16,7 @@ urlpatterns = [
     path("resend/", ResendActivationView.as_view(), name="resend_activation"),
     path("login/", UserLoginView.as_view(), name="login"),
     path("profile/", UserProfileView.as_view(), name="profile"),
-    path("logout/", LogoutView.as_view(next_page="users:login"), {"next_page": "/"}, name="logout"),
+    path("logout/", LogoutView.as_view(), name="logout"),
     path(
         "password_reset/",
         PasswordResetView.as_view(
