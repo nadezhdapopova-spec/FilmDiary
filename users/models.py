@@ -29,9 +29,7 @@ class CustomUser(AbstractUser):
         help_text="Необязательное поле",
     )
     timezone = models.CharField(max_length=32, choices=TIMEZONES, default="Europe/Moscow")
-    tg_chat_id = models.BigIntegerField(
-        blank=True, null=True, verbose_name="Telegram chat-id", help_text="Необязательное поле: укажите свой телеграм id"
-    )
+    tg_chat_id = models.BigIntegerField(blank=True, null=True, verbose_name="Telegram id")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = [

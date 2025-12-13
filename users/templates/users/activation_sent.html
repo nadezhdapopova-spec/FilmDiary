@@ -8,13 +8,16 @@
         Если письма нет, проверьте папку «Спам».
     </p>
 
-    {% if request.user.is_authenticated and not request.user.is_active %}
-    <form method="post" action="{% url 'users_web:resend_activation' %}">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-outline-primary">
-            Отправить письмо повторно
-        </button>
-    </form>
+
+    {% if not user.is_active %}
+        <p class="text-center mt-3 text-muted">
+            Не получили письмо?
+        <form method="post" action="{% url 'users:resend_activation' %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-outline-primary">
+                Отправить письмо повторно
+            </button>
+        </form>
     {% endif %}
 </div>
 {% endblock %}

@@ -514,6 +514,24 @@ files = [
 toml = ["tomli"]
 
 [[package]]
+name = "crispy-bootstrap5"
+version = "2025.6"
+description = "Bootstrap5 template pack for django-crispy-forms"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "crispy_bootstrap5-2025.6-py3-none-any.whl", hash = "sha256:a343aa128b4383f35f00295b94de2b10862f2a4f24eda21fa6ead45234c07050"},
+    {file = "crispy_bootstrap5-2025.6.tar.gz", hash = "sha256:f1bde7cac074c650fc82f31777d4a4cfd0df2512c68bc4128f259c75d3daada4"},
+]
+
+[package.dependencies]
+django = ">=4.2"
+django-crispy-forms = ">=2.3"
+
+[package.extras]
+test = ["pytest", "pytest-django"]
+
+[[package]]
 name = "cron-descriptor"
 version = "2.0.6"
 description = "A Python library that converts cron expressions into human readable strings."
@@ -609,6 +627,20 @@ files = [
 
 [package.dependencies]
 asgiref = ">=3.6"
+django = ">=4.2"
+
+[[package]]
+name = "django-crispy-forms"
+version = "2.5"
+description = "Best way to have Django DRY forms"
+optional = false
+python-versions = ">=3.9"
+files = [
+    {file = "django_crispy_forms-2.5-py3-none-any.whl", hash = "sha256:adc99d5901baca09479c53bf536b3909e80a9f2bb299438a223de4c106ebf1f9"},
+    {file = "django_crispy_forms-2.5.tar.gz", hash = "sha256:066e72a8f152a1334f1c811cc37740868efe3265e5a218f79079ef89f848c3d8"},
+]
+
+[package.dependencies]
 django = ">=4.2"
 
 [[package]]
@@ -1980,4 +2012,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "589a08243e4ce3ace8b5adf7af9a43a37b379d908dfd7f6070c9e48cb30e8964"
+content-hash = "1ebfd2364076f6f5c502304ec92f9ab9005eec5918e4c66743de3ea6cccc6937"

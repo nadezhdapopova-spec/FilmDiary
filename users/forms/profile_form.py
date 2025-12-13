@@ -18,6 +18,7 @@ class UserProfileForm(forms.ModelForm):
     tg_chat_id = forms.IntegerField(required=False)
 
     class Meta:
+        model = User
         fields = [
             "username",
             "timezone",

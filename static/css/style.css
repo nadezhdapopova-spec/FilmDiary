@@ -1,0 +1,32 @@
+/* глаз внутри поля */
+.password-wrapper {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+}
+
+.password-toggle:hover {
+    color: #000;
+}
+
+/* индикатор силы пароля */
+.password-strength {
+    height: 6px;
+    border-radius: 4px;
+    margin-top: 6px;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.password-strength-bar {
+    height: 100%;
+    width: 0;
+    transition: width 0.3s ease;
+}

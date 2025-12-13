@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model, login, update_session_auth_hash
+from django.contrib.auth import get_user_model, update_session_auth_hash
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView
@@ -22,8 +22,7 @@ class RegisterView(SuccessMessageMixin, FormView):
 
     template_name = "users/register.html"
     form_class = RegisterForm
-    success_url = reverse_lazy("users_web:activation_sent")
-    success_message = "Регистрация успешна! Проверьте вашу почту и подтвердите email"
+    success_url = reverse_lazy("users:activation_sent")
 
     def form_valid(self, form):
         """Валидирует и сохраняет данные пользователя без активации аккаунта"""
@@ -38,7 +37,7 @@ class RegisterView(SuccessMessageMixin, FormView):
         """Отправляет email пользователю для подтверждения регистрации"""
         token = default_token_generator.make_token(user)
         activation_url = self.request.build_absolute_uri(
-            reverse("users_web:activate", kwargs={"user_id": user.pk, "token": token})
+            reverse("users:activate", kwargs={"user_id": user.pk, "token": token})
         )
 
         send_activation_email_task.delay(
@@ -64,17 +63,17 @@ class ActivateAccountView(View):
 
         if user.is_active:
             messages.info(request, "Аккаунт уже активирован")
-            return redirect("users_web:login")
+            return redirect("users:login")
 
         if default_token_generator.check_token(user, token):
             user.is_active = True
             user.save()
             messages.success(request, "Аккаунт успешно активирован!")
             request.session.pop("resend_user_id", None)
-            return redirect("users_web:login")
+            return redirect("users:login")
 
         messages.error(request, "Неверная или устаревшая ссылка активации аккаунта")
-        return redirect("users_web:activation_sent")
+        return redirect("users:activation_sent")
 
 
 class ResendActivationView(View):
@@ -87,26 +86,29 @@ class ResendActivationView(View):
         """
         user_id = request.session.get("resend_user_id")
         if not user_id:
-            messages.error(request, "Мы не смогли определить ваш аккаунт. Попробуйте повторить регистрацию")
-            return redirect("users_web:register")
+            messages.error(request, "Мы не смогли определить ваш аккаунт. Попробуйте зарегистрироваться заново")
+            return redirect("users:activation_sent")
 
         User = get_user_model()
         user = User.objects.get(pk=user_id)
+        if not user:
+            messages.error(request, "Мы не смогли определить ваш аккаунт. Попробуйте зарегистрироваться заново")
+            return redirect("users:activation_sent")
 
         if user.is_active:
             messages.info(request, "Ваш аккаунт уже активирован")
-            return redirect("users_web:profile")
+            return redirect("users:login")
 
         last = request.session.get("last_resend")
         now = timezone.now().timestamp()
         if last and now - last < 120:
             messages.error(request, "Попробуйте снова через 2 минуты")
-            return redirect("users_web:activation_sent")
+            return redirect("users:activation_sent")
         request.session["last_resend"] = now
 
         token = default_token_generator.make_token(user)
         activation_url = request.build_absolute_uri(
-            reverse("users_web:activate", kwargs={"user_id": user.pk, "token": token})
+            reverse("users:activate", kwargs={"user_id": user.pk, "token": token})
         )
 
         send_activation_email_task.delay(
@@ -116,7 +118,7 @@ class ResendActivationView(View):
         )
 
         messages.success(request, "Письмо отправлено повторно!")
-        return redirect("users_web:activation_sent")
+        return redirect("users:activation_sent")
 
 
 class UserLoginView(SuccessMessageMixin, LoginView):
@@ -139,14 +141,14 @@ class UserLoginView(SuccessMessageMixin, LoginView):
                 self.request,
                 "Ваш аккаунт не активирован. Проверьте почту или запросите письмо повторно"
             )
-            return redirect("users_web:activation_sent")
+            return redirect("users:activation_sent")
 
         messages.success(self.request, self.success_message)
         return super().form_valid(form)
 
     def get_success_url(self):
         """При входе в аккаунт перенаправляет в личный кабинет пользователя"""
-        return reverse_lazy("users_web:profile")
+        return reverse_lazy("users:profile")
 
 
 class UserProfileView(LoginRequiredMixin, TemplateView):

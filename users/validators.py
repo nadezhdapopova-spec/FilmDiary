@@ -1,4 +1,8 @@
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+
+
+User = get_user_model()
 
 
 def validate_avatar(file):
@@ -11,3 +15,19 @@ def validate_avatar(file):
 
     if file.size > max_size_mb:
         raise ValidationError(f"Размер файла не должен превышать {max_size_mb} МБ")
+
+
+def validate_telegram_id(tg_id: int | None):
+    if tg_id is None:
+        return None
+    tg_id_str = str(tg_id)
+    if not tg_id_str.isdigit():
+        raise ValidationError("Telegram ID должен содержать только цифры")
+
+    if not (5 <= len(tg_id_str) <= 12):
+        raise ValidationError("Telegram ID должен содержать от 5 до 12 цифр")
+
+    if User.objects.filter(tg_chat_id=tg_id).exists():
+        raise ValidationError("Этот Telegram ID уже используется")
+
+    return tg_id

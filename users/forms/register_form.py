@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
-from users.validators import validate_avatar
+from users.validators import validate_telegram_id
 
 User = get_user_model()
 
@@ -17,10 +17,44 @@ class RegisterForm(UserCreationForm):
     """Класс формы для регистрации пользователя"""
 
     username = forms.CharField(
-        max_length=150, help_text="Не более 150 символов. Только буквы, цифры и символы @/./+/-/_."
+        max_length=150,
+        widget=forms.TextInput(attrs={"class": "form-control"}),
     )
-    avatar = forms.ImageField(required=False, validators=[validate_avatar])
-    tg_chat_id = forms.IntegerField(required=False)
+    tg_chat_id = forms.IntegerField(
+        label="Telegram ID",
+        required=False,
+        validators=[validate_telegram_id],
+        widget=forms.TextInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Например: 123456789",
+            }
+        ),
+    )
+    password1 = forms.CharField(
+        label="Пароль",
+        help_text="",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-control",
+                "id": "id_password1",
+                "autocomplete": "new-password",
+                "autocorrect": "off",
+                "autocapitalize": "off",
+                "spellcheck": "false",
+            }
+        ),
+    )
+    password2 = forms.CharField(
+        label="Подтверждение пароля",
+        help_text="",
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-control",
+                "autocomplete": "new-password",
+            }
+        ),
+    )
 
     class Meta(UserCreationForm.Meta):
         model = User
@@ -29,16 +63,10 @@ class RegisterForm(UserCreationForm):
             "username",
             "timezone",
             "tg_chat_id",
-            "avatar",
             "password1",
             "password2",
         )
         widgets = {
             "email": forms.TextInput(attrs={"class": "form-control"}),
-            "username": forms.TextInput(attrs={"class": "form-control"}),
             "timezone": forms.Select(attrs={"class": "form-select"}),
-            "tg_chat_id": forms.NumberInput(attrs={"class": "form-control"}),
-            "avatar": CustomClearableFileInput(attrs={"class": "form-control"}),
-            "password1": forms.PasswordInput(attrs={"class": "form-control"}),
-            "password2": forms.PasswordInput(attrs={"class": "form-control"}),
         }
