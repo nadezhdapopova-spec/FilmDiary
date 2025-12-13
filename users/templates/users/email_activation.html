@@ -5,65 +5,116 @@
     <title>Активация аккаунта</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f6f8;
             margin: 0;
             padding: 0;
+            background-color: #f4f6f8;
+            font-family: Arial, Helvetica, sans-serif;
         }
+
+        .wrapper {
+            width: 100%;
+            padding: 40px 0;
+        }
+
         .container {
-            max-width: 500px;
-            margin: 40px auto;
-            background: #ffffff;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 5px 18px rgba(0,0,0,0.1);
-        }
-        h2 {
-            color: #333333;
+            max-width: 520px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 14px;
+            padding: 36px 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
             text-align: center;
         }
+
+        .logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: #cb6518;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            color: #2b2b2b;
+            margin: 16px 0;
+        }
+
         p {
             color: #555555;
             line-height: 1.6;
+            margin: 12px 0;
         }
+
         .button {
-            display: block;
-            width: max-content;
-            background: #cb6518;
+            display: inline-block;
+            margin: 24px 0;
+            padding: 14px 28px;
+            background-color: #cb6518;
             color: #ffffff !important;
-            padding: 12px 20px;
-            border-radius: 8px;
             text-decoration: none;
-            margin: 25px auto;
+            border-radius: 8px;
             font-weight: bold;
+            font-size: 15px;
         }
+
+        .link {
+            word-break: break-all;
+            font-size: 12px;
+            color: #777777;
+            margin-top: 8px;
+        }
+
+        .divider {
+            height: 1px;
+            background-color: #e6e6e6;
+            margin: 28px 0;
+        }
+
         .footer {
-            margin-top: 25px;
             font-size: 12px;
             color: #999999;
-            text-align: center;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h2>Ваша регистрация подтверждена</h2>
+<div class="wrapper">
+    <div class="container">
 
-    <p>{{ user.username }}, спасибо за регистрацию в нашем сервисе FilmDairy!</p>
+        <!-- Логотип / название -->
+        <div class="logo">
+            🎬 FilmDiary
+        </div>
 
-    <p>Чтобы активировать ваш аккаунт, нажмите кнопку ниже:</p>
+        <h2>Подтвердите вашу почту</h2>
 
-    <a href="{{ activation_url }}" class="button text-center">Активировать аккаунт</a>
+        <p>
+            Спасибо, что зарегистрировались в <strong>FilmDiary</strong>!
+        </p>
 
-    <p>Если кнопка не работает, скопируйте ссылку и вставьте в браузер:</p>
+        <p>
+            Чтобы активировать ваш аккаунт, нажмите кнопку ниже:
+        </p>
 
-    <p style="word-break: break-all; font-size: 12px;">
-        {{ activation_url }}
-    </p>
+        <a href="{{ activation_url }}" class="button">
+            Активировать аккаунт
+        </a>
 
-    <div class="footer">
-        Это письмо отправлено автоматически. Пожалуйста, не отвечайте на него.
+        <p>
+            Если кнопка не работает, скопируйте ссылку и вставьте её в браузер:
+        </p>
+
+        <div class="link">
+            {{ activation_url }}
+        </div>
+
+        <div class="divider"></div>
+
+        <p class="footer">
+            Это письмо отправлено автоматически.<br>
+            Пожалуйста, не отвечайте на него.
+        </p>
+
     </div>
 </div>
 

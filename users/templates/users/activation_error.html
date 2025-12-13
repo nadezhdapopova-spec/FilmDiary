@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block title %}Ошибка активации{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="card shadow-sm p-4 mx-auto" style="max-width: 480px;">
+        <h3 class="mb-3">Что-то пошло не так 😔</h3>
+
+        <p class="text-muted mb-4">
+            Мы не смогли определить ваш аккаунт.
+            Возможно, сессия устарела или вы открыли страницу повторно.
+        </p>
+
+        <div class="d-grid gap-2">
+            <a href="{% url 'users:register' %}" class="btn btn-primary">
+                Зарегистрироваться заново
+            </a>
+
+            <a href="#" class="btn btn-outline-secondary">
+                На главную
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

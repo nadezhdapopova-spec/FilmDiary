@@ -17,6 +17,8 @@ from users.forms.authentication_form import CustomAuthenticationForm
 from users.tasks import send_activation_email_task
 
 
+User = get_user_model()
+
 class RegisterView(SuccessMessageMixin, FormView):
     """Регистрация пользователя"""
 
@@ -58,7 +60,6 @@ class ActivateAccountView(View):
 
     def get(self, request, user_id, token):
         """Проверяет ссылку для активации аккаунта пользователя, активирует аккаунт"""
-        User = get_user_model()
         user = get_object_or_404(User, pk=user_id)
 
         if user.is_active:
@@ -76,6 +77,10 @@ class ActivateAccountView(View):
         return redirect("users:activation_sent")
 
 
+class ActivationErrorView(TemplateView):
+    template_name = "users/activation_error.html"
+
+
 class ResendActivationView(View):
     """Повторная попытка активации аккаунта"""
 
@@ -86,14 +91,12 @@ class ResendActivationView(View):
         """
         user_id = request.session.get("resend_user_id")
         if not user_id:
-            messages.error(request, "Мы не смогли определить ваш аккаунт. Попробуйте зарегистрироваться заново")
-            return redirect("users:activation_sent")
+            return redirect("users:activation_error")
 
-        User = get_user_model()
-        user = User.objects.get(pk=user_id)
-        if not user:
-            messages.error(request, "Мы не смогли определить ваш аккаунт. Попробуйте зарегистрироваться заново")
-            return redirect("users:activation_sent")
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return redirect("users:activation_error")
 
         if user.is_active:
             messages.info(request, "Ваш аккаунт уже активирован")

@@ -9,15 +9,14 @@
     </p>
 
 
-    {% if not user.is_active %}
-        <p class="text-center mt-3 text-muted">
-            Не получили письмо?
-        <form method="post" action="{% url 'users:resend_activation' %}">
-            {% csrf_token %}
-            <button type="submit" class="btn btn-outline-primary">
-                Отправить письмо повторно
-            </button>
-        </form>
-    {% endif %}
+    <p class="text-center mt-3 text-muted">
+        Не получили письмо?
+    <form method="post" action="{% url 'users:resend_activation' %}">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-outline-primary">
+            Отправить письмо повторно
+        </button>
+    </form>
+
 </div>
 {% endblock %}

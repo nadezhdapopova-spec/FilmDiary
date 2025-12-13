@@ -30,3 +30,20 @@
     width: 0;
     transition: width 0.3s ease;
 }
+
+/* Notyf custom theme */
+.notyf__toast {
+    background-color: #000 !important;
+    color: #fff !important;
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 0.95rem;
+}
+
+.notyf__message {
+    color: #fff !important;
+}
+
+.notyf__icon {
+    margin-right: 8px;
+}

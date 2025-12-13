@@ -4,13 +4,14 @@ from django.urls import path, reverse_lazy
 
 from users.forms.password_reset_form import CustomPasswordResetForm, CustomSetPasswordForm
 from users.views import RegisterView, ActivateAccountView, ResendActivationView, UserLoginView, UserProfileView, \
-    ActivationSentView
+    ActivationSentView, ActivationErrorView
 
 app_name = "users"
 
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
     path("activation-sent/", ActivationSentView.as_view(), name="activation_sent"),
+    path("activation/error/", ActivationErrorView.as_view(), name="activation_error"),
     path("activate/<int:user_id>/<str:token>/", ActivateAccountView.as_view(), name="activate"),
     path("resend/", ResendActivationView.as_view(), name="resend_activation"),
     path("login/", UserLoginView.as_view(), name="login"),
