@@ -3,21 +3,20 @@
 
 {% block content %}
 <div class="container py-5 text-center">
-    <h2 class="mb-3">У вас не активирован аккаунт?</h2>
-    <p class="text-muted mb-4">
-        Мы отправим ссылку для подтверждения на вашу почту.
-        Если письма нет, проверьте папку «Спам».
-    </p>
+    <div class="card shadow-sm p-4 mx-auto" style="max-width: 450px;">
+        <h2 class="mb-3">У вас не активирован аккаунт?</h2>
+        <p class="text-muted mb-4">
+            Мы отправим ссылку для подтверждения на вашу почту.
+            Если письма нет, проверьте папку «Спам».
+        </p>
 
-    <p class="text-center mt-3 text-muted">
-        Введите email и нажмите 'Отправить письмо':
-    <form method="post">
-        {% csrf_token %}
-        {{ form.email|as_crispy_field }}
-        <button type="submit" class="btn btn-primary w-100 mt-3">
-            Отправить письмо
-        </button>
-    </form>
-
+        <form method="post">
+            {% csrf_token %}
+            {{ form.email|as_crispy_field }}
+            <button type="submit" class="btn btn-primary w-100 mt-3">
+                Отправить письмо
+            </button>
+        </form>
+    </div>
 </div>
 {% endblock %}
