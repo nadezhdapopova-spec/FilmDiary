@@ -4,13 +4,8 @@ from django.contrib.auth.forms import UserCreationForm
 
 from users.validators import validate_telegram_id
 
+
 User = get_user_model()
-
-
-class CustomClearableFileInput(forms.ClearableFileInput):
-    """Класс для создания кастомного поля формы для загрузки файлов"""
-
-    template_name = "users/widgets/custom_file_input.html"
 
 
 class RegisterForm(UserCreationForm):

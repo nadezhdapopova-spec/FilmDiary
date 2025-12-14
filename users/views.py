@@ -1,4 +1,4 @@
-from django.contrib.auth import get_user_model, update_session_auth_hash
+from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView
@@ -15,8 +15,7 @@ from users.forms.profile_form import UserProfileForm, UserPasswordForm
 from users.forms.register_form import RegisterForm
 from users.forms.authentication_form import CustomAuthenticationForm
 from users.forms.resend_activation_form import ResendActivationForm
-from users.tasks import send_activation_email_task
-
+from users.tasks import send_activation_email_task, send_confirm_email_task
 
 User = get_user_model()
 
@@ -136,7 +135,6 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
     template_name = "users/profile.html"
 
     def get_context_data(self, **kwargs):
-        """Добавляет формы для личных данных и смены пароля в контекст"""
         context = super().get_context_data(**kwargs)
         user = self.request.user
         context["profile_form"] = kwargs.get("profile_form") or UserProfileForm(instance=user)
@@ -144,24 +142,65 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
         return context
 
     def post(self, request, *args, **kwargs):
-        """Обновляет данные пользователя"""
+        """
+        Обновляет данные пользователя. Обновляет email:
+        проверяет, менялся ли email, генерирует token, отправляет письмо
+        """
+
         user = request.user
+        profile_form = UserProfileForm(request.POST, request.FILES, instance=user)
+        password_form = UserPasswordForm(user=user, data=request.POST)
 
         if "save_profile" in request.POST:
-            profile_form = UserProfileForm(request.POST, request.FILES, instance=user)
             if profile_form.is_valid():
+                email_changed = "email" in profile_form.changed_data
                 profile_form.save()
-                messages.success(request, "Профиль успешно обновлён")
-                return redirect("users:account")
+
+                if email_changed:
+                    token = default_token_generator.make_token(user)
+                    confirm_url = request.build_absolute_uri(
+                        reverse("users:confirm_email", args=[user.pk, token])
+                    )
+
+                    send_confirm_email_task.delay(
+                        user_id=user.pk,
+                        new_email=profile_form.cleaned_data["email"],
+                        confirm_url=confirm_url,
+                    )
+
+                    messages.warning(
+                        request,
+                        "Мы отправили письмо для подтверждения нового email"
+                    )
+
+                messages.success(request, "Профиль обновлён")
+                return redirect("users:profile")
+
             return self.render_to_response(self.get_context_data(profile_form=profile_form))
 
         elif "change_password" in request.POST:
-            password_form = UserPasswordForm(user=request.user, data=request.POST)
             if password_form.is_valid():
                 password_form.save()
-                messages.success(request, "Профиль успешно обновлён")
-                update_session_auth_hash(request, password_form.user)
-                return redirect("users:account")
+                messages.success(request, "Пароль успешно изменён")
+                return redirect("users:profile")
             return self.render_to_response(self.get_context_data(password_form=password_form))
 
-        return self.get(request, *args, **kwargs)
+        return redirect("users:profile")
+
+class ConfirmEmailView(View):
+    """Проверяет token, меняет email"""
+
+    def get(self, request, user_id, token):
+        user = get_object_or_404(User, pk=user_id)
+
+        if default_token_generator.check_token(user, token):
+            user.email = user.email_new
+            user.email_new = None
+            user.email_confirmed = True
+            user.save()
+
+            messages.success(request, "Email успешно подтверждён")
+            return redirect("users:profile")
+
+        messages.error(request, "Ссылка недействительна")
+        return redirect("users:profile")

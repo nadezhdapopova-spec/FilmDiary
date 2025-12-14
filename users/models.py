@@ -20,6 +20,8 @@ class CustomUser(AbstractUser):
     ]
 
     email = models.EmailField(unique=True, verbose_name="Email")
+    email_new = models.EmailField(blank=True, null=True)
+    email_confirmed = models.BooleanField(default=True)
     avatar = models.ImageField(
         upload_to="users/avatars/",
         blank=True,

@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 class ResendActivationForm(forms.Form):
+    """Форма отправки письма для активации профиля пользователя"""
+
     email = forms.EmailField(label="Email", widget=forms.EmailInput(attrs={
         "class": "form-control",
         "placeholder": "Введите ваш email",

@@ -1,32 +1,50 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
-from django.core.exceptions import ValidationError
+from django.contrib.auth.forms import SetPasswordForm, PasswordResetForm
 
 
 User = get_user_model()
 
 
 class CustomPasswordResetForm(PasswordResetForm):
-    """Класс восстановления пароля пользователя"""
+    """Форма для восстановления пароля"""
 
-    email = forms.EmailField(widget=forms.EmailInput(attrs={"class": "form-control"}))
+    email = forms.EmailField(
+        label="Email",
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control",
+                "autocomplete": "email",
+            }
+        ),
+    )
 
     def clean_email(self):
-        """Валидация указанного email пользователя"""
-        email = self.cleaned_data.get("email")
-        if not User.objects.filter(email=email).exists():
-            raise ValidationError("Пользователь с таким email не найден")
-        return email
+        email = self.cleaned_data["email"]
 
-    def save(self, *args, **kwargs):
-        """Использование кастомного письма для восстановления пароля пользователя"""
-        kwargs["html_email_template_name"] = "users/password_reset_email.html"
-        return super().save(*args, **kwargs)
+        if not User.objects.filter(email=email).exists():
+            raise forms.ValidationError(
+                "Пользователь с таким email не найден"
+            )
+
+        return email
 
 
 class CustomSetPasswordForm(SetPasswordForm):
-    """Класс для создания и сохранения нового пароля пользователя"""
+    """Форма для нового пароля"""
 
-    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Новый пароль"}))
-    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Подтвердите пароль"}))
+    new_password1 = forms.CharField(
+        label="Новый пароль",
+        widget=forms.PasswordInput(attrs={
+            "class": "form-control"
+        }),
+        help_text="",
+    )
+    new_password2 = forms.CharField(
+        label="Подтверждение пароля",
+        widget=forms.PasswordInput(attrs={
+            "class": "form-control",
+            "placeholder": "Повторите пароль",
+        }),
+        help_text="",
+    )
