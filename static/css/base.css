@@ -11,16 +11,15 @@ html,
 body {
   margin: 0;
   padding: 0;
-  background: radial-gradient(
-      1200px 600px at 10% -10%,
-      rgba(255, 138, 0, 0.08),
-      transparent 40%
-    ),
-    radial-gradient(
-      800px 500px at 90% 10%,
-      rgba(96, 165, 250, 0.06),
-      transparent 45%
-    ),
+  background:
+    radial-gradient(circle at 20% 10%, rgba(123, 92, 255, 0.18), transparent 40%),
+    radial-gradient(circle at 80% 30%, rgba(255, 138, 0, 0.2), transparent 45%),
+    linear-gradient(180deg, #05070d, #02030a),
+    /*radial-gradient(*/
+    /*  800px 500px at 90% 10%,*/
+    /*  rgba(96, 165, 250, 0.06),*/
+    /*  transparent 45%*/
+    /*),*/
     var(--bg-main);
   color: var(--text-main);
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;

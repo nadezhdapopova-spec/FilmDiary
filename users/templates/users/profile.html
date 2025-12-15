@@ -3,73 +3,79 @@
 {% load crispy_forms_tags %}
 {% load crispy_forms_filters %}
 
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
 {% block content %}
-<div class="container py-5">
-    <h2 class="mb-4">Личный кабинет</h2>
+<div class="profile-wrapper">
+    <div class="container py-5">
+        <h2 class="mb-4">Личный кабинет</h2>
 
-    {% if not request.user.email_confirmed and request.user.email_new %}
-        <div class="alert alert-warning small d-flex align-items-center">
-            <i class="bi bi-envelope-exclamation me-2"></i>
-            Подтвердите новый email. Мы отправили письмо на <strong>{{ request.user.email_new }}</strong>
-        </div>
-    {% endif %}
-
-    <div class="row g-4">
-
-        <!-- Левая колонка: профиль + аватар -->
-        <div class="col-lg-6">
-            <div class="card shadow-sm p-4">
-                <h5 class="mb-3"><i class="bi bi-person-circle me-2"></i> Данные профиля</h5>
-
-                <!-- Форма профиля -->
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-
-                    <!-- Предпросмотр -->
-                    <div class="text-center mb-3">
-                        <img id="avatarPreview"
-                             src="{{ request.user.avatar.url }}"
-                             class="rounded-circle shadow"
-                             style="width:120px;height:120px;object-fit:cover">
-                    </div>
-
-                    <!-- Кастомная загрузка -->
-                    <div class="mb-4">
-                        {{ profile_form.avatar }}
-                    </div>
-
-                    <!-- Остальные поля -->
-                    {{ profile_form.username|as_crispy_field }}
-                    {{ profile_form.email|as_crispy_field }}
-                    {{ profile_form.timezone|as_crispy_field }}
-                    {{ profile_form.tg_chat_id|as_crispy_field }}
-
-                    <button name="save_profile" class="btn btn-primary w-100 mt-3">
-                        Сохранить
-                    </button>
-                </form>
+        {% if not request.user.email_confirmed and request.user.email_new %}
+            <div class="alert alert-warning small d-flex align-items-center">
+                <i class="bi bi-envelope-exclamation me-2"></i>
+                Подтвердите новый email. Мы отправили письмо на <strong>{{ request.user.email_new }}</strong>
             </div>
-        </div>
+        {% endif %}
 
-        <!-- Правая колонка: смена пароля -->
-        <div class="col-lg-6">
-            <div class="card shadow-sm p-4">
-                <h5 class="mb-3"><i class="bi bi-key-fill me-2"></i> Смена пароля</h5>
-                <form method="post">
-                    {% csrf_token %}
-                    {{ password_form|crispy }}
-                    <button name="change_password" class="btn btn-outline-danger w-100 mt-2">Сменить пароль</button>
-                </form>
+        <div class="row g-4">
+
+            <!-- Левая колонка: профиль + аватар -->
+            <div class="col-lg-6">
+                <div class="profile-card">
+                    <h5 class="mb-3"><i class="bi bi-person-circle me-2"></i> Данные профиля</h5>
+
+                    <!-- Форма профиля -->
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+
+                        <!-- Предпросмотр -->
+                        <div class="text-center mb-3">
+                            <img id="avatarPreview"
+                                 src="{{ request.user.avatar.url }}"
+                                 class="rounded-circle shadow"
+                                 style="width:120px;height:120px;object-fit:cover">
+                        </div>
+
+                        <!-- Кастомная загрузка -->
+                        <div class="mb-4">
+                            {{ profile_form.avatar }}
+                        </div>
+
+                        <!-- Остальные поля -->
+                        {{ profile_form.username|as_crispy_field }}
+                        {{ profile_form.email|as_crispy_field }}
+                        {{ profile_form.timezone|as_crispy_field }}
+                        {{ profile_form.tg_chat_id|as_crispy_field }}
+
+                        <button name="save_profile" class="btn btn-primary w-100 mt-3">
+                            Сохранить
+                        </button>
+                    </form>
+                </div>
             </div>
+
+            <!-- Правая колонка: смена пароля -->
+            <div class="col-lg-6">
+                <div class="card shadow-sm p-4">
+                    <h5 class="mb-3"><i class="bi bi-key-fill me-2"></i> Смена пароля</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        {{ password_form|crispy }}
+                        <button name="change_password" class="btn btn-outline-danger w-100 mt-2">Сменить пароль</button>
+                    </form>
+                </div>
+            </div>
+
         </div>
 
+        <!-- Кнопка выхода -->
+        <form method="post" action="{% url 'users:logout' %}" class="mt-4 text-center">
+            {% csrf_token %}
+            <button class="btn btn-link text-danger">Выйти</button>
+        </form>
     </div>
-
-    <!-- Кнопка выхода -->
-    <form method="post" action="{% url 'users:logout' %}" class="mt-4 text-center">
-        {% csrf_token %}
-        <button class="btn btn-link text-danger">Выйти</button>
-    </form>
 </div>
 {% endblock %}
 

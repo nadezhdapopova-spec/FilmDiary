@@ -7,12 +7,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: radial-gradient(
-    circle at top left,
-    #1b1b1b,
-    #050505 70%
-  );
-  padding: 1.4rem;
+  background:
+    radial-gradient(circle at top right, rgba(255,138,0,0.15), transparent 40%),
+    radial-gradient(circle at bottom left, rgba(255,95,0,0.12), transparent 45%),
+    #050505;
+  padding: 1.5rem;
 }
 
 .auth-card {
