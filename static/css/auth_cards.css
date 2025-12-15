@@ -115,6 +115,15 @@
   text-decoration: underline;
 }
 
+.auth-footer--dark a {
+  color: #111; /* чёрный */
+}
+
+.auth-footer--dark a:hover {
+  color: #000;
+  text-decoration: underline;
+}
+
 /* mobile */
 @media (max-width: 768px) {
   .auth-card {

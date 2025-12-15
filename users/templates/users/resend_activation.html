@@ -1,22 +1,49 @@
 {% extends "base.html" %}
+{% load static %}
 {% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
+
+{% block title %}Повторное письмо для активации аккаунта{% endblock %}
 
 {% block content %}
-<div class="container py-5 text-center">
-    <div class="card shadow-sm p-4 mx-auto" style="max-width: 500px;">
-        <h2 class="mb-3">У вас не активирован аккаунт?</h2>
-        <p class="text-muted mb-4">
-            Мы отправим ссылку для подтверждения на вашу почту.
-            Если письма нет, проверьте папку «Спам»
-        </p>
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <!-- Левая часть: изображение -->
+        <div class="auth-image"
+            style="background-image: url('{% static "img/auth/register.jpg" %}')">
+        </div>
 
-        <form method="post">
-            {% csrf_token %}
-            {{ form.email|as_crispy_field }}
-            <button type="submit" class="btn btn-primary w-100 mt-3">
-                Отправить письмо
-            </button>
-        </form>
+        <!-- Правая часть: форма -->
+        <div class="auth-body">
+            <div class="text-center">
+                <h2>У вас не активирован аккаунт?</h2>
+            </div>
+            {% if form.non_field_errors %}
+                <div class="form-error">
+                    {{ form.non_field_errors|safe }}
+                </div>
+            {% endif %}
+
+            <p class="text-center mt-3 mb-5">
+                Мы отправим ссылку для подтверждения на вашу почту.
+                Если письма нет, проверьте папку «Спам»
+            </p>
+
+            <div class="text-center">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.email|as_crispy_field }}
+
+                    <button type="submit" class="btn btn-primary mt-3 w-50">
+                        Отправить письмо
+                    </button>
+                </form>
+            </div>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/auth.js' %}"></script>
 {% endblock %}

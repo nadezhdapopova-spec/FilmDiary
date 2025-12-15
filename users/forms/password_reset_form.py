@@ -44,7 +44,6 @@ class CustomSetPasswordForm(SetPasswordForm):
         label="Подтверждение пароля",
         widget=forms.PasswordInput(attrs={
             "class": "form-control",
-            "placeholder": "Повторите пароль",
         }),
         help_text="",
     )
