@@ -1,0 +1,179 @@
+/* =========================
+   AUTH CARDS (login/register/reset)
+========================= */
+
+.auth-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    circle at top left,
+    #1b1b1b,
+    #050505 70%
+  );
+  padding: 1.4rem;
+}
+
+.auth-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 900px;
+  width: 100%;
+  background: #ffffff;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+}
+
+.auth-image {
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.auth-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,0.2),
+    rgba(0,0,0,0.6)
+  );
+}
+
+.auth-body {
+  padding: 2rem 2rem;
+  color: #111;
+}
+
+.auth-body h2 {
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.auth-body p,
+.auth-body label {
+  color: #555;
+}
+
+/* form fields inside auth */
+.auth-card .mb-3,
+.auth-card .form-group {
+  margin-bottom: 0.75rem !important;
+}
+
+.auth-card .form-control,
+.auth-card select {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid #ddd;
+  border-radius: 0;
+  padding: 0.2rem 0.15rem;
+  color: #111;
+}
+
+.auth-card .form-control:focus,
+.auth-card select:focus {
+  border-color: var(--accent-primary);
+  box-shadow: none;
+}
+
+/* password eye */
+.auth-card .password-toggle {
+  color: #999;
+}
+
+.auth-card .password-toggle:hover {
+  color: var(--accent-primary);
+}
+
+/* buttons */
+.auth-card .btn-primary {
+  width: 100%;
+  padding: 0.75rem;
+  margin-top: 0.8rem;
+  border-radius: 10px;
+  font-size: 0.95rem;
+}
+
+/* footer links */
+.auth-footer {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.auth-footer a {
+  color: var(--accent-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+/* mobile */
+@media (max-width: 768px) {
+  .auth-card {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-image {
+    display: none;
+  }
+}
+
+/* глаз внутри поля */
+.password-wrapper {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: #6c757d;
+}
+
+.password-toggle:hover {
+    color: #000;
+}
+
+/* индикатор силы пароля */
+.password-strength {
+    height: 6px;
+    border-radius: 4px;
+    margin-top: 6px;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.password-strength-bar {
+    height: 100%;
+    width: 0;
+    transition: width 0.3s ease;
+}
+
+/* unified form error */
+.form-error {
+  margin-top: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(229, 83, 61, 0.4);
+}
+
+/* django non-field errors */
+.form-error ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.form-error li {
+  font-size: 0.85rem;
+  color: #e5533d;
+}

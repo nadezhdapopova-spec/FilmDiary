@@ -1,0 +1,111 @@
+/* COMPONENTS: кнопки, карточки, формы */
+
+/* CARDS */
+.card {
+  background: var(--bg-card);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(6px);
+  transition: transform var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+/* BUTTONS */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.2rem;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: all var(--transition-fast);
+}
+
+.btn-primary {
+  background: linear-gradient(
+    135deg,
+    var(--accent-primary),
+    var(--accent-secondary)
+  );
+  color: #000;
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0 30px rgba(255, 138, 0, 0.4);
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* FORMS */
+.input,
+select,
+textarea {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  outline: none;
+  transition: border var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.input::placeholder {
+  color: var(--text-muted);
+}
+
+.input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--accent-primary);
+  box-shadow: 0 0 0 2px rgba(255, 138, 0, 0.25);
+}
+
+/* Notyf custom theme */
+.notyf__toast {
+  background: linear-gradient(
+    135deg,
+    #ff8a00,
+    #ff5f00
+  ) !important;
+  color: #000 !important;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 0.95rem;
+  box-shadow: 0 10px 30px rgba(255, 138, 0, 0.4);
+}
+
+.notyf__message {
+  color: #000 !important;
+  font-weight: 600;
+}
+
+.notyf__icon {
+  margin-right: 10px;
+}
+
+.notyf {
+  z-index: 9999 !important;
+}

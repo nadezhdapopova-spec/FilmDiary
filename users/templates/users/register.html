@@ -6,55 +6,56 @@
 {% block title %}Регистрация{% endblock %}
 
 {% block content %}
-<div class="container py-5">
-    <h2 class="mb-4 text-center">Регистрация</h2>
+<div class="auth-wrapper">
+  <div class="auth-card">
 
-    <div class="card shadow-sm p-4 mx-auto" style="max-width: 450px;">
-        <form method="post" novalidate>
-            {% csrf_token %}
-
-            {{ form.email|as_crispy_field }}
-            {{ form.username|as_crispy_field }}
-            {{ form.timezone|as_crispy_field }}
-            {{ form.tg_chat_id|as_crispy_field }}
-
-            <!-- Пароль -->
-            <div class="mb-3">
-                <label for="id_password1" class="form-label">Пароль</label>
-
-                <div class="password-wrapper">
-                    {{ form.password1 }}
-                    <i
-                        class="bi bi-eye password-toggle"
-                        onclick="togglePassword('id_password1', this)"
-                    ></i>
-                </div>
-
-                <div class="password-strength">
-                    <div id="password-strength-bar" class="password-strength-bar"></div>
-                </div>
-
-                {% if form.password1.errors %}
-                    <div class="text-danger small mt-1">
-                        {{ form.password1.errors|striptags }}
-                    </div>
-                {% endif %}
-            </div>
-
-            {{ form.password2|as_crispy_field }}
-
-            <button class="btn btn-primary w-100 mt-3">
-                Создать аккаунт
-            </button>
-        </form>
-
-        {% if not request.user.is_authenticated %}
-            <p class="text-center mt-3">
-                Уже есть аккаунт?
-                <a href="{% url 'users:login' %}">Войти</a>
-            </p>
-        {% endif %}
+    <!-- Левая часть: изображение -->
+    <div class="auth-image"
+         style="background-image: url('{% static "img/auth/register.jpg" %}')">
     </div>
+
+    <!-- Правая часть: форма -->
+    <div class="auth-body">
+      <h2>Регистрация</h2>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {{ form.email|as_crispy_field }}
+        {{ form.username|as_crispy_field }}
+        {{ form.timezone|as_crispy_field }}
+        {{ form.tg_chat_id|as_crispy_field }}
+
+        <!-- Пароль -->
+        <div class="mb-3">
+          <label for="id_password1">Пароль</label>
+          <div class="password-wrapper">
+            {{ form.password1 }}
+            <i class="bi bi-eye password-toggle"
+               onclick="togglePassword('id_password1', this)">
+            </i>
+          </div>
+
+          <div class="password-strength">
+            <div id="password-strength-bar"
+                 class="password-strength-bar"></div>
+          </div>
+        </div>
+
+        {{ form.password2|as_crispy_field }}
+
+        <button class="btn btn-primary">
+          Создать аккаунт
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Уже есть аккаунт?
+        <a href="{% url 'users:login' %}">Войти</a>
+      </div>
+    </div>
+
+  </div>
 </div>
 {% endblock %}
 

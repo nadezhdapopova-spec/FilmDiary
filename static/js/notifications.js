@@ -5,7 +5,7 @@ document.addEventListener("DOMContentLoaded", () => {
         duration: 4000,
         position: {
             x: "right",
-            y: "bottom",
+            y: "top",
         },
         dismissible: true,
         ripple: false,
