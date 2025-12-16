@@ -15,14 +15,3 @@
     transform: translateY(0);
   }
 }
-
-/* RESPONSIVE */
-@media (max-width: 768px) {
-  .card {
-    padding: 1.2rem;
-  }
-
-  .banner {
-    padding: 2rem 1.5rem;
-  }
-}

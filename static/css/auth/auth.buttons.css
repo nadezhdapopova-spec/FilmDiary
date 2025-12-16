@@ -1,0 +1,33 @@
+/* COMPONENTS: кнопки */
+
+.auth-card .btn-primary {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: var(--auth-radius-md);
+
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255,138,0,0.95),
+      rgba(255,94,0,0.95)
+    );
+
+  color: #fff;
+  font-weight: 700;
+
+  backdrop-filter: blur(6px);
+  box-shadow:
+    0 10px 30px rgba(255,138,0,0.45),
+    inset 0 1px 0 rgba(255,255,255,0.35);
+
+  transition: transform var(--auth-transition),
+              box-shadow var(--auth-transition);
+}
+
+.auth-card .btn-primary:hover {
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow:
+    0 15px 40px rgba(255,138,0,0.6),
+    inset 0 1px 0 rgba(255,255,255,0.45);
+}

@@ -7,7 +7,7 @@
 
 {% block content %}
 <div class="auth-wrapper">
-  <div class="auth-card">
+  <div class="auth-card auth-register">
 
     <!-- Левая часть: изображение -->
     <div class="auth-image"
@@ -49,7 +49,7 @@
         </button>
       </form>
 
-      <div class="auth-footer">
+      <div class="auth-footer text-center mt-3">
         Уже есть аккаунт?
         <a href="{% url 'users:login' %}">Войти</a>
       </div>

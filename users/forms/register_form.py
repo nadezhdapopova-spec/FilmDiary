@@ -65,3 +65,8 @@ class RegisterForm(UserCreationForm):
             "email": forms.TextInput(attrs={"class": "form-control"}),
             "timezone": forms.Select(attrs={"class": "form-select"}),
         }
+
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            for field in self.fields.values():
+                field.help_text = None

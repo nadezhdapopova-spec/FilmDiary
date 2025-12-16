@@ -32,31 +32,6 @@
   transition: all var(--transition-fast);
 }
 
-.btn-primary {
-  background: linear-gradient(
-    135deg,
-    var(--accent-primary),
-    var(--accent-secondary)
-  );
-  color: #000;
-  box-shadow: var(--shadow-glow);
-}
-
-.btn-primary:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 0 30px rgba(255, 138, 0, 0.4);
-}
-
-.btn-secondary {
-  background: transparent;
-  color: var(--text-main);
-  border: 1px solid var(--border-color);
-}
-
-.btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.06);
-}
-
 /* FORMS */
 .input,
 select,
@@ -81,31 +56,4 @@ select:focus,
 textarea:focus {
   border-color: var(--accent-primary);
   box-shadow: 0 0 0 2px rgba(255, 138, 0, 0.25);
-}
-
-/* Notyf custom theme */
-.notyf__toast {
-  background: linear-gradient(
-    135deg,
-    #ff8a00,
-    #ff5f00
-  ) !important;
-  color: #000 !important;
-  border-radius: 12px;
-  padding: 14px 18px;
-  font-size: 0.95rem;
-  box-shadow: 0 10px 30px rgba(255, 138, 0, 0.4);
-}
-
-.notyf__message {
-  color: #000 !important;
-  font-weight: 600;
-}
-
-.notyf__icon {
-  margin-right: 10px;
-}
-
-.notyf {
-  z-index: 9999 !important;
 }
