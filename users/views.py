@@ -151,7 +151,7 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
         profile_form = UserProfileForm(request.POST, request.FILES, instance=user)
         password_form = UserPasswordForm(user=user, data=request.POST)
 
-        if "save_profile" in request.POST:
+        if request.POST.get("form_type") == "profile":
             if profile_form.is_valid():
                 email_changed = "email" in profile_form.changed_data
                 profile_form.save()
@@ -178,7 +178,8 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
 
             return self.render_to_response(self.get_context_data(profile_form=profile_form))
 
-        elif "change_password" in request.POST:
+
+        elif request.POST.get("form_type") == "password":
             if password_form.is_valid():
                 password_form.save()
                 messages.success(request, "Пароль успешно изменён")
