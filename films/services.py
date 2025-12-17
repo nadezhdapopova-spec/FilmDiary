@@ -12,17 +12,19 @@ def get_movie_credits(tmdb_id):
 
 
 def get_crew_by_job(film, job):
-    return film.filmcrew_set.filter(job=job).select_related("person")
+    return [fc for fc in film.filmcrew_set.all() if fc.job == job]
 
 
 def get_crew_member(credits, job):
     return next((p for p in credits.get("crew", []) if p.get("job") == job), None)
 
 
-def build_film_context(*, film=None, tmdb_data=None, credits=None):
+def build_film_context(*, film=None, tmdb_id=None):
     """
     Возвращает единый контекст для шаблона film_detail.html
     """
+    if film and tmdb_id:
+        raise ValueError("Provide either film OR tmdb data, not both")
     if film:
         return {
             "source": "db",
@@ -61,7 +63,12 @@ def build_film_context(*, film=None, tmdb_data=None, credits=None):
             "vote_count": film.vote_count
         }
 
-    if tmdb_data and credits:
+    elif tmdb_id:
+        tmdb_data = get_movie_data(tmdb_id)
+        credits = get_movie_credits(tmdb_id)
+        if not tmdb_data or not credits:
+            raise ValueError("TMDB data missing")
+
         director = get_crew_member(credits, "Director")
         writer = get_crew_member(credits, "Writer")
         composer = get_crew_member(credits, "Composer")

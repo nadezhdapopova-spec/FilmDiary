@@ -39,16 +39,14 @@ class FilmDetailView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         tmdb_id = self.kwargs["tmdb_id"]
 
-        film = Film.objects.filter(tmdb_id=tmdb_id, user=self.request.user).first()
+        film = (
+            Film.objects.filter(tmdb_id=tmdb_id, user=self.request.user).select_related()
+            .prefetch_related("genres","filmactor_set__actor","filmcrew_set__person",).first()
+        )
         if film:
             context["film"] = build_film_context(film=film)  # одинаковый context["film"] если в БД и если из TMDB
         else:
-            movie_data = get_movie_data(tmdb_id)
-            credits = get_movie_credits(tmdb_id)
-            context["film"] = build_film_context(
-                tmdb_data=movie_data,
-                credits=credits
-            )
+            context["film"] = build_film_context(tmdb_id=tmdb_id)
         return context
 
 
