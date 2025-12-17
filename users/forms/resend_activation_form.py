@@ -3,14 +3,20 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
+
 class ResendActivationForm(forms.Form):
     """Форма отправки письма для активации профиля пользователя"""
 
-    email = forms.EmailField(label="", widget=forms.EmailInput(attrs={
-        "class": "form-control",
-        "placeholder": "Введите ваш email",
-        "help_text": "",
-    }))
+    email = forms.EmailField(
+        label="",
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Введите ваш email",
+                "help_text": "",
+            }
+        ),
+    )
 
     def clean_email(self):
         email = self.cleaned_data.get("email")

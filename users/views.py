@@ -1,23 +1,24 @@
+from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.views import LoginView
 from django.contrib.messages.views import SuccessMessageMixin
-from django.shortcuts import redirect, get_object_or_404
-from django.contrib import messages
-from django.urls import reverse_lazy, reverse
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse, reverse_lazy
 from django.utils import timezone
 from django.views import View
 from django.views.generic import TemplateView
 from django.views.generic.edit import FormView
 
-from users.forms.profile_form import UserProfileForm, UserPasswordForm
-from users.forms.register_form import RegisterForm
 from users.forms.authentication_form import CustomAuthenticationForm
+from users.forms.profile_form import UserPasswordForm, UserProfileForm
+from users.forms.register_form import RegisterForm
 from users.forms.resend_activation_form import ResendActivationForm
 from users.tasks import send_activation_email_task, send_confirm_email_task
 
 User = get_user_model()
+
 
 class RegisterView(SuccessMessageMixin, FormView):
     """Регистрация пользователя"""
@@ -86,7 +87,6 @@ class ResendActivationView(FormView):
 
     template_name = "users/resend_activation.html"
     form_class = ResendActivationForm
-
 
     def form_valid(self, form):
         """
@@ -158,9 +158,7 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
 
                 if email_changed:
                     token = default_token_generator.make_token(user)
-                    confirm_url = request.build_absolute_uri(
-                        reverse("users:confirm_email", args=[user.pk, token])
-                    )
+                    confirm_url = request.build_absolute_uri(reverse("users:confirm_email", args=[user.pk, token]))
 
                     send_confirm_email_task.delay(
                         user_id=user.pk,
@@ -168,16 +166,12 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
                         confirm_url=confirm_url,
                     )
 
-                    messages.warning(
-                        request,
-                        "Мы отправили письмо для подтверждения нового email"
-                    )
+                    messages.warning(request, "Мы отправили письмо для подтверждения нового email")
 
                 messages.success(request, "Профиль обновлён")
                 return redirect("users:profile")
 
             return self.render_to_response(self.get_context_data(profile_form=profile_form))
-
 
         elif request.POST.get("form_type") == "password":
             if password_form.is_valid():
@@ -187,6 +181,7 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
             return self.render_to_response(self.get_context_data(password_form=password_form))
 
         return redirect("users:profile")
+
 
 class ConfirmEmailView(View):
     """Проверяет token, меняет email"""

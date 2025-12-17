@@ -1,12 +1,12 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import PasswordChangeForm
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Row, Column, Submit, HTML
+
 from crispy_bootstrap5.bootstrap5 import FloatingField
+from crispy_forms.helper import FormHelper
+from crispy_forms.layout import Column, Layout, Row, Submit
 
 from users.validators import validate_avatar, validate_telegram_id
-
 
 User = get_user_model()
 
@@ -45,7 +45,6 @@ class UserProfileForm(forms.ModelForm):
             ),
             Submit("save_profile", "Сохранить изменения", css_class="btn btn-primary w-100 mt-3"),
         )
-
 
     def clean_avatar(self):
         avatar = self.cleaned_data.get("avatar")

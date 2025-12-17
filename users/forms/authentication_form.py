@@ -1,6 +1,6 @@
 from django import forms
-from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import get_user_model
+from django.contrib.auth.forms import AuthenticationForm
 from django.urls import reverse
 from django.utils.safestring import mark_safe
 
@@ -12,19 +12,23 @@ class CustomAuthenticationForm(AuthenticationForm):
 
     username = forms.EmailField(
         label="Email",
-        widget=forms.EmailInput(attrs={
-            "class": "form-control",
-            "placeholder": "Введите email",
-            "autofocus": True,
-        })
+        widget=forms.EmailInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Введите email",
+                "autofocus": True,
+            }
+        ),
     )
     password = forms.CharField(
         label="Пароль",
         strip=False,
-        widget=forms.PasswordInput(attrs={
-            "class": "form-control",
-            "placeholder": "Введите пароль",
-        }),
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-control",
+                "placeholder": "Введите пароль",
+            }
+        ),
     )
 
     def confirm_login_allowed(self, user):

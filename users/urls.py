@@ -1,10 +1,23 @@
-from django.contrib.auth.views import LogoutView, PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, \
-    PasswordResetCompleteView
+from django.contrib.auth.views import (
+    LogoutView,
+    PasswordResetCompleteView,
+    PasswordResetConfirmView,
+    PasswordResetDoneView,
+    PasswordResetView,
+)
 from django.urls import path, reverse_lazy
 
-from users.forms.password_reset_form import CustomSetPasswordForm, CustomPasswordResetForm
-from users.views import RegisterView, ActivateAccountView, ResendActivationView, UserLoginView, UserProfileView, \
-    ActivationSentView, ActivationErrorView, ConfirmEmailView
+from users.forms.password_reset_form import CustomPasswordResetForm, CustomSetPasswordForm
+from users.views import (
+    ActivateAccountView,
+    ActivationErrorView,
+    ActivationSentView,
+    ConfirmEmailView,
+    RegisterView,
+    ResendActivationView,
+    UserLoginView,
+    UserProfileView,
+)
 
 app_name = "users"
 
@@ -16,7 +29,11 @@ urlpatterns = [
     path("resend/", ResendActivationView.as_view(), name="resend_activation"),
     path("login/", UserLoginView.as_view(), name="login"),
     path("profile/", UserProfileView.as_view(), name="profile"),
-    path("confirm-email/<int:user_id>/<str:token>/", ConfirmEmailView.as_view(), name="confirm_email",),
+    path(
+        "confirm-email/<int:user_id>/<str:token>/",
+        ConfirmEmailView.as_view(),
+        name="confirm_email",
+    ),
     path("logout/", LogoutView.as_view(), name="logout"),
     path(
         "password_reset/",

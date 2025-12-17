@@ -3,8 +3,8 @@ import time
 from json import JSONDecodeError
 
 import requests
-
 from dotenv import load_dotenv
+
 load_dotenv()
 
 API_KEY = os.getenv("TMDB_API_KEY")
@@ -14,7 +14,7 @@ LANG = "ru-RU"
 
 class Tmdb:
     """Класс для работы с TMDB API"""
-    
+
     def __init__(self) -> None:
         """Конструктор для получения вакансий через API"""
         self._base_url: str = BASE
@@ -79,8 +79,9 @@ class Tmdb:
 
     def get_movie_details(self, movie_id):
         """Возвращает подробную информацию о фильме. Используется в просмотре карточки фильма"""
-        return self._get(f"/movie/{movie_id}",
-                         {"append_to_response": "images", "include_image_language": "en-US,null"})
+        return self._get(
+            f"/movie/{movie_id}", {"append_to_response": "images", "include_image_language": "en-US,null"}
+        )
 
     def get_config(self):
         """
@@ -133,10 +134,7 @@ class Tmdb:
 
     def get_movies_by_genre(self, genre_id, page=1):
         """Возвращает фильмы по жанру"""
-        return self._get("/discover/movie", {
-            "with_genres": genre_id,
-            "page": page
-        })
+        return self._get("/discover/movie", {"with_genres": genre_id, "page": page})
 
 
 if __name__ == "__main__":

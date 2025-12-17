@@ -4,7 +4,6 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / ".env", override=True)
@@ -140,7 +139,7 @@ MESSAGE_TAGS = {
 
 AUTHENTICATION_BACKENDS = [
     "users.backends.EmailBackendAllowInactive",  # к кастомному backend
-    "django.contrib.auth.backends.ModelBackend", # для админки
+    "django.contrib.auth.backends.ModelBackend",  # для админки
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"

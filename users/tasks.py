@@ -1,9 +1,10 @@
-from celery import shared_task
-from django.template.loader import render_to_string
-from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
-from config import settings
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 
+from celery import shared_task
+
+from config import settings
 
 User = get_user_model()
 
@@ -31,7 +32,7 @@ def send_activation_email_task(self, user_id, email, activation_url):
 
 
 @shared_task(bind=True, max_retries=3)
-def send_confirm_email_task(self, user_id:str, new_email:str, confirm_url: str):
+def send_confirm_email_task(self, user_id: str, new_email: str, confirm_url: str):
     """Асинхронная отправка письма для подтверждения смены email"""
     try:
         user = User.objects.get(pk=user_id)
