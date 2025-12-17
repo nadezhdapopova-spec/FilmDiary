@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
+
+{% block title %}Вход{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+    <div class="auth-card">
+        <!-- Левая часть: изображение -->
+        <div class="auth-image"
+            style="background-image: url('{% static "img/auth/register.jpg" %}')">
+        </div>
+
+        <!-- Правая часть: форма -->
+        <div class="auth-body mb-3">
+            <h2>Вход</h2>
+            {% if form.non_field_errors %}
+                <div class="form-error">
+                    {{ form.non_field_errors|safe }}
+                </div>
+            {% endif %}
+
+            <form method="post">
+                {% csrf_token %}
+                {{ form.username|as_crispy_field }}
+
+                <!-- Пароль -->
+                <div class="mt-4 mb-3">
+                    <label for="id_password">Пароль</label>
+
+                    <div class="password-wrapper mt-2">
+                        {{ form.password }}
+                        <i class="bi bi-eye password-toggle"
+                            onclick="togglePassword('id_password', this)"></i>
+                    </div>
+
+                    {% if form.password.errors %}
+                        <div class="form-error">
+                            {{ form.password.errors|safe }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <button class="btn btn-primary mt-4">
+                    Войти
+                </button>
+            </form>
+
+            <div class="auth-footer mt-4 text-center">
+                <p>Забыли пароль?
+                <a href="{% url 'users:password_reset' %}">Восстановить пароль</a>
+                </p>
+                <p>Нет аккаунта? <a href="{% url 'users:register' %}">Зарегистрироваться</a>
+                <p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/auth.js' %}"></script>
+{% endblock %}

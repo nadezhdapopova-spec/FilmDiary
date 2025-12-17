@@ -1,0 +1,11 @@
+/* LAYOUT: hover / focus эффекты */
+
+@media (max-width: 768px) {
+  .auth-card {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-image {
+    display: none;
+  }
+}

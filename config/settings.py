@@ -1,8 +1,8 @@
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from dotenv import load_dotenv
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -25,15 +25,24 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "django_filters",
+    "drf_yasg",
+    "django_celery_beat",
+    "corsheaders",
+    "rest_framework_simplejwt",
+    "crispy_forms",
+    "crispy_bootstrap5",
+    "users",
 ]
 
-# CRISPY_ALLOWED_TEMPLATE_PACKS = ["bootstrap5"]
-# CRISPY_TEMPLATE_PACK = "bootstrap5"
+CRISPY_ALLOWED_TEMPLATE_PACKS = ["bootstrap5"]
+CRISPY_TEMPLATE_PACK = "bootstrap5"
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
@@ -61,7 +70,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "config.wsgi.application"
 
-
 # Database
 
 DATABASES = {
@@ -75,6 +83,9 @@ DATABASES = {
     }
 }
 
+# Default primary key field type
+
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Password validation
 
@@ -93,7 +104,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 
 LANGUAGE_CODE = "ru"
@@ -104,7 +114,6 @@ USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-
 # Static files (CSS, JavaScript, Images)
 
 STATIC_URL = "/static/"
@@ -113,10 +122,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
-
-# Default primary key field type
-
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # MESSAGE_TAGS
 
@@ -132,24 +137,22 @@ MESSAGE_TAGS = {
 
 # Users settings
 
-# AUTH_USER_MODEL = "users.CustomUser"
-# LOGIN_REDIRECT_URL = "reports:home"
-# LOGOUT_REDIRECT_URL = "reports:home"
-# LOGIN_URL = "users:login"
+AUTHENTICATION_BACKENDS = [
+    "users.backends.EmailBackendAllowInactive",  # к кастомному backend
+    "django.contrib.auth.backends.ModelBackend",  # для админки
+]
 
+AUTH_USER_MODEL = "users.CustomUser"
+LOGIN_REDIRECT_URL = "users:profile"
+LOGOUT_REDIRECT_URL = "users:login"
+LOGIN_URL = "users:login"
 
-# Mail server settings
+# Настройки срока действия токенов
 
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-EMAIL_HOST = os.getenv("EMAIL_HOST")
-EMAIL_PORT = os.getenv("EMAIL_PORT")
-EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "False").lower() == "true"
-EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False").lower() == "true"
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+}
 
 # Caches settings
 
@@ -162,5 +165,102 @@ if CACHE_ENABLED:
         }
     }
 
+# Rest_framework settings
+
+REST_FRAMEWORK = {
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+    ],
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+}
+
+# CORS
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:8000",
+]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:8000",
+]
+
+# CELERY
+
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
+CELERY_TIMEZONE = "Europe/Moscow"
+CELERY_ENABLE_UTC = False
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+# CELERY_BEAT_SCHEDULE = {
+#     "send_habit_reminder": {
+#         "task": "habits.tasks.send_habit_reminder",
+#         "schedule": timedelta(minutes=1),
+#     },
+# }
+
+# Mail server settings
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = os.getenv("EMAIL_PORT")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "False").lower() == "true"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False").lower() == "true"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+SERVER_EMAIL = EMAIL_HOST_USER
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+
+# TELEGRAM INTEGRATION
+
+TELEGRAM_URL = "https://api.telegram.org/bot"
+TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 # Logging settings
+
+# recommendations.py
+# Вес признаков
+RECOMMENDER_FEATURE_WEIGHTS = {
+    "director": 3.0,
+    "actor": 2.0,
+    "genre": 1.5,
+    "keyword": 1.0,
+}
+
+# Весовое соотношение content / text
+RECOMMENDER_WEIGHT_STRUCT = 0.7
+RECOMMENDER_WEIGHT_TEXT = 0.3
+
+# Максимальный порог количества фич в TF-IDF
+RECOMMENDER_TFIDF_MAX_FEATURES = 5000
+
+# Отбор кандидатов: рекомендуемое оптимальное количество
+RECOMMENDER_TOP_K_BASE = 200
+
+# Параметры нормализации рейтинга
+RECOMMENDER_RATING_MIN = 1
+RECOMMENDER_RATING_MAX = 10
+
+# Параметры весов жанров профиля
+RECOMMENDER_GENRE_BOOST_STRATEGY = "max"
+RECOMMENDER_GENRE_PROFILE_WEIGHT = 0.25
+RECOMMENDER_GENRE_SIMILARITY_WEIGHT = 0.2
+
+# Параметры весов жанров API
+RECOMMENDER_API_GENRE_PRIOR_WEIGHT = 0.1
+RECOMMENDER_API_SIMILAR_WEIGHT = 0.15
+RECOMMENDER_API_RECOMMENDED_WEIGHT = 0.2
+
+# Окончательное масштабирование: параметры мягкости, чтобы избежать полного обнуления
+RECOMMENDER_RATING_SOFTNESS = 0.5
+RECOMMENDER_RECENCY_SOFTNESS = 0.5

@@ -1,0 +1,10 @@
+<div class="text-center mt-5">
+    <label class="btn btn-outline-secondary">
+        <i class="bi bi-upload me-1"></i> 📁 Загрузить аватар
+        <input type="file"
+               name="{{ widget.name }}"
+               id="{{ widget.attrs.id }}"
+               hidden
+               {% include "django/forms/widgets/attrs.html" %}>
+    </label>
+</div>

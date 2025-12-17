@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_tags %}
+{% load crispy_forms_filters %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="profile-wrapper">
+        <div class="profile-card">
+
+          <!-- HEADER -->
+          <div class="profile-header">
+            <h2 class="profile-title">
+              <i class="bi bi-person-circle me-2"></i>
+              Личный кабинет
+            </h2>
+          </div>
+
+          {% if not request.user.email_confirmed and request.user.email_new %}
+            <div class="alert alert-warning small d-flex align-items-center">
+              <i class="bi bi-envelope-exclamation me-2"></i>
+              Подтвердите новый email. Мы отправили письмо на
+              <strong>{{ request.user.email_new }}</strong>
+            </div>
+          {% endif %}
+
+          <!-- TABS HEADER -->
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <ul class="nav nav-pills" id="profileTabs" role="tablist">
+              <li class="nav-item">
+                <button class="nav-link active"
+                        data-bs-toggle="pill"
+                        data-bs-target="#pane-profile"
+                        type="button">
+                  Профиль
+                </button>
+              </li>
+              <li class="nav-item">
+                <button class="nav-link"
+                        data-bs-toggle="pill"
+                        data-bs-target="#pane-password"
+                        type="button">
+                  Пароль
+                </button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- TAB CONTENT -->
+          <div class="tab-content" id="profileTabsContent">
+
+            <!-- PROFILE TAB -->
+            <div class="tab-pane fade show active" id="pane-profile">
+
+              <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="profile">
+
+                <div class="row g-4 align-items-start">
+
+                  <div class="col-12 col-lg-5 text-center">
+                    <div class="mb-3">
+                      <img id="avatarPreview"
+                           src="{{ request.user.avatar.url }}"
+                           class="profile-avatar"
+                           alt="Avatar">
+                    </div>
+
+                    <div class="profile-avatar-upload">
+                      {{ profile_form.avatar }}
+                    </div>
+
+                    <div class="mt-3">
+                      {{ profile_form.username|as_crispy_field }}
+                    </div>
+                  </div>
+
+                  <div class="col-12 col-lg-7 profile-fields">
+                    {{ profile_form.email|as_crispy_field }}
+                    {{ profile_form.timezone|as_crispy_field }}
+                    {{ profile_form.tg_chat_id|as_crispy_field }}
+
+                    <div class="d-flex justify-content-center mt-5">
+                      <button type="submit" class="btn btn-primary px-4">
+                        Сохранить
+                      </button>
+                    </div>
+                  </div>
+
+                </div>
+              </form>
+            </div>
+
+            <!-- PASSWORD TAB -->
+            <div class="tab-pane fade" id="pane-password">
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="form_type" value="password">
+
+                {{ password_form|crispy }}
+
+                <div class="password-actions mt-5">
+                  <button type="submit" class="btn btn-primary px-4">
+                    Сменить пароль
+                  </button>
+                </div>
+              </form>
+            </div>
+
+          </div> <!-- /tab-content -->
+
+          <!-- FOOTER -->
+          <div class="profile-footer">
+            <form method="post" action="{% url 'users:logout' %}">
+              {% csrf_token %}
+              <button class="btn btn-logout">
+                <i class="bi bi-box-arrow-right me-2"></i>
+                Выйти
+              </button>
+            </form>
+          </div>
+
+        </div> <!-- /profile-card -->
+      </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/auth.js' %}"></script>
+<script>
+const avatarInput = document.querySelector('input[name="avatar"]');
+if (avatarInput) {
+  avatarInput.addEventListener('change', function (e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const img = document.getElementById('avatarPreview');
+      if (img) img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+</script>
+{% endblock %}
