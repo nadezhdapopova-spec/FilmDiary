@@ -140,7 +140,7 @@ class Tmdb:
 if __name__ == "__main__":
     tmdb = Tmdb()
     # print(tmdb.search_movie("Битва за битвой", 1))
-    # print(tmdb.get_movie_details("1054867"))
+    print(tmdb.get_movie_details("1054867"))
     # print(tmdb.get_config())
     # print(tmdb.get_credits("1054867"))
     # print([r for r in res.get("cast")][0])

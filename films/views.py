@@ -5,6 +5,7 @@ from django.views import View
 from django.views.generic import ListView, TemplateView
 
 from films.models import Film
+from films.services import build_film_context, get_movie_data, get_movie_credits
 
 
 class UserListFilmView(LoginRequiredMixin, ListView):
@@ -42,10 +43,11 @@ class FilmDetailView(LoginRequiredMixin, TemplateView):
         if film:
             context["film"] = build_film_context(film=film)  # одинаковый context["film"] если в БД и если из TMDB
         else:
-            movie_data = get_film_by_id(tmdb_id)
+            movie_data = get_movie_data(tmdb_id)
+            credits = get_movie_credits(tmdb_id)
             context["film"] = build_film_context(
                 tmdb_data=movie_data,
-                user=self.request.user
+                credits=credits
             )
         return context
 

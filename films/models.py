@@ -97,7 +97,7 @@ class FilmCrew(models.Model):
     """Промежуточная таблица: связь с фильмом через должность (crew)"""
     film = models.ForeignKey(to="films.Film", on_delete=models.CASCADE)
     person = models.ForeignKey(to="films.Person", on_delete=models.CASCADE)
-    job = models.CharField(max_length=100)  # Director, Writer, Composer
+    job = models.CharField(max_length=100)  # Director, Writer, Composer, Producer
 
     class Meta:
         unique_together = ("film", "person", "job")
