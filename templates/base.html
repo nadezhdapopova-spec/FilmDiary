@@ -5,23 +5,37 @@
     <meta charset="UTF-8">
     <title>{% block title %}FilmDiary{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <!-- CSS -->
     <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
     <link rel="stylesheet" href="{% static 'css/theme.css' %}">
-    <!-- Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
 
     {% block extra_head %}{% endblock %}
 </head>
 
-<body class="d-flex flex-column min-vh-100">
+<body class="layout">
 
-<main class="flex-fill">
-    {% block content %}{% endblock %}
-</main>
+<!-- TOP BAR -->
+{% include "includes/top_bar.html" %}
 
-<!-- Django messages → JS -->
+<div class="layout__body">
+
+    <!-- SIDE NAVIGATION -->
+    {% include "includes/side_navigation.html" %}
+
+    <!-- PAGE CONTENT -->
+    <main class="layout__content" role="main">
+        {% block content %}{% endblock %}
+    </main>
+
+</div>
+
+<!-- FOOTER -->
+{% include "includes/footer.html" %}
+
+<!-- Django messages -->
 {% if messages %}
 <script>
     window.djangoMessages = [

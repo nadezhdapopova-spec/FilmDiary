@@ -1,0 +1,30 @@
+/* карточки */
+
+.glass-card {
+  width: auto;
+  padding: 2.6rem 2.8rem;
+  border-radius: 26px;
+  background: rgba(15, 18, 35, 0.78);
+  backdrop-filter: blur(22px);
+  border: 1px solid rgba(255,255,255,0.08);
+
+  box-shadow:
+    0 40px 90px rgba(0, 40, 120, 0.6),
+    0 0 80px rgba(96, 165, 250, 0.35);
+
+  display: flex;
+  flex-direction: column;
+  gap: 1.8rem;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #fff;
+}

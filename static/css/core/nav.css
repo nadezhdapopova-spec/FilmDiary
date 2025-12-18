@@ -1,0 +1,29 @@
+/* табы, меню */
+
+.glass-card .nav-pills {
+  gap: 0.6rem;
+}
+
+.glass-card .nav-link {
+  border-radius: 14px;
+  padding: 0.45rem 1.1rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  backdrop-filter: blur(8px);
+
+  transition: all 0.25s ease;
+}
+
+.glass-card .nav-link:hover {
+  color: #fff;
+  box-shadow: 0 0 20px rgba(96,165,250,0.35);
+}
+
+.glass-card .nav-link.active {
+  color: #000;
+  background: linear-gradient(135deg, #ff8a00, #ffb703);
+  box-shadow: 0 0 30px rgba(255,138,0,0.6);
+}

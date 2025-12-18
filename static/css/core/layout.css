@@ -1,0 +1,24 @@
+/* центрирование, wrappers */
+
+.layout {
+  min-height: 100vh;
+  background: url("/static/images/profile.png") center / cover no-repeat;
+}
+
+.layout__body {
+  display: flex;
+  min-height: 100vh;
+  padding-top: var(--topbar-h);
+}
+
+.layout__content {
+  flex: 1;
+  min-width: 0;
+  padding: 2.0rem 1.5rem;
+}
+
+@media (min-width: 992px) {
+  .layout__content {
+    padding: 2.2rem 2.2rem;
+  }
+}

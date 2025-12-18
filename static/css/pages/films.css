@@ -1,0 +1,9 @@
+.page-shell {
+  /*min-height: 100vh;*/
+  min-height: calc(100vh - var(--topbar-h));
+  padding: 3rem 1.5rem;
+  display: flex;
+  /*align-items: center;*/
+  /*justify-content: center;*/
+  background: url("/static/images/profile.png") center / cover no-repeat;
+}

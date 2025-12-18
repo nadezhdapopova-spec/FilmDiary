@@ -1,0 +1,40 @@
+<!-- Desktop sidebar (visible on lg+) -->
+<aside class="side-nav glass-card d-none d-lg-flex" aria-label="Навигация">
+  <div class="side-nav__brand">
+    <span class="side-nav__dot" aria-hidden="true"></span>
+    <span class="side-nav__title">Меню</span>
+  </div>
+
+  <nav class="side-nav-menu">
+    <a href="/" class="side-link {% if request.path == '/' %}active{% endif %}">🏠 Главная</a>
+    <a href="/films" class="side-link {% if request.path|slice:':6' == '/films' %}active{% endif %}">🎬 Фильмы</a>
+    <a href="/my" class="side-link {% if request.path|slice:':3' == '/my' %}active{% endif %}">⭐ Мои фильмы</a>
+    <a href="/calendar" class="side-link {% if request.path|slice:':9' == '/calendar' %}active{% endif %}">📅 Календарь</a>
+    <a href="/profile" class="side-link {% if request.path|slice:':8' == '/profile' %}active{% endif %}">👤 Профиль</a>
+  </nav>
+
+  <div class="side-nav__glow" aria-hidden="true"></div>
+</aside>
+
+<!-- Offcanvas sidebar (mobile) -->
+<aside
+  class="offcanvas offcanvas-start glass-offcanvas d-lg-none"
+  tabindex="-1"
+  id="sideMenu"
+  aria-labelledby="sideMenuLabel"
+>
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="sideMenuLabel">Меню</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <nav class="side-nav-menu">
+      <a href="/" class="side-link {% if request.path == '/' %}active{% endif %}">🏠 Главная</a>
+      <a href="/films" class="side-link {% if request.path|slice:':6' == '/films' %}active{% endif %}">🎬 Фильмы</a>
+      <a href="/my" class="side-link {% if request.path|slice:':3' == '/my' %}active{% endif %}">⭐ Мои фильмы</a>
+      <a href="/calendar" class="side-link {% if request.path|slice:':9' == '/calendar' %}active{% endif %}">📅 Календарь</a>
+      <a href="/profile" class="side-link {% if request.path|slice:':8' == '/profile' %}active{% endif %}">👤 Профиль</a>
+    </nav>
+  </div>
+</aside>

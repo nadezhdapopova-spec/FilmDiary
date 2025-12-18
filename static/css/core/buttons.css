@@ -1,0 +1,49 @@
+/* кнопки */
+
+.glass-card .btn-primary {
+  border-radius: 16px;
+  font-weight: 700;
+  padding: 0.65rem 1.4rem;
+  background: linear-gradient(135deg, #ff8a00, #ffb703);
+  color: #000;
+  box-shadow: 0 0 30px rgba(255,138,0,0.45);
+}
+
+
+/* ========== Auth buttons ========== */
+.auth-btn {
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  padding: 0.55rem 1.0rem;
+  font-weight: 700;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.9);
+  transition: all .25s ease;
+}
+
+.auth-btn:hover {
+  color: #fff;
+  box-shadow: 0 0 20px rgba(96,165,250,0.22);
+}
+
+.auth-btn--primary {
+  background: linear-gradient(135deg, var(--neon-orange), var(--neon-yellow));
+  color: #000;
+  border-color: rgba(255,138,0,0.35);
+  box-shadow: 0 0 26px rgba(255,138,0,0.35);
+}
+
+.auth-btn--ghost {
+  background: rgba(255,255,255,0.04);
+}
+
+.auth-btn--danger {
+  background: rgba(255, 107, 107, 0.12);
+  border-color: rgba(255, 107, 107, 0.28);
+  color: #ffd6d6;
+}
+
+.auth-btn--danger:hover {
+  box-shadow: 0 0 22px rgba(255, 107, 107, 0.25);
+}

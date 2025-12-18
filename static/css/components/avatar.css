@@ -1,0 +1,15 @@
+/* аватары */
+
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar--lg {
+  width: 160px;
+  height: 160px;
+  border: 2px solid rgba(255,138,0,0.6);
+  box-shadow:
+    0 0 30px rgba(255,138,0,0.45),
+    0 0 60px rgba(96,165,250,0.25);
+}

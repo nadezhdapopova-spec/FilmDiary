@@ -13,7 +13,6 @@ class UserListFilmView(LoginRequiredMixin, ListView):
     """Представление для отображения списка 'Мои фильмы'"""
 
     model = Film
-    template_name = "films/my_films.html"
     context_object_name = "films"
     paginate_by = 12
 

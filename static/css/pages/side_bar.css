@@ -1,0 +1,122 @@
+/* ========== Sidebar (desktop) ========== */
+
+.side-nav.glass-card {
+  width: var(--side-w);
+  padding: 1.25rem 1.05rem;
+  border-radius: 22px;
+  margin: 1.2rem 0 1.2rem 1.2rem;
+
+  display: flex;
+  flex-direction: column;
+  gap: 1.0rem;
+
+  position: sticky;
+  top: calc(var(--topbar-h) + 1.2rem);
+  height: calc(100vh - var(--topbar-h) - 2.4rem);
+
+  overflow: hidden;
+  background: rgba(15, 18, 35, 0.70);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.side-nav__brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.55rem 0.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.side-nav__dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--neon-orange), var(--neon-yellow));
+  box-shadow: 0 0 18px rgba(255,138,0,0.55);
+}
+
+.side-nav__title {
+  color: rgba(255,255,255,0.85);
+  font-weight: 800;
+  letter-spacing: 0.2px;
+}
+
+/* декоративный “неоновый” акцент */
+.side-nav__glow {
+  position: absolute;
+  inset: auto -40px -70px -40px;
+  height: 160px;
+  background: radial-gradient(circle at 30% 20%, rgba(255,138,0,0.22), transparent 55%),
+              radial-gradient(circle at 70% 60%, rgba(96,165,250,0.20), transparent 60%);
+  filter: blur(2px);
+  pointer-events: none;
+}
+
+/* ========== Links ========== */
+.side-nav-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  z-index: 1;
+}
+
+.side-link {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  padding: 0.70rem 0.85rem;
+  border-radius: 16px;
+
+  text-decoration: none;
+  color: rgba(255,255,255,0.78);
+
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+
+  transition: transform .15s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;
+}
+
+.side-link:hover {
+  transform: translateX(2px);
+  color: #fff;
+  border-color: rgba(96,165,250,0.28);
+  box-shadow: 0 0 22px rgba(96,165,250,0.18);
+}
+
+.side-link.active {
+  color: #000;
+  background: linear-gradient(135deg, var(--neon-orange), var(--neon-yellow));
+  border-color: rgba(255,138,0,0.35);
+  box-shadow: 0 0 26px rgba(255,138,0,0.35);
+}
+
+/* ========== Offcanvas (mobile) ========== */
+.glass-offcanvas {
+  /* кастом ширины через bootstrap variable */
+  --bs-offcanvas-width: min(86vw, 320px);
+  background: rgba(15, 18, 35, 0.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-right: 1px solid rgba(255,255,255,0.10);
+  box-shadow:
+    0 30px 90px rgba(0, 40, 120, 0.55),
+    0 0 70px rgba(96, 165, 250, 0.25);
+}
+
+.glass-offcanvas .offcanvas-header {
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+
+.glass-offcanvas .offcanvas-title {
+  color: #fff;
+  font-weight: 800;
+  letter-spacing: 0.2px;
+  text-shadow: 0 0 18px rgba(96,165,250,0.25);
+}
+
+.glass-offcanvas .offcanvas-body {
+  padding-top: 1.0rem;
+}

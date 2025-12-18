@@ -1,0 +1,15 @@
+/* glass-контейнеры, blur */
+
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur-strong);
+  border: 1px solid var(--glass-border);
+}
+
+.glass-card {
+  padding: 2.6rem 2.8rem;
+  border-radius: var(--radius-lg);
+  box-shadow:
+    0 40px 90px rgba(0, 40, 120, 0.6),
+    0 0 80px rgba(96, 165, 250, 0.35);
+}

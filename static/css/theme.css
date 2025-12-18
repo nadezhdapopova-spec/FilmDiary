@@ -1,10 +1,16 @@
 /* theme.css */
-@import "variables.css";
-@import "base.css";
-@import "layout.css";
-@import "components.css";
-@import "animations.css";
-@import "notifications.css";
+@import "core/variables.css";
+@import "core/layout.css";
+@import "core/buttons.css";
+@import "core/forms.css";
+@import "core/glass.css";
+@import "core/nav.css";
+@import "core/neon.css";
+
+@import "components/avatar.css";
+@import "components/card.css";
+@import "components/footer.css";
+@import "components/upload.css";
 
 @import "auth/auth.variables.css";
 @import "auth/auth.layout.css";
@@ -13,4 +19,8 @@
 @import "auth/auth.buttons.css";
 @import "auth/auth.animations.css";
 
-@import "profile.css";
+@import "pages/profile.css";
+@import "pages/films.css";
+@import "pages/topbar.css";
+@import "pages/side_bar.css";
+

@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import RedirectView
 
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
@@ -20,6 +21,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path("", RedirectView.as_view(url="/films/home/", permanent=False)),
     path("admin/", admin.site.urls),
     path("api-auth/", include("rest_framework.urls")),
     path("users/", include("users.urls", namespace="users")),

@@ -1,0 +1,16 @@
+/* цвета, тени, радиусы */
+
+:root {
+  --bg-glass: rgba(15, 18, 35, 0.78);
+  --glass-border: rgba(255,255,255,0.08);
+
+  --neon-orange: #ff8a00;
+  --neon-yellow: #ffb703;
+  --neon-blue: #60a5fa;
+  --neon-red: #ff6b6b;
+
+  --radius-lg: 26px;
+  --radius-md: 16px;
+
+  --blur-strong: blur(22px);
+}

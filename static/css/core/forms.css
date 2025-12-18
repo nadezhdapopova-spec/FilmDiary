@@ -1,0 +1,24 @@
+/* input, select, focus */
+
+.glass-card .form-control,
+.glass-card select {
+  background: rgba(255,255,255,0.05);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff;
+}
+
+.glass-card .form-control:focus,
+.glass-card select:focus {
+  border-color: #ff8a00;
+  box-shadow: 0 0 0 2px rgba(255,138,0,0.3);
+}
+
+/* remove number arrows */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
