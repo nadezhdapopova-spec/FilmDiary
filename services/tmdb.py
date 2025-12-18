@@ -3,10 +3,13 @@ import json
 import os
 import time
 from json import JSONDecodeError
+from typing import Optional
 
 import requests
 from django.core.cache import cache
 from dotenv import load_dotenv
+
+from services.cache_ttl import TMDB_TTL
 
 load_dotenv()
 
@@ -35,7 +38,7 @@ class Tmdb:
         digest = hashlib.md5(raw.encode()).hexdigest()
         return f"{prefix}:{path}:{digest}"
 
-    def _get(self, path: str, params: dict | None = None, retries=3, timeout=5) -> dict:
+    def _get(self, path: str, params: dict | None = None, ttl_key: str="recommended", retries=3, timeout=5) -> dict:
         """
         Внутренний метод для GET запросов:
         timeout: 5 сек (защита от зависания)
@@ -56,7 +59,7 @@ class Tmdb:
                 response.raise_for_status()
                 data = response.json()
 
-                cache.set(cache_key, data, timeout=60 * 60)  # кэширем полученные данные на 1 час
+                cache.set(cache_key, data, TMDB_TTL.get(ttl_key, 60 * 60 * 12))  # по умолчанию кэширем на 12 часов
                 return data
 
             except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
@@ -76,12 +79,12 @@ class Tmdb:
                 return {}
         return {}
 
-    def _get_multipage(self, path: str, pages: int = 1, params=None) -> list:
+    def _get_multipage(self, path: str, pages: int=1, params: dict=None, ttl_key: str="recommended") -> list:
         """Возвращает несколько страниц результатов"""
         all_results = []
         params = params or {}
 
-        first = self._get(path, {**params, "page": 1})
+        first = self._get(path, {**params, "page": 1}, ttl_key)
         if "results" not in first:
             return []
 
@@ -90,7 +93,7 @@ class Tmdb:
         pages_to_fetch = min(pages, total_pages)
 
         for page in range(2, pages_to_fetch + 1):
-            resp = self._get(path, {**params, "page": page})
+            resp = self._get(path, {**params, "page": page}, ttl_key)
             if "results" in resp:
                 all_results.extend(resp["results"])
             else:
@@ -99,12 +102,14 @@ class Tmdb:
 
     def search_movie(self, query, page=1):
         """Возвращает список фильмов по поисковой строке. Используется на странице поиска"""
-        return self._get("/search/movie", {"query": query, "page": page})
+        return self._get("/search/movie", {"query": query, "page": page}, "search")
 
     def get_movie_details(self, movie_id):
         """Возвращает подробную информацию о фильме. Используется в просмотре карточки фильма"""
         return self._get(
-            f"/movie/{movie_id}", {"append_to_response": "images", "include_image_language": "en-US,null"}
+            f"/movie/{movie_id}",
+            {"append_to_response": "images", "include_image_language": "en-US,null"},
+            "movie_detail"
         )
 
     def get_config(self):
@@ -114,51 +119,51 @@ class Tmdb:
         - размеры постеров
         - размеры backdrop
         """
-        return self._get("/configuration", {})
+        return self._get("/configuration", {}, "config")
 
     def get_credits(self, movie_id):
         """
         Возвращает актёров(cast) и команду(crew) для отображения актёров, режиссёров,
         сценаристов, продюсеров, операторов
         """
-        return self._get(f"/movie/{movie_id}/credits", {})
+        return self._get(f"/movie/{movie_id}/credits", {}, "movie_credits")
 
     def get_now_playing(self, pages=1):
         """Возвращает фильмы, которые сейчас в кино"""
-        return self._get_multipage("/movie/now_playing", pages)
+        return self._get_multipage("/movie/now_playing", pages, {},"trending")
 
     def get_upcoming(self, pages=1):
         """Возвращает фильмы, которые скоро выйдут в прокат"""
-        return self._get_multipage("/movie/upcoming", pages)
+        return self._get_multipage("/movie/upcoming", pages, {},"trending")
         # return [r.get("title") for r in res.get("results")]
 
     def get_popular(self, pages=1):
         """Возвращает популярные фильмы"""
-        return self._get_multipage("/movie/popular", pages)
+        return self._get_multipage("/movie/popular", pages, {}, "popular")
 
     def get_trending(self, time_window="week"):
         """Возвращает трендовые фильмы ('тренды недели')"""
-        return self._get(f"/trending/movie/{time_window}")
+        return self._get(f"/trending/movie/{time_window}", {}, "trending")
 
     def get_top_rated(self, pages=1):
         """Возвращает топ-рейтинговые фильмы"""
-        return self._get_multipage("/movie/top_rated", pages)
+        return self._get_multipage("/movie/top_rated", pages, {}, "top_rated")
 
     def get_similar_movies(self, movie_id, pages=1):
         """Возвращает похожие фильмы (по содержанию)"""
-        return self._get_multipage(f"/movie/{movie_id}/similar", pages)
+        return self._get_multipage(f"/movie/{movie_id}/similar", pages, {},"similar")
 
     def get_recommended_movies(self, movie_id, pages=1):
         """Возвращает рекомендации TMDB на основе их алгоритма (collaborative + content-based)"""
-        return self._get_multipage(f"/movie/{movie_id}/recommendations", pages)
+        return self._get_multipage(f"/movie/{movie_id}/recommendations", pages, {}, "recommended")
 
     def get_genres(self):
         """Возвращает список жанров"""
-        return self._get("/genre/movie/list")
+        return self._get("/genre/movie/list", {},"genres")
 
     def get_movies_by_genre(self, genre_id, page=1):
         """Возвращает фильмы по жанру"""
-        return self._get("/discover/movie", {"with_genres": genre_id, "page": page})
+        return self._get("/discover/movie", {"with_genres": genre_id, "page": page}, "genres")
 
 
 if __name__ == "__main__":

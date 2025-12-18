@@ -6,8 +6,7 @@ from django.views import View
 from django.views.generic import ListView, TemplateView
 
 from films.models import Film
-from films.services import build_film_context, get_movie_data, get_movie_credits, get_tmdb_movie_payload, \
-    save_film_from_tmdb
+from films.services import build_film_context, get_tmdb_movie_payload, save_film_from_tmdb
 
 
 class UserListFilmView(LoginRequiredMixin, ListView):
