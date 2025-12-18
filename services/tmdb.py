@@ -1,8 +1,11 @@
+import hashlib
+import json
 import os
 import time
 from json import JSONDecodeError
 
 import requests
+from django.core.cache import cache
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -20,20 +23,41 @@ class Tmdb:
         self._base_url: str = BASE
         self._base_params: dict = {"api_key": API_KEY, "language": LANG}
 
+    @staticmethod
+    def _make_cache_key(prefix: str, path: str, params: dict) -> str:
+        """
+        Создает уникальный безопасный ключ для кэша:
+        hashlib - стандартная библиотека Python для криптографических хешей;
+        md5 - берёт любой объём данных и возвращает фиксированную строку длиной 32 символа в виде бинарного объекта;
+        hexdigest - преобразует бинарный объект в читаемую строку
+        """
+        raw = json.dumps(params, sort_keys=True, ensure_ascii=False) # одинаковый порядок элементов словаря и правильная кодировка символов
+        digest = hashlib.md5(raw.encode()).hexdigest()
+        return f"{prefix}:{path}:{digest}"
+
     def _get(self, path: str, params: dict | None = None, retries=3, timeout=5) -> dict:
         """
         Внутренний метод для GET запросов:
         timeout: 5 сек (защита от зависания)
         retries: 3 попытки
+        Берет данные из кэша или кэширует (TTL: 1 час)
         """
         url = f"{self._base_url}{path}"
         params = {**self._base_params, **(params or {})}
+
+        cache_key = self._make_cache_key("tmdb", path, params)  # создаем уникальный кэш-ключ
+        cached = cache.get(cache_key)   #  берем из кэша, если есть
+        if cached is not None:
+            return cached
 
         for attempt in range(1, retries + 1):
             try:
                 response = requests.get(url, params=params, timeout=timeout)
                 response.raise_for_status()
-                return response.json()
+                data = response.json()
+
+                cache.set(cache_key, data, timeout=60 * 60)  # кэширем полученные данные на 1 час
+                return data
 
             except (requests.exceptions.Timeout, requests.exceptions.ConnectionError):
                 if attempt < retries:

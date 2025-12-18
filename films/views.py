@@ -1,11 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import Http404
 from django.shortcuts import redirect
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
 from films.models import Film
-from films.services import build_film_context, get_movie_data, get_movie_credits
+from films.services import build_film_context, get_movie_data, get_movie_credits, get_tmdb_movie_payload, \
+    save_film_from_tmdb
 
 
 class UserListFilmView(LoginRequiredMixin, ListView):
@@ -45,12 +47,23 @@ class FilmDetailView(LoginRequiredMixin, TemplateView):
         )
         if film:
             context["film"] = build_film_context(film=film)  # одинаковый context["film"] если в БД и если из TMDB
-        else:
-            context["film"] = build_film_context(tmdb_id=tmdb_id)
+            if not context["film"]:
+                raise Http404("Фильм не найден")
+            return context
+
+        payload = get_tmdb_movie_payload(tmdb_id)
+        if not payload:
+            raise Http404("Фильм не найден")
+        context["film"] = build_film_context(
+            tmdb_data=payload["details"],
+            credits=payload["credits"]
+        )
+        if not context["film"]:
+            raise Http404("Фильм не найден")
         return context
 
 
-class AddFilmView(View):
+class AddFilmView(LoginRequiredMixin, View):
     """Представление для добавления фильма в список 'Мои фильмы'"""
 
     def post(self, request, *args, **kwargs):
@@ -63,10 +76,10 @@ class AddFilmView(View):
         else:
             messages.info(request, "Фильм уже есть в библиотеке")
 
-        return redirect("films:detail", tmdb_id=tmdb_id)
+        return redirect("films:film_detail", tmdb_id=tmdb_id)
 
 
-class DeleteFilmView(View):
+class DeleteFilmView(LoginRequiredMixin, View):
     """Представление для удаления фильма из списка'Мои фильмы'"""
 
     def post(self, request, *args, **kwargs):

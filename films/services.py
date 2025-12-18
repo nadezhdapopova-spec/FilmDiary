@@ -1,30 +1,36 @@
+from typing import Optional
+from django.db import transaction
+
+from django.core.cache import cache
+
+from films.models import Film, Genre, Actor, FilmActor, Person, FilmCrew
 from services.tmdb import Tmdb
 
 
 tmdb = Tmdb()
 
 def get_movie_data(tmdb_id):
+    """Возвращает подробные данные о фильме из API TMDB"""
     return tmdb.get_movie_details(tmdb_id)
 
 
 def get_movie_credits(tmdb_id):
+    """Возвращает данные об актерах и создателях фильма из API TMDB"""
     return tmdb.get_credits(tmdb_id)
 
 
 def get_crew_by_job(film, job):
+    """Возвращает данные из БД о создателе фильма по конкретной должности"""
     return [fc for fc in film.filmcrew_set.all() if fc.job == job]
 
 
 def get_crew_member(credits, job):
+    """Возвращает данные из API TMDB о создателе фильма по конкретной должности"""
     return next((p for p in credits.get("crew", []) if p.get("job") == job), None)
 
 
-def build_film_context(*, film=None, tmdb_id=None):
-    """
-    Возвращает единый контекст для шаблона film_detail.html
-    """
-    if film and tmdb_id:
-        raise ValueError("Provide either film OR tmdb data, not both")
+def build_film_context(*, film=None, tmdb_data=None, credits=None):
+    """Возвращает единый контекст для шаблона film_detail.html из БД или из API TMDB"""
     if film:
         return {
             "source": "db",
@@ -63,12 +69,7 @@ def build_film_context(*, film=None, tmdb_id=None):
             "vote_count": film.vote_count
         }
 
-    elif tmdb_id:
-        tmdb_data = get_movie_data(tmdb_id)
-        credits = get_movie_credits(tmdb_id)
-        if not tmdb_data or not credits:
-            raise ValueError("TMDB data missing")
-
+    if tmdb_data and credits:
         director = get_crew_member(credits, "Director")
         writer = get_crew_member(credits, "Writer")
         composer = get_crew_member(credits, "Composer")
@@ -118,5 +119,105 @@ def build_film_context(*, film=None, tmdb_id=None):
             "rating": tmdb_data.get("vote_average"),
             "vote_count": tmdb_data.get("vote_count")
         }
+    return None
 
-    raise ValueError("build_film_context: no data provided")
+
+def get_tmdb_movie_payload(tmdb_id: int) -> Optional[dict]:
+    """Кэширует данные из TMDB, если их еще нет, или возвращает данные из кэша (TTL: 12 часов)"""
+    cache_key = f"tmdb:movie:{tmdb_id}"
+
+    data = cache.get(cache_key)
+    if data:
+        return data
+
+    details = tmdb.get_movie_details(tmdb_id)
+    credits = tmdb.get_credits(tmdb_id)
+    if not details or credits:
+        return None
+    data = {
+        "details": details,
+        "credits": credits,
+    }
+    cache.set(cache_key, data, timeout=60 * 60 * 12)  # 12 часов
+    return data
+
+
+@transaction.atomic
+def save_film_from_tmdb(*, tmdb_id: int, user):
+    """
+    Создает и записывает объект фильма в БД, если еще не записан:
+    если успешно - commit, если любая ошибка - rollback: или фильм сохранён в БД полностью, или не сохраняется вообще
+    """
+    film = Film.objects.filter(tmdb_id=tmdb_id, user=user).first()  # проверяем, есть ли уже фильм у пользователя
+    if film:
+        return film, False
+
+    payload = get_tmdb_movie_payload(tmdb_id)  # получаем TMDB данные из кэша
+    details = payload["details"]
+    credits = payload["credits"]
+
+    film = Film.objects.create(  # создаем фильм
+        user=user,
+        tmdb_id=tmdb_id,
+        title=details["title"],
+        original_title=details.get("original_title"),
+        tagline=details.get("tagline"),
+        overview=details.get("overview", ""),
+        runtime=details.get("runtime"),
+        original_country=details.get("original_country"),
+        release_date=details.get("release_date") or None,
+        production_company=details.get("production_company"),
+        poster_path=details.get("poster_path"),
+        backdrop_path=details.get("backdrop_path"),
+        vote_average=details.get("vote_average"),
+        vote_count=details.get("vote_count"),
+        budget=details.get("budget"),
+        revenue=details.get("revenue"),
+    )
+
+    for genre_data in details.get("genres", []):  # жанры без дублей
+        genre, _ = Genre.objects.get_or_create(
+            tmdb_id=genre_data["id"],
+            defaults={"name": genre_data["name"]}
+        )
+        film.genres.add(genre)
+
+    for idx, actor_data in enumerate(credits.get("cast", [])[:20]):  # актеры без дублей
+        actor, _ = Actor.objects.get_or_create(
+            tmdb_id=actor_data["id"],
+            defaults={
+                "name": actor_data["name"],
+                "original_name": actor_data.get("original_name"),
+                "profile_path": actor_data.get("profile_path"),
+            }
+        )
+
+        FilmActor.objects.create(
+            film=film,
+            actor=actor,
+            character=actor_data.get("character"),
+            order=idx
+        )
+
+    important_jobs = {"Director", "Writer", "Producer", "Composer"}
+
+    for crew_data in credits.get("crew", []):
+        if crew_data["job"] not in important_jobs:
+            continue
+
+        person, _ = Person.objects.get_or_create(   # режиссер, сценарист, продюсер, композитор без дублей
+            tmdb_id=crew_data["id"],
+            defaults={
+                "name": crew_data["name"],
+                "original_name": crew_data.get("original_name"),
+                "profile_path": crew_data.get("profile_path"),
+            }
+        )
+
+        FilmCrew.objects.get_or_create(
+            film=film,
+            person=person,
+            job=crew_data["job"]
+        )
+
+    return film, True
