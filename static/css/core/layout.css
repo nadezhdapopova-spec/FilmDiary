@@ -8,7 +8,7 @@
 .layout__body {
   display: flex;
   min-height: 100vh;
-  padding-top: var(--topbar-h);
+  padding-top: 0;
 }
 
 .layout__content {
@@ -20,13 +20,6 @@
 @media (min-width: 992px) {
   .layout__content {
     padding: 2.2rem 2.2rem;
+    margin-left: calc(var(--side-w-collapsed) + 0.6rem);
   }
 }
-
-/*!* когда меню раскрыто – двигаем контент вправо *!*/
-/*@media (min-width: 992px) {*/
-/*  body.sidebar-open .layout__body {*/
-/*    margin-left: 260px;*/
-/*    transition: margin-left 0.25s ease;*/
-/*  }*/
-/*}*/

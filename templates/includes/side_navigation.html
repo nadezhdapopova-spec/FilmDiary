@@ -6,20 +6,33 @@
   </div>
 
   <nav class="side-nav-menu">
-    <a href="/" class="side-link {% if request.path == '/' %}active{% endif %}">
-      🏠 <span class="side-link__text">Главная</span>
+    <a href="/films/home/" class="side-link {% if request.path|slice:'6:11' == '/home' %}active{% endif %}">
+      <span class="side-link__icon">🏠</span>
+      <span class="side-link__text">Главная</span>
     </a>
-    <a href="/films" class="side-link {% if request.path|slice:':6' == '/films' %}active{% endif %}">
-      🎬 <span class="side-link__text">Фильмы</span>
+    <a href="/films/my_films/" class="side-link {% if request.path|slice:'6:15' == '/my_films' %}active{% endif %}">
+      <span class="side-link__icon">🎬</span>
+      <span class="side-link__text">Мои фильмы</span>
     </a>
-    <a href="/my" class="side-link {% if request.path|slice:':3' == '/my' %}active{% endif %}">
-      ⭐ <span class="side-link__text">Мои фильмы</span>
+    <a href="/films/watched/" class="side-link {% if request.path|slice:'6:14' == '/watched' %}active{% endif %}">
+      <span class="side-link__icon">🍿</span>
+      <span class="side-link__text">Просмотрено</span>
     </a>
-    <a href="/calendar" class="side-link {% if request.path|slice:':9' == '/calendar' %}active{% endif %}">
-      📅 <span class="side-link__text">Календарь</span>
+    <a href="/films/favourite/" class="side-link {% if request.path|slice:'6:16' == '/favourite' %}active{% endif %}">
+      <span class="side-link__icon">🔥</span>
+      <span class="side-link__text">Любимое</span>
     </a>
-    <a href="/profile" class="side-link {% if request.path|slice:':8' == '/profile' %}active{% endif %}">
-      👤 <span class="side-link__text">Профиль</span>
+    <a href="/reviews/my_reviews" class="side-link {% if request.path|slice:'8:19' == '/my_reviews' %}active{% endif %}">
+      <span class="side-link__icon">✍️</span>
+      <span class="side-link__text">Отзывы</span>
+    </a>
+    <a href="/calendar/my_calendar" class="side-link {% if request.path|slice:'9:21' == '/my_calendar' %}active{% endif %}">
+      <span class="side-link__icon">📅</span>
+      <span class="side-link__text">Календарь</span>
+    </a>
+    <a href="/users/profile" class="side-link {% if request.path|slice:'6:14' == '/profile' %}active{% endif %}">
+      <span class="side-link__icon">🧑</span>
+      <span class="side-link__text">Профиль</span>
     </a>
   </nav>
 
