@@ -14,7 +14,7 @@
 .layout__content {
   flex: 1;
   min-width: 0;
-  padding: 2.0rem 1.5rem;
+  padding: 2rem 1.5rem;
 }
 
 @media (min-width: 992px) {
@@ -22,3 +22,11 @@
     padding: 2.2rem 2.2rem;
   }
 }
+
+/*!* когда меню раскрыто – двигаем контент вправо *!*/
+/*@media (min-width: 992px) {*/
+/*  body.sidebar-open .layout__body {*/
+/*    margin-left: 260px;*/
+/*    transition: margin-left 0.25s ease;*/
+/*  }*/
+/*}*/

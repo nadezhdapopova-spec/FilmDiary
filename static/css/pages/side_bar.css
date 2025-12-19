@@ -1,31 +1,51 @@
-/* ========== Sidebar (desktop) ========== */
+:root {
+  --side-w-collapsed: 72px;   /* свернутое */
+  --side-w-expanded: 240px;   /* раскрытое */
+}
+
+/* ========== Desktop sidebar ========== */
 
 .side-nav.glass-card {
-  width: var(--side-w);
-  padding: 1.25rem 1.05rem;
+  width: var(--side-w-collapsed);
+  padding: 1.0rem 0.85rem;
   border-radius: 22px;
-  margin: 1.2rem 0 1.2rem 1.2rem;
+  margin: 0 0 1.2rem 1.2rem;
 
   display: flex;
   flex-direction: column;
   gap: 1.0rem;
 
   position: sticky;
-  top: calc(var(--topbar-h) + 1.2rem);
-  height: calc(100vh - var(--topbar-h) - 2.4rem);
+  top: calc(var(--topbar-h) + 0.3rem);
+  height: auto;
+  max-height: calc(100vh - var(--topbar-h) - 2.4rem);
 
   overflow: hidden;
-  background: rgba(15, 18, 35, 0.70);
+  background: rgba(15, 18, 35, 0.80);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+
+  transition: width 0.25s ease, box-shadow 0.25s ease;
 }
 
+/* при наведении — расширяем */
+@media (min-width: 992px) {
+  .side-nav.glass-card:hover {
+    width: var(--side-w-expanded);
+    box-shadow:
+      0 40px 90px rgba(0, 40, 120, 0.6),
+      0 0 80px rgba(96, 165, 250, 0.35);
+  }
+}
+
+/* шапка меню */
 .side-nav__brand {
   display: flex;
   align-items: center;
   gap: 0.6rem;
   padding: 0.35rem 0.55rem 0.75rem;
   border-bottom: 1px solid rgba(255,255,255,0.08);
+  white-space: nowrap;
 }
 
 .side-nav__dot {
@@ -37,12 +57,13 @@
 }
 
 .side-nav__title {
-  color: rgba(255,255,255,0.85);
-  font-weight: 800;
-  letter-spacing: 0.2px;
+  display: none;
+  /*color: rgba(255,255,255,0.85);*/
+  /*font-weight: 800;*/
+  /*letter-spacing: 0.2px;*/
 }
 
-/* декоративный “неоновый” акцент */
+/* декоративное свечение */
 .side-nav__glow {
   position: absolute;
   inset: auto -40px -70px -40px;
@@ -53,13 +74,14 @@
   pointer-events: none;
 }
 
-/* ========== Links ========== */
+/* ссылки */
 .side-nav-menu {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 1rem;
   position: relative;
   z-index: 1;
+  margin-top: 0.7rem;
 }
 
 .side-link {
@@ -67,7 +89,7 @@
   align-items: center;
   gap: 0.6rem;
 
-  padding: 0.70rem 0.85rem;
+  padding: 0.70rem 0.7rem;
   border-radius: 16px;
 
   text-decoration: none;
@@ -76,14 +98,17 @@
   background: rgba(255,255,255,0.05);
   border: 1px solid rgba(255,255,255,0.08);
 
-  transition: transform .15s ease, box-shadow .25s ease, border-color .25s ease, background .25s ease;
+  transition:
+    transform .15s ease,
+    box-shadow .25s ease,
+    border-color .25s ease,
+    background .25s ease,
+    color .25s ease;
 }
 
 .side-link:hover {
   transform: translateX(2px);
-  color: #fff;
-  border-color: rgba(96,165,250,0.28);
-  box-shadow: 0 0 22px rgba(96,165,250,0.18);
+
 }
 
 .side-link.active {
@@ -93,18 +118,23 @@
   box-shadow: 0 0 26px rgba(255,138,0,0.35);
 }
 
-/* ========== Offcanvas (mobile) ========== */
-.glass-offcanvas {
-  /* кастом ширины через bootstrap variable */
-  --bs-offcanvas-width: min(86vw, 320px);
-  background: rgba(15, 18, 35, 0.82);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border-right: 1px solid rgba(255,255,255,0.10);
-  box-shadow:
-    0 30px 90px rgba(0, 40, 120, 0.55),
-    0 0 70px rgba(96, 165, 250, 0.25);
+/* текст ссылки — скрыт в свернутом состоянии */
+.side-link__text {
+  display: none;
+  white-space: nowrap;
 }
+
+/* при ховере сайдбара показываем текст */
+@media (min-width: 992px) {
+  .side-nav.glass-card:hover .side-link__text {
+    display: inline;
+  }
+  .side-nav.glass-card:hover .side-nav__title {
+    display: inline; color: #fff;
+  }
+}
+
+/* ========== Offcanvas (мобайл) ========== */
 
 .glass-offcanvas .offcanvas-header {
   border-bottom: 1px solid rgba(255,255,255,0.08);

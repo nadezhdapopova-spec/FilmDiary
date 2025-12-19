@@ -56,3 +56,16 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 });
+
+document.addEventListener('DOMContentLoaded', function () {
+  var offcanvasEl = document.getElementById('sideMenu');
+  if (!offcanvasEl) return;
+
+  offcanvasEl.addEventListener('show.bs.offcanvas', function () {
+    document.body.classList.add('sidebar-open');
+  });
+
+  offcanvasEl.addEventListener('hidden.bs.offcanvas', function () {
+    document.body.classList.remove('sidebar-open');
+  });
+});

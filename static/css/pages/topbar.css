@@ -1,38 +1,46 @@
 /* ========== Topbar ========== */
-
 :root {
   --topbar-h: 74px;
-  --side-w: 280px; /* не широкое */
+  --side-w: 280px;
 }
 
-.topbar.glass-card {
+header.topbar.glass-card {
   position: sticky;
   top: 0;
-  z-index: 1030; /* выше контента */
+  z-index: 1030;
+
   width: 100%;
+  margin: 0;
   border-radius: 0;
   padding: 0.85rem 1.1rem;
 
-  background: rgba(15, 18, 35, 0.62);
+  /* стекло */
+  background: rgba(15, 18, 35, 0.55);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
+
   border-bottom: 1px solid rgba(255,255,255,0.10);
 
-  /* неоновые блики */
   box-shadow:
-    0 18px 60px rgba(0, 40, 120, 0.45),
+    0 18px 60px rgba(0, 40, 120, 0.35),
     0 0 55px rgba(96, 165, 250, 0.22),
     inset 0 1px 0 rgba(255,255,255,0.08);
 }
 
-.topbar::before {
+header.topbar.glass-card::before {
   content: "";
   position: absolute;
-  inset: -2px 0 auto 0;
+  left: 0;
+  right: 0;
+  top: 0;
   height: 2px;
-  background: linear-gradient(90deg, transparent, rgba(255,138,0,0.85), rgba(96,165,250,0.85), transparent);
-  filter: blur(0.2px);
-  opacity: 0.9;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,138,0,0.85),
+    rgba(96,165,250,0.85),
+    transparent
+  );
 }
 
 .topbar__inner {
@@ -59,18 +67,11 @@
   display: flex;
   align-items: center;
   gap: 0.65rem;
-}
-
-/* показывать кнопку меню только на мобильных */
-.topbar__menu-btn {
-  display: inline-flex;
+  flex-wrap: nowrap;
+  white-space: nowrap;
 }
 
 @media (min-width: 992px) {
-  .topbar__menu-btn {
-    display: none;
-  }
-
   .topbar__inner {
     grid-template-columns: 1fr auto;
   }
@@ -78,33 +79,6 @@
   .app-logo {
     justify-self: start;
   }
-}
-
-/* кнопка-иконка */
-.icon-btn {
-  width: 44px;
-  height: 44px;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.06);
-  color: #fff;
-  cursor: pointer;
-  transition: transform .15s ease, box-shadow .25s ease, border-color .25s ease;
-}
-
-.icon-btn:hover {
-  transform: translateY(-1px);
-  border-color: rgba(255,138,0,0.45);
-  box-shadow:
-    0 0 18px rgba(255,138,0,0.22),
-    0 0 22px rgba(96,165,250,0.18);
-}
-
-.icon-btn__icon {
-  font-size: 1.15rem;
-  line-height: 1;
 }
 
 /* аватар справа (маленький) */
@@ -119,8 +93,20 @@
   display: inline-flex;
   border-radius: 999px;
   padding: 2px;
-  background: radial-gradient(circle at 30% 30%, rgba(255,138,0,0.25), transparent 55%),
-              radial-gradient(circle at 70% 70%, rgba(96,165,250,0.22), transparent 60%);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,138,0,0.25), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(96,165,250,0.22), transparent 60%);
 }
 
+/* чтобы форма не рвала строку */
+.topbar__logout {
+  margin: 0;
+  display: inline-block;
+}
 
+.topbar__logout .auth-btn {
+  display: inline-flex;
+  width: auto;
+  align-items: center;
+  justify-content: center;
+}

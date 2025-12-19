@@ -1,4 +1,4 @@
-<!-- Desktop sidebar (visible on lg+) -->
+<!-- Desktop sidebar (lg+) -->
 <aside class="side-nav glass-card d-none d-lg-flex" aria-label="Навигация">
   <div class="side-nav__brand">
     <span class="side-nav__dot" aria-hidden="true"></span>
@@ -6,22 +6,34 @@
   </div>
 
   <nav class="side-nav-menu">
-    <a href="/" class="side-link {% if request.path == '/' %}active{% endif %}">🏠 Главная</a>
-    <a href="/films" class="side-link {% if request.path|slice:':6' == '/films' %}active{% endif %}">🎬 Фильмы</a>
-    <a href="/my" class="side-link {% if request.path|slice:':3' == '/my' %}active{% endif %}">⭐ Мои фильмы</a>
-    <a href="/calendar" class="side-link {% if request.path|slice:':9' == '/calendar' %}active{% endif %}">📅 Календарь</a>
-    <a href="/profile" class="side-link {% if request.path|slice:':8' == '/profile' %}active{% endif %}">👤 Профиль</a>
+    <a href="/" class="side-link {% if request.path == '/' %}active{% endif %}">
+      🏠 <span class="side-link__text">Главная</span>
+    </a>
+    <a href="/films" class="side-link {% if request.path|slice:':6' == '/films' %}active{% endif %}">
+      🎬 <span class="side-link__text">Фильмы</span>
+    </a>
+    <a href="/my" class="side-link {% if request.path|slice:':3' == '/my' %}active{% endif %}">
+      ⭐ <span class="side-link__text">Мои фильмы</span>
+    </a>
+    <a href="/calendar" class="side-link {% if request.path|slice:':9' == '/calendar' %}active{% endif %}">
+      📅 <span class="side-link__text">Календарь</span>
+    </a>
+    <a href="/profile" class="side-link {% if request.path|slice:':8' == '/profile' %}active{% endif %}">
+      👤 <span class="side-link__text">Профиль</span>
+    </a>
   </nav>
 
   <div class="side-nav__glow" aria-hidden="true"></div>
 </aside>
 
-<!-- Offcanvas sidebar (mobile) -->
+<!-- Offcanvas (мобайл / планшет) -->
 <aside
   class="offcanvas offcanvas-start glass-offcanvas d-lg-none"
   tabindex="-1"
   id="sideMenu"
   aria-labelledby="sideMenuLabel"
+  data-bs-scroll="true"
+  data-bs-backdrop="true"
 >
   <div class="offcanvas-header">
     <h5 class="offcanvas-title" id="sideMenuLabel">Меню</h5>
@@ -30,6 +42,7 @@
 
   <div class="offcanvas-body">
     <nav class="side-nav-menu">
+      <!-- те же ссылки, можно без span.side-link__text, иконки уже есть -->
       <a href="/" class="side-link {% if request.path == '/' %}active{% endif %}">🏠 Главная</a>
       <a href="/films" class="side-link {% if request.path|slice:':6' == '/films' %}active{% endif %}">🎬 Фильмы</a>
       <a href="/my" class="side-link {% if request.path|slice:':3' == '/my' %}active{% endif %}">⭐ Мои фильмы</a>
