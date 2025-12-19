@@ -7,9 +7,9 @@
 
 .side-nav.glass-card {
   width: var(--side-w-collapsed);
-  padding: 1.0rem 0.85rem;
-  border-radius: 22px;
-  margin: 0.8rem 0 1.0rem 1.5rem;
+  padding: 1.0rem 0.9rem;
+  border-radius: 24px;
+  margin: 0.4rem 0 1.2rem 0.9rem;
 
   display: flex;
   flex-direction: column;
@@ -17,27 +17,38 @@
 
   position: sticky;
   top: calc(var(--topbar-h) + 0.4rem);
-
   height: auto;
   max-height: calc(100vh - var(--topbar-h) - 1.0rem);
 
   overflow: hidden;
-  background: rgba(15, 18, 35, 0.65);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255,255,255,0.10);
+  /* фон светлее и чуть более “синий+оранжевый” */
+  background: linear-gradient(
+    145deg,
+    rgba(24, 32, 70, 0.92),
+    rgba(24, 32, 70, 0.70)
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.18);
 
-  transition: width 0.25s ease, box-shadow 0.25s ease;
-  z-index: 1;
+  box-shadow:
+    0 24px 60px rgba(0, 40, 120, 0.65),
+    0 0 55px rgba(96,165,250,0.45),
+    0 0 40px rgba(255,138,0,0.40),
+    inset 0 1px 0 rgba(255,255,255,0.26),
+    inset 0 -10px 24px rgba(0, 0, 0, 0.50);
+
+  transition: width 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
 
-/* при наведении — расширяем */
 @media (min-width: 992px) {
   .side-nav.glass-card:hover {
     width: var(--side-w-expanded);
+    transform: translateY(-2px);
     box-shadow:
-      0 30px 80px rgba(0, 40, 120, 0.5),
-      0 0 60px rgba(96, 165, 250, 0.3);
+      0 40px 90px rgba(0, 40, 120, 0.75),
+      0 0 90px rgba(96,165,250,0.55),
+      0 0 65px rgba(255,138,0,0.55);
   }
 }
 
@@ -96,40 +107,26 @@
   align-items: center;
   gap: 0.9rem;
 
-  padding: 0.5rem 0.6rem;
-  border-radius: 16px;
+  padding: 0.55rem 0.5rem;
+  border-radius: 18px;
 
   text-decoration: none;
-  color: rgba(255,255,255,0.78);
+  color: rgba(255,255,255,0.88);
 
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: radial-gradient(circle at 0% 0%, rgba(255,255,255,0.14), transparent 60%);
+  border: 1px solid rgba(255,255,255,0.22);
   backdrop-filter: blur(10px);
 
+  box-shadow:
+    0 0 0 rgba(0,0,0,0),
+    inset 0 0 0 rgba(255,255,255,0);
+
   transition:
-    transform .15s ease,
+    transform .12s ease,
     box-shadow .25s ease,
     border-color .25s ease,
     background .25s ease,
     color .25s ease;
-}
-
-.side-link:hover {
-  transform: translateX(2px);
-}
-
-.side-link.active {
-  color: #000;
-  background: linear-gradient(135deg, var(--neon-orange), var(--neon-yellow));
-  border-color: rgba(255,138,0,0.35);
-  box-shadow: 0 0 26px rgba(255,138,0,0.35);
-}
-
-/* текст ссылки — скрыт в свернутом состоянии */
-.side-link__text {
-  display: none;
-  white-space: nowrap;
-  font-size: 1.1rem;
 }
 
 .side-link__icon {
@@ -138,6 +135,35 @@
   justify-content: center;
   width: 24px;
   font-size: 1.3rem;
+  text-shadow:
+    0 0 12px rgba(255,138,0,0.75),
+    0 0 18px rgba(96,165,250,0.55);
+}
+
+.side-link:hover {
+  transform: translateX(3px);
+  color: #fff;
+  background: radial-gradient(circle at 0% 0%, rgba(255,255,255,0.18), transparent 60%);
+  border-color: rgba(96,165,250,0.55);
+  box-shadow:
+    0 0 24px rgba(96,165,250,0.55),
+    0 0 26px rgba(255,138,0,0.45);
+}
+
+.side-link.active {
+  color: #000;
+  background: linear-gradient(135deg, var(--neon-orange), var(--neon-yellow));
+  border-color: rgba(255,138,0,0.65);
+  box-shadow:
+    0 0 32px rgba(255,138,0,0.75),
+    0 0 26px rgba(96,165,250,0.55);
+}
+
+/* текст ссылки — скрыт в свернутом состоянии */
+.side-link__text {
+  display: none;
+  white-space: nowrap;
+  font-size: 1.1rem;
 }
 
 /* при ховере сайдбара показываем текст */
