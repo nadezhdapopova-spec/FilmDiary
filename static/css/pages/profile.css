@@ -5,7 +5,7 @@
 .profile-wrapper {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 2.4rem 1.5rem 3rem;
+  padding: 0.5rem 1.5rem 3rem;
 }
 
 /* MAIN CARD */
@@ -45,11 +45,6 @@
   box-shadow: 0 0 20px rgba(96,165,250,0.35);
 }
 
-.profile-card .nav-link.active {
-  color: #000;
-  background: linear-gradient(135deg, #ff8a00, #ffb703);
-  box-shadow: 0 0 30px rgba(255,138,0,0.6);
-}
 
 .profile-card .form-label,
 .profile-card label {
@@ -66,31 +61,21 @@
   box-shadow:
     0 0 30px rgba(255,138,0,0.45),
     0 0 60px rgba(96,165,250,0.25);
+  margin-bottom: 0;
 }
 
 /* UPLOAD */
 .profile-avatar-upload {
-  margin-top: 0.6rem;
+  margin-top: 0.1rem;
 }
 
-.profile-avatar-upload input[type="file"] {
-  background-color: transparent !important;
-  box-shadow: none !important;
-  border: none;
-}
-
-.profile-avatar-upload input[type="file"]:hover,
-.profile-avatar-upload input[type="file"]:focus,
-.profile-avatar-upload input[type="file"]:active {
-  background-color: transparent !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-
+.profile-avatar-upload input[type="file"],
 .profile-avatar-upload .form-control[type="file"] {
   background-color: transparent !important;
   border: none !important;
+  box-shadow: none !important;
 }
+
 
 .profile-avatar-upload input[type="file"]::-webkit-file-upload-button {
   background: transparent;
@@ -104,6 +89,14 @@
   color: var(--auth-orange);
   cursor: pointer;
   font-weight: 600;
+}
+
+.profile-avatar-upload input[type="file"]:hover,
+.profile-avatar-upload input[type="file"]:focus,
+.profile-avatar-upload input[type="file"]:active {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .profile-avatar-upload input[type="file"]::file-selector-button {
@@ -122,6 +115,9 @@
   box-shadow: 0 0 18px rgba(255,138,0,0.45);
 }
 
+.profile-card .row.g-4 {
+  row-gap: 1.2rem;
+}
 
 /* REMOVE NUMBER ARROWS */
 .profile-card input[type="number"]::-webkit-inner-spin-button,
@@ -134,12 +130,27 @@
   -moz-appearance: textfield;
 }
 
+.profile-username-field {
+  text-align: left;
+}
+
+.profile-username-field .form-group,
+.profile-username-field .form-label,
+.profile-username-field .form-control {
+  text-align: left;
+}
+
 .profile-card .btn-primary {
   border-radius: 16px;
   background: linear-gradient(135deg, #ff8a00, #ffb703);
   color: #000;
   border: 1px solid rgba(255,138,0,0.6);
   box-shadow: 0 0 30px rgba(255,138,0,0.45);
+}
+
+.profile-card .btn-primary:hover {
+  color: #fff;
+  box-shadow: 0 0 20px rgba(96,165,250,0.35);
 }
 
 .profile-fields .form-group {
@@ -174,5 +185,12 @@
 
 .btn-logout:hover {
   background: rgba(255,80,80,0.15);
+  box-shadow: 0 0 20px rgba(255,80,80,0.4);
+  color: #ffffff;
+}
+
+.btn-logout:focus,
+.btn-logout:active {
+  color: #ffffff;
   box-shadow: 0 0 20px rgba(255,80,80,0.4);
 }

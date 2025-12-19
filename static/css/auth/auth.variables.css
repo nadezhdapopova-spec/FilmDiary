@@ -26,3 +26,7 @@
   --text-main: #111;
   --text-secondary: #555;
 }
+
+:root {
+  --accent-primary: #ff8a00;
+}

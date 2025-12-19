@@ -5,6 +5,8 @@
 
 {% block title %}Повторное письмо для активации аккаунта{% endblock %}
 
+{% block body_class %}layout--auth{% endblock %}
+
 {% block content %}
 <div class="auth-wrapper">
     <div class="auth-card">
@@ -34,7 +36,7 @@
                     {% csrf_token %}
                     {{ form.email|as_crispy_field }}
 
-                    <button type="submit" class="btn btn-primary mt-3 w-50">
+                    <button type="submit" class="btn btn-primary mt-3 w-75">
                         Отправить письмо
                     </button>
                 </form>

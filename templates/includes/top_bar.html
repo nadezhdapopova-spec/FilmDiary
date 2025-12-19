@@ -9,16 +9,17 @@
     <!-- Auth справа -->
     <div class="topbar__actions">
       {% if user.is_authenticated %}
-        <a class="topbar__avatar-link" href="/profile" aria-label="Профиль">
-          <img class="avatar avatar--sm" src="{{ user.profile.avatar.url }}" alt="Avatar">
+        <a class="topbar__avatar-link" href="{% url 'users:profile' %}" aria-label="Профиль">
+          <img class="avatar avatar--sm" src="{{ user.avatar.url }}" alt="{{ user.email }}">
         </a>
         <form action="{% url 'users:logout' %}" method="post" class="topbar__logout">
           {% csrf_token %}
           <button class="auth-btn auth-btn--danger" type="submit">Выход</button>
         </form>
       {% else %}
-        <a class="auth-btn auth-btn--ghost" href="/register">Регистрация</a>
-        <a class="auth-btn auth-btn--primary" href="/login">Вход</a>
+        <a class="auth-btn auth-btn--primary" href="{% url "users:login" %}">Вход</a>
+        <a class="auth-btn auth-btn--ghost" href="{% url "users:register" %}">Регистрация</a>
+
       {% endif %}
     </div>
   </div>

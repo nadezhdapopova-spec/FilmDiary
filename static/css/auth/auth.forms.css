@@ -17,6 +17,7 @@
 }
 
 .auth-card .form-control:focus {
+  /*border-color: #ff8a00;*/
   border-color: var(--accent-primary);
   box-shadow: 0 4px 20px rgb(255, 255, 255);
 }

@@ -1,7 +1,7 @@
 /* COMPONENTS: кнопки */
 
 .auth-card .btn-primary {
-  width: 100%;
+  /*width: 100%;*/
   padding: 0.75rem;
   border-radius: var(--auth-radius-md);
 
@@ -12,6 +12,7 @@
       rgba(255,94,0,0.95)
     );
 
+  border: 1px solid rgba(255,138,0,0.85);
   color: #fff;
   font-weight: 700;
 

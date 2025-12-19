@@ -16,21 +16,19 @@
     {% block extra_head %}{% endblock %}
 </head>
 
-<body class="layout">
+<body class="layout {% block body_class %}{% endblock %}">
 
 <!-- TOP BAR -->
 {% include "includes/top_bar.html" %}
 
 <div class="layout__body">
+    {% if user.is_authenticated %}
+        {% include "includes/side_navigation.html" %}
+    {% endif %}
 
-    <!-- SIDE NAVIGATION -->
-    {% include "includes/side_navigation.html" %}
-
-    <!-- PAGE CONTENT -->
     <main class="layout__content" role="main">
         {% block content %}{% endblock %}
     </main>
-
 </div>
 
 <!-- FOOTER -->

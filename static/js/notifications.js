@@ -12,7 +12,7 @@ document.addEventListener("DOMContentLoaded", () => {
         types: [
             {
                 type: "success",
-                background: "#000",
+                background: "#ff8a00",
                 icon: {
                     className: "bi bi-check-circle-fill",
                     tagName: "i",
@@ -21,7 +21,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             {
                 type: "error",
-                background: "#000",
+                background: "#ff8a00",
                 icon: {
                     className: "bi bi-exclamation-circle-fill",
                     tagName: "i",
@@ -30,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             {
                 type: "info",
-                background: "#000",
+                background: "#ff8a00",
                 icon: {
                     className: "bi bi-info-circle-fill",
                     tagName: "i",
@@ -39,7 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
             },
             {
                 type: "warning",
-                background: "#000",
+                background: "#ff8a00",
                 icon: {
                     className: "bi bi-exclamation-triangle-fill",
                     tagName: "i",
