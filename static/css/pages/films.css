@@ -7,3 +7,52 @@
   /*justify-content: center;*/
   background: url("/static/images/profile.png") center / cover no-repeat;
 }
+
+/* контейнер секции */
+.movie-section-card {
+  margin-bottom: 2rem;
+}
+
+/* сетка маленьких карточек */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1.4rem;
+}
+
+/* отдельная карточка фильма внутри glass-card */
+.movie-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  background: rgba(255,255,255,0.03);
+  border-radius: 18px;
+  padding: 0.8rem;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* постер */
+.movie-poster {
+  width: 100%;
+  border-radius: 14px;
+  object-fit: cover;
+  aspect-ratio: 2 / 3; /* постер 2:3 */
+}
+
+/* текст под постером */
+.movie-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.movie-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.movie-extra {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.7);
+}

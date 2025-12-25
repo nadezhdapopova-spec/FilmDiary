@@ -1,0 +1,22 @@
+.app-footer.card {
+    width: auto;
+    padding: 2.6rem 2.8rem;
+    /*border-radius: 26px;*/
+    background:
+        url("/static/images/footer.jpg") 0 0 / 100% 100% no-repeat;
+    backdrop-filter: blur(22px);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow:
+    0 40px 90px rgba(0, 40, 120, 0.6),
+    0 0 80px rgba(96, 165, 250, 0.35);
+
+    display: flex;
+    flex-direction: column;
+    gap: 1.8rem;
+}
+
+.app-footer-title {
+  font-size: 1rem;
+  font-weight: 300;
+  color: #989292;
+}

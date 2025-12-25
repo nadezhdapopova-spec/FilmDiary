@@ -1,12 +1,24 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import Http404
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
 from films.models import Film
 from films.services import build_film_context, get_tmdb_movie_payload, save_film_from_tmdb
+
+
+class HomeView(View):
+    def get(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return render(request, "films/home.html")
+        context = {
+            # "recs_for_me": get_recommendations(request.user, limit=4),
+            # "planned_movies": get_planned(request.user, limit=4),
+            # "recent_movies": get_recent(request.user, limit=4),
+        }
+        return render(request, "films/home.html", context)
 
 
 class UserListFilmView(LoginRequiredMixin, ListView):

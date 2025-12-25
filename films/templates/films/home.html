@@ -5,27 +5,92 @@
 
 {% block content %}
 <main class="main-content">
+  <section class="homepage-section">
 
-    <section class="hero glass-card">
-        <h1 class="hero-title">Filmoria</h1>
-        <p class="hero-subtitle">
-            Смотри. Запоминай. Оценивай.
-        </p>
-    </section>
-
-    <section class="content-block">
-        <h2 class="block-title">Рекомендации</h2>
-        <div class="film-row">
-            <!-- film cards -->
+    {% if user.is_authenticated %}
+      <!-- Рекомендации для меня -->
+      <div class="glass-card movie-section-card">
+        <div class="card-header">
+          <h2 class="card-title">Персональные рекомендации на сегодня</h2>
+          <a href="#" class="auth-btn auth-btn--primary">
+            Смотреть все
+          </a>
         </div>
-    </section>
 
-    <section class="content-block">
-        <h2 class="block-title">Популярно сейчас</h2>
-        <div class="film-row">
-            <!-- film cards -->
+        <div class="movie-grid">
+          {% for movie in recs_for_me %}
+            <article class="movie-card">
+              <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="movie-poster">
+              <div class="movie-meta">
+                <h3 class="movie-title">{{ movie.title }}</h3>
+                <p class="movie-extra">{{ movie.year }} · {{ movie.runtime }} мин</p>
+              </div>
+            </article>
+          {% endfor %}
         </div>
-    </section>
+      </div>
 
+      <!-- Поиск и подборки -->
+      <div class="glass-card movie-section-card">
+        <div class="card-header">
+          <h2 class="card-title">Поиск и подборки</h2>
+          <a href="#" class="auth-btn auth-btn--primary">Искать в подборках</a>
+        </div>
+        <!-- Поисковая строка -->
+      </div>
+
+      <!-- Запланировано к просмотру -->
+      <div class="glass-card movie-section-card">
+        <div class="card-header">
+          <h2 class="card-title">Запланированные фильмы</h2>
+          <a href="#" class="auth-btn auth-btn--primary">Открыть список</a>
+        </div>
+
+        <div class="movie-grid">
+          {% for movie in planned_movies %}
+            <article class="movie-card">
+              <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="movie-poster">
+              <div class="movie-meta">
+                <h3 class="movie-title">{{ movie.title }}</h3>
+                <p class="movie-extra">План на {{ movie.planned_date }}</p>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Запланировано к просмотру -->
+      <div class="glass-card movie-section-card">
+        <div class="card-header">
+          <h2 class="card-title">Недавно просмотренные</h2>
+          <a href="#" class="auth-btn auth-btn--primary">Открыть список</a>
+        </div>
+
+        <div class="movie-grid">
+          {% for movie in planned_movies %}
+            <article class="movie-card">
+              <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="movie-poster">
+              <div class="movie-meta">
+                <h3 class="movie-title">{{ movie.title }}</h3>
+                <p class="movie-extra">Просмотрено: {{ movie.watched_date }}</p>
+              </div>
+            </article>
+          {% endfor %}
+        </div>
+      </div>
+
+    {% else %}
+      <div class="glass-card movie-section-card">
+        <div class="card-header">
+
+        </div>
+        <div class="card-body">
+          Смотри. Запоминай. Оценивай.
+          <a href="#" class="auth-btn auth-btn--primary">Войти</a>
+        </div>
+      </div>
+
+    {% endif %}
+  </section>
 </main>
 {% endblock %}

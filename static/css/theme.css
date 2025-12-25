@@ -5,7 +5,6 @@
 @import "core/forms.css";
 @import "core/glass.css";
 @import "core/nav.css";
-@import "core/neon.css";
 
 @import "components/avatar.css";
 @import "components/card.css";
@@ -23,4 +22,4 @@
 @import "pages/films.css";
 @import "pages/topbar.css";
 @import "pages/side_bar.css";
-
+@import "pages/footer.css";
