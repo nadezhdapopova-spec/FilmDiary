@@ -82,11 +82,25 @@
     {% else %}
       <div class="glass-card movie-section-card">
         <div class="card-header">
-
+          <img src="{% static 'images/banner.png' %}" class="img-fluid" alt="image">
         </div>
         <div class="card-body">
-          Смотри. Запоминай. Оценивай.
-          <a href="#" class="auth-btn auth-btn--primary">Войти</a>
+          <p class="mb-3">FilmDiary это фильмы, оценки, эмоции в одном кадре.</p>
+          <p>Здесь ты можешь:</p>
+          <p><span class="check">✓</span> вести структурированный дневник просмотров,</p>
+          <p><span class="check">✓</span> сохранять отзывы, ставь оценки, формировать список любимых фильмов,</p>
+          <p><span class="check">✓</span> получать персональные рекомендации на основе собственных оценок и предпочтений,</p>
+          <p class="mb-3"><span class="check">✓</span> планировать просмотры в календаре: планируй премьеры, пересматривай лучшие моменты. FilmDiary помнит каждый фильм.</p>
+          <p>Регистрируйся, смотри, оценивай, получай рекомендации, планируй.</p>
+          <p>Это личное веб-приложение без необходимости социальной сети. У нас уютно как дома!</p>
+        </div>
+        <div class="text-center mb-4">
+          <a class="neon-logo neon-logo--small">
+            FilmDiary — твой неоновый маршрут по миру кино, собери свою личную киновселенную
+          </a>
+        </div>
+        <div class="text-center mb-3">
+          <a class="auth-btn auth-btn--primary" href="{% url "users:register" %}">Зарегистрироваться</a>
         </div>
       </div>
 

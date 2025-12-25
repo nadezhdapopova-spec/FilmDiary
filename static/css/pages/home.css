@@ -1,0 +1,29 @@
+.glass-card.movie-section-card .card-body,
+.glass-card.movie-section-card .card-body p {
+  font-family: "Poppins", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  color: rgb(205, 200, 193);
+  font-size: 0.98rem;
+  line-height: 1.6;
+  margin-bottom: 0.3rem;
+}
+
+.movie-section-card .neon-logo--small {
+  font-size: 1rem;
+}
+
+.text-center .auth-btn.auth-btn--primary {
+  text-decoration: none;
+  box-shadow: 0 0 26px rgba(255,138,0,0.9) !important;
+  color: #000;
+}
+
+.text-center .auth-btn:hover {
+  color: #fff;
+  box-shadow: 0 0 20px rgba(96,165,250,0.22);
+}
+
+.check {
+  color: #cdc8c1;
+  margin-right: 0.35rem;
+  font-weight: 700;
+}

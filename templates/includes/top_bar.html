@@ -1,10 +1,15 @@
+{% load static %}
 <header class="topbar glass-card" role="banner">
   <div class="topbar__inner">
-    <!-- левая зона (может быть пустой или под иконку) -->
-    <div class="topbar__left"></div>
+    <!-- Левый блок: иконка + текстовый логотип -->
+    <img src="{% static 'images/symbol_smile.png' %}"
+       alt="logo"
+       class="topbar__logo-fixed">
 
-    <!-- Logo слева -->
-    <a class="neon-logo" href="/">FilmDiary — твой персональный кино‑трекер</a>
+    <!-- Центровка только текста -->
+    <a class="neon-logo topbar__title" href="/">
+      FilmDiary — твой персональный кино‑трекер
+    </a>
 
     <!-- Auth справа -->
     <div class="topbar__actions">
