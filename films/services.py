@@ -221,3 +221,39 @@ def save_film_from_tmdb(*, tmdb_id: int, user):
         )
 
     return film, True
+
+
+def search_film(query: str, user, page_num: int=1) -> list[dict]:
+    """Ищет фильмы по строке запроса через TMDB и возвращает список словарей для отображения фильмов (словарь=фильм)"""
+    if not query:
+        return []
+
+    cache_key = f"tmdb:search:{query}:{page_num}"
+    data = cache.get(cache_key)
+    if not data:
+        data = tmdb.search_movie(query=query, page=page_num)
+        cache.set(cache_key, data, timeout=60 * 30)  # 30 минут
+
+    results = data.get("results", [])  or []
+    ids = [item.get("id") for item in results if item.get("id")]
+    existing = set(
+        Film.objects.filter(tmdb_id__in=ids, user=user)
+        .values_list("tmdb_id", flat=True)
+    )
+
+    films: list[dict] = []
+    for item in results:
+        films.append(
+            {
+                "tmdb_id": item.get("id"),
+                "title": item.get("title") or item.get("name"),
+                "original_title": item.get("original_title"),
+                "poster_path": item.get("poster_path"),
+                "release_date": item.get("release_date"),
+                "genres": [g.get("name") for g in item.get("genres", [])],
+                "rating": item.get("vote_average"),
+                "in_library": item.get("id") in existing,
+            }
+        )
+
+    return films

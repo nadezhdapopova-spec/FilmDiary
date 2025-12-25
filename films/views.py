@@ -1,12 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.http import Http404
 from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
 from films.models import Film
-from films.services import build_film_context, get_tmdb_movie_payload, save_film_from_tmdb
+from films.services import build_film_context, get_tmdb_movie_payload, save_film_from_tmdb, search_film
 
 
 class HomeView(View):
@@ -101,3 +102,20 @@ class DeleteFilmView(LoginRequiredMixin, View):
 
         messages.info(request, "Фильм успешно удалён")
         return redirect("films:my_films")
+
+
+def film_search_view(request):
+    """Осуществляет поисковый запрос фильма"""
+    query = request.GET.get("q", "").strip()
+    page_number = request.GET.get("page", 1)
+    results = search_film(query=query, page_num=page_number, user=request.user)
+
+    paginator = Paginator(results, 10)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        "search_type": "film",
+        "query": query,
+        "page_obj": page_obj,
+    }
+    return render(request, "films/film_search.html", context)

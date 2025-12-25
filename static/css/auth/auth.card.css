@@ -29,20 +29,17 @@
 
 .auth-image {
   position: relative;
-  background-size: cover;
+  min-height: 160px;
+  background-size: contain;
   background-position: center;
+  background-repeat: no-repeat;
 }
 
 .auth-image::after {
   content: "";
   position: absolute;
   inset: 0;
-  background:
-    linear-gradient(
-      180deg,
-      rgba(10, 14, 40, 0.2),
-      rgba(10, 14, 40, 0.8)
-    );
+  background: rgba(0, 0, 0, 0.15);
 }
 
 /* Правая часть, форма */
