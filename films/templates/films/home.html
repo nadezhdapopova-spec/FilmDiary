@@ -12,21 +12,11 @@
       <div class="glass-card movie-section-card">
         <div class="card-header">
           <h2 class="card-title">Персональные рекомендации на сегодня</h2>
+          for film in recommendations[:12]:
+            {% include 'films/includes/film_preview_card.html' %}
           <a href="#" class="auth-btn auth-btn--primary">
             Смотреть все
           </a>
-        </div>
-
-        <div class="movie-grid">
-          {% for movie in recs_for_me %}
-            <article class="movie-card">
-              <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="movie-poster">
-              <div class="movie-meta">
-                <h3 class="movie-title">{{ movie.title }}</h3>
-                <p class="movie-extra">{{ movie.year }} · {{ movie.runtime }} мин</p>
-              </div>
-            </article>
-          {% endfor %}
         </div>
       </div>
 
@@ -34,8 +24,26 @@
       <div class="glass-card movie-section-card">
         <div class="card-header">
           <h2 class="card-title">Поиск и подборки фильмов</h2>
-          <!-- Поисковая строка -->
-          <a href="#" class="auth-btn auth-btn--primary">Искать в подборках</a>
+        </div>
+
+        <div class="card-body movie-search-body">
+          <!-- Строка поиска -->
+          <div class="movie-search-body__search">
+            {% include 'includes/search_bar.html' %}
+          </div>
+
+          <!-- Блок подборок -->
+          <div class="movie-search-body__collections">
+            <h3 class="card-title movie-search-body__subtitle">Искать в подборках:</h3>
+
+            <div class="movie-search-body__chips">
+              <a href="#" class="auth-btn auth-btn--primary">Сейчас в кино</a>
+              <a href="#" class="auth-btn auth-btn--primary">Скоро в кино</a>
+              <a href="#" class="auth-btn auth-btn--primary">Популярные фильмы</a>
+              <a href="#" class="auth-btn auth-btn--primary">Тренды недели</a>
+              <a href="#" class="auth-btn auth-btn--primary">Топ‑рейтинговые фильмы</a>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -59,7 +67,7 @@
         </div>
       </div>
 
-      <!-- Запланировано к просмотру -->
+      <!-- Просмотрено -->
       <div class="glass-card movie-section-card">
         <div class="card-header">
           <h2 class="card-title">Недавно просмотренные</h2>

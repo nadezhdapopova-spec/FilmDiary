@@ -1,0 +1,16 @@
+<form method="get"
+      action="{% if search_type == 'film' %}{% url 'films:film_search_view' %}
+              {% elif search_type == 'my_film' %}{% url 'films:my_film_search_view' %}{% endif %}">
+  <div class="movie-search-bar">
+    <input name="q"
+           value="{{ request.GET.q }}"
+           placeholder="Введите название фильма"
+           class="form-control movie-search-bar__input" />
+
+    <a class="auth-btn auth-btn--primary movie-search-bar__button"
+       href="{% url 'films:film_search' %}">
+      <span class="movie-search-bar__icon">🔍</span>
+      Найти фильм
+    </a>
+  </div>
+</form>

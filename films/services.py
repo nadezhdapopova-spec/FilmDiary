@@ -223,6 +223,35 @@ def save_film_from_tmdb(*, tmdb_id: int, user):
     return film, True
 
 
+def map_status(user_film):
+    """Формирует пользовательский статус фильма для карточки фильма"""
+    if user_film is None:
+        return {"status": "none"}
+
+    if user_film.is_watched:
+        if user_film.rating is not None:
+            if user_film.rating >= 8:
+                rating_color = "high"
+            elif user_film.rating >= 5:
+                rating_color = "medium"
+            else:
+                rating_color = "low"
+        else:
+            rating_color = "medium"
+
+        return {
+            "status": "watched",
+            "rating": user_film.rating,
+            "rating_color": rating_color,
+            "is_favorite": user_film.is_favorite,
+        }
+
+    if not user_film.is_watched:
+        return {"status": "planned"}
+
+    return {"status": "none"}
+
+
 def search_film(query: str, user, page_num: int=1) -> list[dict]:
     """Ищет фильмы по строке запроса через TMDB и возвращает список словарей для отображения фильмов (словарь=фильм)"""
     if not query:
@@ -235,25 +264,38 @@ def search_film(query: str, user, page_num: int=1) -> list[dict]:
         cache.set(cache_key, data, timeout=60 * 30)  # 30 минут
 
     results = data.get("results", [])  or []
+
     ids = [item.get("id") for item in results if item.get("id")]
     existing = set(
         Film.objects.filter(tmdb_id__in=ids, user=user)
         .values_list("tmdb_id", flat=True)
     )
 
+    all_genre_ids = set(
+        g_id
+        for item in results
+        for g_id in item.get("genre_ids", [])
+    )
+    genres_qs = Genre.objects.filter(tmdb_id__in=all_genre_ids)  # формируем один раз для запроса
+    genre_map = {g.tmdb_id: g.name for g in genres_qs}
+
     films: list[dict] = []
     for item in results:
-        films.append(
-            {
+        poster_path = item.get("poster_path")
+        full_poster_url = tmdb.get_poster_url(poster_path, size="w342")
+        genre_ids = item.get("genre_ids", []) or []
+        tmdb_id = item.get("id")
+        user_film = Film.objects.filter(tmdb_id=tmdb_id, user=user).first() # ищем, есть ли этот фильм у пользователя
+        film_dict = {
                 "tmdb_id": item.get("id"),
                 "title": item.get("title") or item.get("name"),
-                "original_title": item.get("original_title"),
-                "poster_path": item.get("poster_path"),
+                "poster_path": full_poster_url,
                 "release_date": item.get("release_date"),
-                "genres": [g.get("name") for g in item.get("genres", [])],
-                "rating": item.get("vote_average"),
-                "in_library": item.get("id") in existing,
+                "genres": ", ".join([genre_map.get(g_id) for g_id in genre_ids if g_id in genre_map]),
+                "rating": float(item.get("vote_average")),
             }
-        )
+        info = map_status(user_film)  # получаем пользовательский статус фильма
+        film_dict.update(info)
+        films.append(film_dict)
 
     return films

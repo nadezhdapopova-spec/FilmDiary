@@ -1,9 +1,14 @@
-{% for film in page_obj %}
-  <div class="movie-card">
-    <h3>{{ film.title }}</h3>
-    {% if film.release_date %}
-      <p>{{ film.release_date|slice:":4" }}</p>
-    {% endif %}
-    <p>{{ film.overview }}</p>
-  </div>
-{% endfor %}
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Результаты поиска{% endblock %}
+
+{% block content %}
+<main class="main-content">
+  <section class="homepage-section">
+
+    {% include 'films/includes/film_preview_card.html' %}
+
+  </section>
+</main>
+{% endblock %}

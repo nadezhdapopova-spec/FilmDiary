@@ -164,6 +164,19 @@ class Tmdb:
         """Возвращает фильмы по жанру"""
         return self._get("/discover/movie", {"with_genres": genre_id, "page": page}, "genres")
 
+    def get_poster_url(self, path: str, size: str = "w342") -> str | None:   # w185, w342, w500
+        """Строит полный URL постера из относительного path"""
+        if not path:
+            return None
+
+        config = self.get_config() or {}
+        images = config.get("images", {})
+        base_url = images.get("secure_base_url") or images.get("base_url")
+        if not base_url:
+            return None
+
+        return f"{base_url}{size}{path}"
+
 
 # if __name__ == "__main__":
 #     tmdb = Tmdb()

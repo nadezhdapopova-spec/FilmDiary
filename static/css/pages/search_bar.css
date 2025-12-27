@@ -1,0 +1,74 @@
+.movie-search-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.6rem;
+}
+
+/* подзаголовок “Искать в подборках” */
+.movie-search-body__subtitle {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+/* чипы-подборки: красиво переносятся */
+.movie-search-body__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.2rem;
+}
+
+/* чуть уменьшить кнопки внутри этой карточки, чтобы выглядели как чипы */
+.movie-search-body__chips .auth-btn {
+  padding: 0.45rem 1.1rem;
+  font-size: 0.85rem;
+}
+
+/* контейнер поиска */
+.movie-search-bar {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.9rem;
+
+  width: 100%;
+  flex-wrap: wrap;       /* на маленьких экранах элементы встанут столбиком */
+}
+
+/* инпут */
+.movie-search-bar__input {
+  max-width: 600px;
+  flex-grow: 1;
+  color: #cdc8c1;  /* цвет введённого текста */
+}
+
+/* цвет плейсхолдера */
+.movie-search-bar__input::placeholder {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* кнопка */
+.movie-search-bar__button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+}
+
+/* иконка */
+.movie-search-bar__icon {
+  margin-right: 0.1rem;
+  color: #22c55e; /* аналог .text-success */
+}
+
+/* адаптация под мобильные */
+@media (max-width: 767.98px) {
+  .movie-search-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .movie-search-bar__button {
+    justify-content: center;
+    width: 100%;
+  }
+}

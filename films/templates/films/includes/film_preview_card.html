@@ -1,0 +1,41 @@
+<div class="movie-card glass-card">
+  {% for film in page_obj %}
+    <article class="movie-card">
+
+      {% include 'films/includes/rating.html' %}
+
+      {% if film.poster_url %}
+        <img src="{{ film.poster_path }}" alt="{{ film.title }}" class="movie-poster">
+      {% endif %}
+      <h3>{{ film.title }}</h3>
+      <p>{{ film.release_date }}, {{ film.genres }}</p>
+
+      <!-- оранжевая черта -->
+      <div class="movie-card__divider"></div>
+
+      <!-- футер статуса -->
+      <div class="movie-card__footer">
+        <span class="movie-card__footer-label">Мой статус:</span>
+
+        {% if film.status == "watched" %}
+          <span class="status-badge">
+            <span class="status-badge__square status-badge__square--{{ film.rating_color }}"></span>
+            <span class="status-badge__text">Просмотрено ({{ film.rating }})</span>
+            {% if film.is_favorite %}
+              <span class="status-badge__icon">🔥</span>
+            {% endif %}
+          </span>
+
+        {% elif film.status == "planned" %}
+          <span class="status-badge">
+            <span class="status-badge__text">Хочу посмотреть</span>
+          </span>
+
+        {% else %}
+          <span class="status-badge status-badge--empty">—</span>
+        {% endif %}
+
+      </div>
+    </article>
+  {% endfor %}
+</div>

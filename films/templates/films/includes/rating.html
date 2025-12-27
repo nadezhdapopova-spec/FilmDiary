@@ -1,0 +1,11 @@
+<span class="badge position-absolute top-0 end-0 m-2
+  {% if film.rating >= 8.0 %}
+    bg-success
+  {% elif film.rating >= 6.0 %}
+    bg-primary
+  {% elif film.rating < 6.0 %}
+    bg-secondary
+  {% endif %}
+  ">
+  {{ film.get_rating_display }}
+</span>

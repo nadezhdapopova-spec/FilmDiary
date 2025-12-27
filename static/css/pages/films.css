@@ -56,3 +56,65 @@
   font-size: 0.8rem;
   color: rgba(255,255,255,0.7);
 }
+
+/* тонкая оранжевая черта */
+.movie-card__divider {
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, #ff8a00, #ffb703);
+  opacity: 0.9;
+  margin-top: 0.6rem;
+}
+
+/* футер карточки */
+.movie-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: rgba(255,255,255,0.82);
+}
+
+.movie-card__footer-label {
+  opacity: 0.8;
+}
+
+/* бейдж статуса */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* маленький цветной квадрат оценки */
+.status-badge__square {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+/* варианты цвета в зависимости от оценки */
+.status-badge__square--low {
+  background: #f97373;      /* красный */
+}
+.status-badge__square--medium {
+  background: #facc15;      /* жёлтый */
+}
+.status-badge__square--high {
+  background: #4ade80;      /* зелёный */
+}
+
+.status-badge__text {
+  white-space: nowrap;
+}
+
+.status-badge__icon {
+  font-size: 0.9rem;
+}
+
+/* когда статуса нет */
+.status-badge--empty {
+  opacity: 0.45;
+}
