@@ -10,16 +10,21 @@ from films.models import Film
 from films.services import build_film_context, get_tmdb_movie_payload, save_film_from_tmdb, search_film
 
 
-class HomeView(View):
-    def get(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return render(request, "films/home.html")
-        context = {
-            # "recs_for_me": get_recommendations(request.user, limit=4),
-            # "planned_movies": get_planned(request.user, limit=4),
-            # "recent_movies": get_recent(request.user, limit=4),
-        }
-        return render(request, "films/home.html", context)
+class HomeView(TemplateView):
+    template_name = "films/home.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_authenticated:
+            context.update({
+                # "recs_for_me": get_recommendations(self.request.user, limit=4),
+                # "planned_movies": get_planned(self.request.user, limit=4),
+                # "recent_movies": get_recent(self.request.user, limit=4),
+            })
+
+        context["search_type"] = "films"  # всегда для search_bar
+        return context
 
 
 class UserListFilmView(LoginRequiredMixin, ListView):
@@ -110,11 +115,11 @@ def film_search_view(request):
     page_number = request.GET.get("page", 1)
     results = search_film(query=query, page_num=page_number, user=request.user)
 
-    paginator = Paginator(results, 10)
+    paginator = Paginator(results, 12)
     page_obj = paginator.get_page(page_number)
 
     context = {
-        "search_type": "film",
+        "search_type": "films",
         "query": query,
         "page_obj": page_obj,
     }

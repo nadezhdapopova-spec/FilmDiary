@@ -72,3 +72,40 @@
     width: 100%;
   }
 }
+
+
+/* контейнер для карточек поиска */
+.movie-search-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.6rem;
+  margin-top: 2rem;
+}
+
+/* на больших экранах — строго 4 в ряд */
+@media (min-width: 1200px) {
+  .movie-search-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* на средних экранах — 3 в ряд */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .movie-search-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* на маленьких — 2 в ряд */
+@media (min-width: 768px) and (max-width: 991px) {
+  .movie-search-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* на мобильных — 1 в столбик */
+@media (max-width: 767px) {
+  .movie-search-grid {
+    grid-template-columns: 1fr;
+  }
+}

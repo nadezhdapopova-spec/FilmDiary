@@ -266,10 +266,14 @@ def search_film(query: str, user, page_num: int=1) -> list[dict]:
     results = data.get("results", [])  or []
 
     ids = [item.get("id") for item in results if item.get("id")]
-    existing = set(
-        Film.objects.filter(tmdb_id__in=ids, user=user)
-        .values_list("tmdb_id", flat=True)
-    )
+    if not ids:
+        return []
+
+    user_films = {   # ОДИН запрос: получаем все фильмы пользователя по tmdb_id
+        film.tmdb_id: film
+        for film in Film.objects.filter(tmdb_id__in=ids, user=user)
+    }
+    existing = set(user_films.keys())  # быстрый set из ключей словаря
 
     all_genre_ids = set(
         g_id
@@ -281,11 +285,12 @@ def search_film(query: str, user, page_num: int=1) -> list[dict]:
 
     films: list[dict] = []
     for item in results:
+        tmdb_id = item.get("id")
+        user_film = user_films.get(tmdb_id)  # ищем, есть ли этот фильм у пользователя
         poster_path = item.get("poster_path")
         full_poster_url = tmdb.get_poster_url(poster_path, size="w342")
         genre_ids = item.get("genre_ids", []) or []
-        tmdb_id = item.get("id")
-        user_film = Film.objects.filter(tmdb_id=tmdb_id, user=user).first() # ищем, есть ли этот фильм у пользователя
+
         film_dict = {
                 "tmdb_id": item.get("id"),
                 "title": item.get("title") or item.get("name"),
@@ -293,6 +298,7 @@ def search_film(query: str, user, page_num: int=1) -> list[dict]:
                 "release_date": item.get("release_date"),
                 "genres": ", ".join([genre_map.get(g_id) for g_id in genre_ids if g_id in genre_map]),
                 "rating": float(item.get("vote_average")),
+                "in_library": tmdb_id in existing,
             }
         info = map_status(user_film)  # получаем пользовательский статус фильма
         film_dict.update(info)
