@@ -100,11 +100,16 @@
   gap: 0.75rem;
   margin-top: auto;
   font-size: 0.85rem;
-  color: rgba(255,255,255,0.82);
+  color: rgb(255, 255, 255);
+}
+
+.movie-card__footer--centered {
+  justify-content: center;  /* ← кнопка по центру */
 }
 
 .movie-card__footer-label {
   opacity: 0.8;
+  color: rgb(255, 255, 255);
 }
 
 /* бейдж статуса */

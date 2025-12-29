@@ -26,10 +26,10 @@
     <div class="movie-card__divider"></div>
 
     <!-- футер статуса -->
-    <div class="movie-card__footer">
-      <span class="movie-card__footer-label">Мой статус:</span>
+    <div class="movie-card__footer{% if obj.status == 'none' %} movie-card__footer--centered{% endif %}">
 
       {% if obj.status == "watched" %}
+        <span class="movie-card__footer-label">Мой статус:</span>
         <span class="status-badge">
           <span class="status-badge__square status-badge__square--{{ obj.rating_color }}"></span>
           <span class="status-badge__text">Просмотрено ({{ obj.rating }})</span>
@@ -39,12 +39,18 @@
         </span>
 
       {% elif obj.status == "planned" %}
+        <span class="movie-card__footer-label">Мой статус:</span>
         <span class="status-badge">
           <span class="status-badge__text">Хочу посмотреть</span>
         </span>
 
       {% else %}
-        <span class="status-badge status-badge--empty">—</span>
+        <button class="btn-add-film glass-btn"
+            data-tmdb-id="{{ obj.tmdb_id }}"
+            data-title="{{ obj.title }}">
+          <span class="btn-add-film__text">Хочу посмотреть</span>
+          <span class="btn-add-film__icon">+</span>
+        </button>
       {% endif %}
 
     </div>

@@ -47,3 +47,33 @@
 .auth-btn--danger:hover {
   box-shadow: 0 0 22px rgba(255, 107, 107, 0.25);
 }
+
+.glass-btn {
+  /*border: none;*/
+  border-radius: 12px;
+  padding: 0.4rem 1rem;
+  background: linear-gradient(135deg, var(--neon-orange), var(--neon-yellow));
+  backdrop-filter: blur(12px);
+  color: rgba(255,255,255,0.9);
+  font-weight: 700;
+  font-size: 1rem;
+  border: 1px solid rgba(255,138,0,0.35);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.glass-btn:hover {
+  background: linear-gradient(135deg, var(--neon-orange), var(--neon-yellow));
+  border-color: rgba(255, 184, 0, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 184, 0, 0.2);
+  color: rgb(19, 19, 21);
+}
+
+.btn-add-film__icon {
+  font-size: 1.1rem;
+  font-weight: bold;
+}

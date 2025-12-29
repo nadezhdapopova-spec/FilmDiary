@@ -9,6 +9,6 @@ urlpatterns = [
     path("search/", film_search_view, name="film_search"),
     path("my_films/", UserListFilmView.as_view(template_name="films/my_films.html"), name="my_films"),
     path("film/<int:tmdb_id>/", FilmDetailView.as_view(), name="film_detail"),
-    path("add/", AddFilmView.as_view(), name="add_film"),
+    path("add_film/", AddFilmView.as_view(), name="add_film"),
     path("delete/<int:tmdb_id>/", DeleteFilmView.as_view(), name="delete_film"),
 ]

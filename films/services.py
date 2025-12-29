@@ -132,7 +132,8 @@ def get_tmdb_movie_payload(tmdb_id: int) -> Optional[dict]:
 
     details = tmdb.get_movie_details(tmdb_id)
     credits = tmdb.get_credits(tmdb_id)
-    if not details or credits:
+    if not details or not credits:
+        print(f"TMDB API failed: details={details}, credits={credits}")
         return None
     data = {
         "details": details,
@@ -153,6 +154,13 @@ def save_film_from_tmdb(*, tmdb_id: int, user):
         return film, False
 
     payload = get_tmdb_movie_payload(tmdb_id)  # получаем TMDB данные из кэша
+    if not payload:
+        print(f"TMDB API returned None for tmdb_id={tmdb_id}")
+        return None, False
+
+    if "details" not in payload:
+        print(f"No 'details' in payload for tmdb_id={tmdb_id}: {payload}")
+        return None, False
     details = payload["details"]
     credits = payload["credits"]
 

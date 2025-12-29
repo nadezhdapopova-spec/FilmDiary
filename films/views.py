@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from django.shortcuts import redirect, render
 from django.views import View
 from django.views.generic import ListView, TemplateView
@@ -86,13 +86,31 @@ class AddFilmView(LoginRequiredMixin, View):
         """Добавляет фильм в список пользователя 'Мои фильмы'"""
         tmdb_id = request.POST.get("tmdb_id")
 
-        film, created = save_film_from_tmdb(tmdb_id=tmdb_id, user=request.user)
-        if created:
-            messages.success(request, "Фильм добавлен в библиотеку")
-        else:
-            messages.info(request, "Фильм уже есть в библиотеке")
+        if not tmdb_id:
+            if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+                return JsonResponse({"status": "error", "message": "Нет ID фильма"}, status=400)
+            else:
+                messages.error(request, "Нет ID фильма")
+                return redirect("films:film_search")
 
-        return redirect("films:film_detail", tmdb_id=tmdb_id)
+        film, created = save_film_from_tmdb(tmdb_id=tmdb_id, user=request.user)
+        if request.headers.get("X-Requested-With") == "XMLHttpRequest":  # AJAX ответ
+            if film is None:
+                return JsonResponse({"status": "error", "message": "Ошибка получения данных фильма"}, status=500)
+            if created:
+                return JsonResponse({"status": "added", "message": "Фильм добавлен"})
+            else:
+                return JsonResponse({"status": "exists", "message": "Уже в библиотеке"})
+        else:  # обычный редирект
+            if film:
+                if created:
+                    messages.success(request, "Фильм добавлен в библиотеку")
+                else:
+                    messages.info(request, "Фильм уже есть в библиотеке")
+                return redirect("films:film_search")
+            else:
+                messages.error(request, "Ошибка добавления фильма")
+                return redirect("films:film_search")
 
 
 class DeleteFilmView(LoginRequiredMixin, View):

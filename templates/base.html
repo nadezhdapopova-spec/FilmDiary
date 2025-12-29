@@ -54,6 +54,7 @@
 <script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
 <script src="{% static 'js/notifications.js' %}"></script>
 
+{% csrf_token %}
 {% block extra_js %}{% endblock %}
 </body>
 </html>
