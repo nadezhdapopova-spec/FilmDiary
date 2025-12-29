@@ -24,6 +24,7 @@
 .movie-card {
   display: flex;
   flex-direction: column;
+  height: 100%;
   gap: 0.6rem;
   background: rgba(255,255,255,0.03);
   border-radius: 18px;
@@ -31,11 +32,25 @@
   border: 1px solid rgba(255,255,255,0.06);
 }
 
-/* постер */
-.movie-poster {
+.movie-card__poster-wrapper {
+  position: relative;
   width: 100%;
-  border-radius: 14px;
+  padding-top: 150%;      /* пропорции постера, например 2:3 */
+  overflow: hidden;
+}
+
+/* постер */
+.movie-poster,
+.no-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
   aspect-ratio: 2 / 3; /* постер 2:3 */
 }
 
@@ -44,17 +59,28 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  flex-grow: 1;  /* если в карточке есть свободное место, растягивай именно блок с заголовком/жанрами */
 }
 
 .movie-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;   /* или 1–2 строки */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   font-size: 0.95rem;
   font-weight: 700;
   color: #fff;
+  margin: 0;
 }
 
 .movie-extra {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;   /* или 1–2 строки */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   font-size: 0.8rem;
   color: rgba(255,255,255,0.7);
+  margin: 0;
 }
 
 /* тонкая оранжевая черта */
@@ -72,7 +98,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  margin-top: 0.75rem;
+  margin-top: auto;
   font-size: 0.85rem;
   color: rgba(255,255,255,0.82);
 }

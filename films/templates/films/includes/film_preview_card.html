@@ -3,14 +3,24 @@
 
     {% include 'films/includes/rating.html' %}
 
-    {% if obj.poster_path %}
-      <img src="{{ obj.poster_path }}" alt="{{ obj.title }}" class="movie-poster">
-    {% endif %}
+    <div class="movie-card__poster-wrapper">
+      {% if obj.poster_url %}
+        <img src="{{ obj.poster_url }}"
+          alt="{{ obj.title }}"
+          class="movie-poster"
+          loading="lazy"
+          onerror="this.src='/static/no-poster.jpg'">
+      {% else %}
+        <div class="no-poster">🎬</div>
+      {% endif %}
+    </div>
 
-    <h3 class="movie-title">{{ obj.title }}</h3>
-    <p class="movie-extra">
-      {{ obj.release_date }}{% if obj.genres %}, {{ obj.genres }}{% endif %}
-    </p>
+    <div class="movie-meta mt-2">
+      <h3 class="movie-title">{{ obj.title }}</h3>
+      <p class="movie-extra">
+        {{ obj.release_date|slice:":4" }}{% if obj.genres %}, {{ obj.genres }}{% endif %}
+      </p>
+    </div>
 
     <!-- оранжевая черта -->
     <div class="movie-card__divider"></div>

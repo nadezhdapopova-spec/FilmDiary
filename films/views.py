@@ -112,6 +112,7 @@ class DeleteFilmView(LoginRequiredMixin, View):
 def film_search_view(request):
     """Осуществляет поисковый запрос фильма"""
     query = request.GET.get("q", "").strip()
+    params = f"&q={query}" if query else ""
     page_number = request.GET.get("page", 1)
     results = search_film(query=query, page_num=page_number, user=request.user)
 
@@ -122,5 +123,6 @@ def film_search_view(request):
         "search_type": "films",
         "query": query,
         "page_obj": page_obj,
+        "params": params,
     }
     return render(request, "films/film_search.html", context)

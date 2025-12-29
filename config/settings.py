@@ -79,8 +79,16 @@ DATABASES = {
         "NAME": os.getenv("DB_NAME"),
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
+        "HOST": "127.0.0.1",
         "PORT": os.getenv("DB_PORT"),
+        "CONN_MAX_AGE": 0,       # закрываем после КАЖДОГО запроса, каждое соединение свежее
+        "OPTIONS": {
+            'connect_timeout': 5,  # таймаут подключения, Django ждет подключения к PostgreSQL 5 секунд, а не 30
+            "keepalives": 1,
+            "keepalives_idle": 30,
+            "keepalives_interval": 5,
+            "keepalives_count": 3,
+        },
     }
 }
 

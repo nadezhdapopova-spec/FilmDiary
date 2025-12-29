@@ -33,9 +33,9 @@ class Tmdb:
         md5 - берёт любой объём данных и возвращает фиксированную строку длиной 32 символа в виде бинарного объекта;
         hexdigest - преобразует бинарный объект в читаемую строку
         """
-        raw = json.dumps(params, sort_keys=True, ensure_ascii=False) # одинаковый порядок элементов словаря и правильная кодировка символов
-        digest = hashlib.md5(raw.encode()).hexdigest()
-        return f"{prefix}:{path}:{digest}"
+        raw = json.dumps(params, sort_keys=True, ensure_ascii=False).encode('utf-8') # одинаковый порядок элементов словаря и правильная кодировка символов
+        digest = hashlib.md5(raw).hexdigest()
+        return f"tmdb_{prefix}:{path}:{digest}"[:200]  # укорачиваем
 
     def _get(self, path: str, params: dict | None = None, ttl_key: str="recommended", retries=3, timeout=5) -> dict:
         """
@@ -169,13 +169,8 @@ class Tmdb:
         if not path:
             return None
 
-        config = self.get_config() or {}
-        images = config.get("images", {})
-        base_url = images.get("secure_base_url") or images.get("base_url")
-        if not base_url:
-            return None
-
-        return f"{base_url}{size}{path}"
+        BASE_URL = "https://image.tmdb.org/t/p/"
+        return f"{BASE_URL}{size}{path}"
 
 
 # if __name__ == "__main__":

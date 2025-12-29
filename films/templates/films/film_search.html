@@ -6,35 +6,36 @@
 {% block content %}
 <main class="main-content">
   <section class="homepage-section">
-    <div class="container mt-5">
-        <h2 class="fw-normal">Поиск фильмов{% if query %} по запросу "{{ query }}"{% endif %}</h2>
-        <hr>
-    </div>
-    <div class="container">
-      <div class="movie-search-body__search">
-        {% include 'includes/search_bar.html' %}
+    <div class="glass-card movie-section-card">
+      <div class="card-header">
+        <h2 class="card-title">Поиск фильмов{% if query %} по запросу "{{ query }}"{% endif %}</h2>
       </div>
-      {% if not query %}
-        <h4 class="fw-normal">Введите ключевое слово для поиска</h4>
-      {% elif page_obj.paginator.count == 0 %}
-        <div class="text-center py-5">
-          <h4 class="fw-normal">Ничего не найдено</h4>
-        </div>
-      {% else %}
-        <!-- Сетка из 4 карточек -->
-        <div class="movie-search-grid">
-          {% for obj in page_obj %}
-            {% include 'films/includes/film_preview_card.html' %}
-          {% endfor %}
-        </div>
-      {% endif %}
 
-      {% if page_obj.has_other_pages %}
-        <div class="mt-5">
-          {% include "includes/pagination.html" %}
+      <div class="card-body movie-search-body">
+        <div class="movie-search-body__search">
+          {% include 'includes/search_bar.html' %}
         </div>
-      {% endif %}
+
+        {% if not query %}
+          <h3 class="card-title movie-search-body__subtitle">Введите ключевое слово для поиска</h3>
+        {% elif page_obj.paginator.count == 0 %}
+          <h3 class="card-title movie-search-body__subtitle">Пока ничего не нашли, давай попробуем еще раз</h3>
+        {% else %}
+          <!-- Сетка из 4 карточек -->
+          <div class="movie-search-grid">
+            {% for obj in page_obj %}
+              {% include 'films/includes/film_preview_card.html' %}
+            {% endfor %}
+          </div>
+        {% endif %}
+      </div>
     </div>
+
+    {% if page_obj.has_other_pages %}
+      <div class="mt-5">
+        {% include "includes/pagination.html" %}
+      </div>
+    {% endif %}
   </section>
 </main>
 {% endblock %}

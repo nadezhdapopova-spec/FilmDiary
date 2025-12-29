@@ -257,23 +257,16 @@ def search_film(query: str, user, page_num: int=1) -> list[dict]:
     if not query:
         return []
 
-    cache_key = f"tmdb:search:{query}:{page_num}"
-    data = cache.get(cache_key)
-    if not data:
-        data = tmdb.search_movie(query=query, page=page_num)
-        cache.set(cache_key, data, timeout=60 * 30)  # 30 минут
-
+    data = tmdb.search_movie(query=query, page=page_num)
     results = data.get("results", [])  or []
-
-    ids = [item.get("id") for item in results if item.get("id")]
-    if not ids:
+    if not results:
         return []
 
-    user_films = {   # ОДИН запрос: получаем все фильмы пользователя по tmdb_id
-        film.tmdb_id: film
-        for film in Film.objects.filter(tmdb_id__in=ids, user=user)
-    }
-    existing = set(user_films.keys())  # быстрый set из ключей словаря
+    ids = [item.get("id") for item in results if item.get("id")]
+
+    user_films_qs = Film.objects.filter(tmdb_id__in=ids, user=user)
+    user_films = {film.tmdb_id: film for film in user_films_qs}
+    existing = set(user_films.keys())  # получаем ВСЕ фильмы пользователя одним запросом
 
     all_genre_ids = set(
         g_id
@@ -286,22 +279,26 @@ def search_film(query: str, user, page_num: int=1) -> list[dict]:
     films: list[dict] = []
     for item in results:
         tmdb_id = item.get("id")
-        user_film = user_films.get(tmdb_id)  # ищем, есть ли этот фильм у пользователя
-        poster_path = item.get("poster_path")
-        full_poster_url = tmdb.get_poster_url(poster_path, size="w342")
+        user_film = user_films.get(tmdb_id)
         genre_ids = item.get("genre_ids", []) or []
+        poster_path = item.get("poster_path")
+        poster_url = None
+        if poster_path:
+            if not poster_path.endswith(('.jpg', '.jpeg')):
+                poster_path += '.jpg'
+            poster_url = f"https://image.tmdb.org/t/p/w342{poster_path}"
 
         film_dict = {
                 "tmdb_id": item.get("id"),
-                "title": item.get("title") or item.get("name"),
-                "poster_path": full_poster_url,
-                "release_date": item.get("release_date"),
-                "genres": ", ".join([genre_map.get(g_id) for g_id in genre_ids if g_id in genre_map]),
-                "rating": float(item.get("vote_average")),
+                "title": item.get("title") or item.get("name", "Без названия"),
+                "poster_url": poster_url,
+                "release_date": item.get("release_date", "")[:4] or "----",
+                "genres": ", ".join([genre_map.get(g_id) for g_id in genre_ids[:2] if g_id in genre_map]),
+                "rating": round(float(item.get("vote_average", 0)), 1),
                 "in_library": tmdb_id in existing,
             }
-        info = map_status(user_film)  # получаем пользовательский статус фильма
-        film_dict.update(info)
+        film_dict.update(map_status(user_film))  # получаем и добавляем пользовательский статус фильма
         films.append(film_dict)
+    films.sort(key=lambda f: f["rating"], reverse=True)
 
     return films
