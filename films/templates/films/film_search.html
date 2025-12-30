@@ -30,7 +30,11 @@
           <!-- Сетка из 4 карточек -->
           <div class="movie-search-grid">
             {% for obj in page_obj %}
-              {% include 'films/includes/film_preview_card.html' %}
+              {% if search_type == 'user_films' %}
+                {% include 'films/includes/my_film_preview_card.html' with obj=obj %}
+              {% else %}
+                {% include 'films/includes/film_preview_card.html' with obj=obj %}
+              {% endif %}
             {% endfor %}
           </div>
         {% endif %}
@@ -39,9 +43,31 @@
 
     {% if page_obj.has_other_pages %}
       <div class="mt-5">
-        {% include "includes/pagination.html" %}
+        <div class="d-flex justify-content-center">
+          {% include "includes/pagination.html" %}
+        </div>
+
+        {% if search_type == 'user_films' %}
+          <div class="mt-3 text-start">
+            <a class="auth-btn auth-btn--primary" href="{% url 'films:my_films' %}">Вернуться к списку</a>
+          </div>
+        {% else %}
+          <div class="mt-3 text-center">
+            <a class="auth-btn auth-btn--primary" href="{% url 'films:home' %}">На главную</a>
+          </div>
+        {% endif %}
+      </div>
+
+    {% else %}
+      <div class="mt-5 text-center">
+        {% if search_type == 'user_films' %}
+          <a class="auth-btn auth-btn--primary" href="{% url 'films:my_films' %}">Вернуться к списку</a>
+        {% else %}
+          <a class="auth-btn auth-btn--primary" href="{% url 'films:home' %}">На главную</a>
+        {% endif %}
       </div>
     {% endif %}
+
   </section>
 </main>
 {% endblock %}

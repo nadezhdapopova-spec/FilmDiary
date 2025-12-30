@@ -312,33 +312,18 @@ def search_tmdb_film(query: str, user, page_num: int=1) -> list[dict]:
     return films
 
 
-def search_user_film(query: str, user, page_num: int = 1) -> list[dict]:
+def search_user_film(query: str, user, page_num: int = 1) -> list[Film]:
     """Поиск по фильмам пользователя из БД"""
 
     films_qs = Film.objects.filter(
         user=user,
         title__icontains=query
-    ).prefetch_related("genres", "actors", "crew")[(page_num - 1) * 12: page_num * 12]
+    ).prefetch_related("genres", "actors", "crew").order_by("-created_at")[(page_num - 1) * 12: page_num * 12]
 
-    films = []
-    for film in films_qs:
-        film_dict = {
-            "tmdb_id": film.tmdb_id,
-            "title": film.title,
-            "poster_url": f"https://image.tmdb.org/t/p/w342{film.poster_path}" if film.poster_path else None,
-            "release_date": film.release_date.year if film.release_date else "----",
-            "genres": ", ".join([g.name for g in film.genres.all()[:2]]),
-            "rating": round(film.vote_average or 0, 1),
-            "in_library": True,
-            "created_at": film.created_at
-        }
-        film_dict.update(map_status(film))  # статус текущего фильма
-        films.append(film_dict)
+    return list(films_qs)
 
-    films.sort(key=lambda f: f["created_at"], reverse=True)
-    return films
 
-def search_films(query: str, user, page_num: int=1, source: str = 'tmdb') -> list[dict]:
+def search_films(query: str, user, page_num: int=1, source: str = 'tmdb') -> list:
     """
     Поиск фильмов: "tmdb_film" — глобальный поиск по TMDB,
                    "user_film" — поиск по фильмам пользователя из БД
@@ -347,6 +332,6 @@ def search_films(query: str, user, page_num: int=1, source: str = 'tmdb') -> lis
         return []
 
     if source == 'user_films':
-        return search_user_film(query, user, page_num)
+        return search_user_film(query, user, page_num)  # list[Film]
     else:
-        return search_tmdb_film(query, user, page_num)
+        return search_tmdb_film(query, user, page_num)  # list[dict] для TMDB

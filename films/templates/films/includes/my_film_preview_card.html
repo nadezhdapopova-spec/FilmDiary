@@ -1,76 +1,56 @@
 <div class="movie-card glass-card">
   <article class="movie-card">
-
-{#    {% include 'films/includes/rating.html' %}#}
-
     <div class="movie-card__poster-wrapper">
       {% if obj.poster_path %}
         <img src="https://image.tmdb.org/t/p/w342{{ obj.poster_path }}"
-          alt="{{ obj.title }}"
-          class="movie-poster"
-          loading="lazy"
-          onerror="this.src='/static/no-poster.jpg'">
+             alt="{{ obj.title }}"
+             class="movie-poster"
+             loading="lazy"
+             onerror="this.src='/static/no-poster.jpg'">
       {% else %}
         <div class="no-poster">🎬</div>
       {% endif %}
+
+      <div class="movie-card__overlay">
+        {% if obj.user_rating %}
+          <div class="movie-badge movie-badge--rating">{{ obj.user_rating }}</div>
+        {% endif %}
+
+        <div class="movie-badge-group">
+          {% if obj.is_watched %}
+            <span class="movie-badge movie-badge--watched" title="Просмотрено">🍿</span>
+          {% elif obj.is_planned %}
+            <span class="movie-badge movie-badge--planned" title="Запланировано">📅</span>
+          {% endif %}
+          {% if obj.is_favorite %}
+            <span class="movie-badge movie-badge--favorite" title="Любимое">🔥</span>
+          {% endif %}
+        </div>
+      </div>
     </div>
 
     <div class="movie-meta mt-2">
       <h3 class="movie-title">{{ obj.title }}</h3>
       <p class="movie-extra">
-        {{ obj.release_date.year }}{% if obj.genres %}, {{ obj.genres }}{% endif %}
+        {{ obj.release_date.year }}
+        {% if obj.genres.exists %}
+          ,
+          {% for genre in obj.genres.all %}
+            {{ genre.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        {% endif %}
       </p>
     </div>
 
-    <!-- оранжевая черта -->
     <div class="movie-card__divider"></div>
 
-    <!-- футер статуса -->
-    <div class="movie-card__footer">
-      {% if obj.is_watched %}
-        <div class="movie-card__status-row">
-          <span class="movie-card__footer-label">Мой статус:</span>
-          <span class="status-badge">
-            <span class="status-badge__text">Просмотрено</span>
-          </span>
-        </div>
-        <div class="movie-card__buttons-row">
-          <button class="btn-add-film glass-btn"
-              data-id="{{ obj.id }}"
-              data-title="{{ obj.title }}"
-              data-action="plan">
-            <span class="btn-add-film__text">Запланировать просмотр</span>
-            <span class="btn-add-film__icon">📅</span>
-          </button>
-          {% if not obj.is_favorite %}
-            <button class="btn-add-film glass-btn"
-                data-id="{{ obj.id }}"
-                data-title="{{ obj.title }}"
-                data-action="favorite">
-              <span class="btn-add-film__text">Добавить в любимое</span>
-              <span class="status-badge__icon">🔥</span>
-            </button>
-          {% endif %}
-        </div>
-
-      {% else %}
-        <div class="movie-card__status-row">
-          <span class="movie-card__footer-label">Мой статус:</span>
-          <span class="status-badge">
-            <span class="status-badge__text">Хочу посмотреть</span>
-          </span>
-        </div>
-        <div class="movie-card__buttons-row">
-          <button class="btn-add-film glass-btn"
-              data-id="{{ obj.id }}"
-              data-title="{{ obj.title }}"
-              data-action="plan">
-            <span class="btn-add-film__text">Запланировать просмотр</span>
-            <span class="btn-add-film__icon">📅</span>
-          </button>
-        </div>
-      {% endif %}
-
+    <div class="movie-card__footer movie-card__footer--compact">
+      <span class="movie-card__footer-label">Добавить в:</span>
+      <div class="movie-card__actions-row">
+        <button class="btn-icon" data-action="plan" title="Запланировать">📅</button>
+        <button class="btn-icon" data-action="watched" title="Просмотрено">🍿</button>
+        <button class="btn-icon" data-action="favorite" title="Любимое">🔥</button>
+      </div>
     </div>
   </article>
 </div>

@@ -170,11 +170,13 @@ def film_search_view(request):
 
     results = search_films(source=source, query=query, page_num=page_number, user=request.user)
 
+    is_user_films = source == "user_films"
     paginator = Paginator(results, 12)
     page_obj = paginator.get_page(page_number)
 
     context = {
-        "search_type": "tmdb",
+        "search_type": source,
+        "is_user_films": is_user_films,
         "query": query,
         "page_obj": page_obj,
         "params": params,
