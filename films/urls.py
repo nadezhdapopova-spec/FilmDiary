@@ -1,6 +1,7 @@
 from django.urls import path
 
-from films.views import UserListFilmView, FilmDetailView, AddFilmView, DeleteFilmView, HomeView, film_search_view
+from films.views import UserListFilmView, FilmDetailView, AddFilmView, DeleteFilmView, HomeView, film_search_view, \
+    UpdateFilmStatusView
 
 app_name = "films"
 
@@ -10,5 +11,6 @@ urlpatterns = [
     path("my_films/", UserListFilmView.as_view(template_name="films/my_films.html"), name="my_films"),
     path("film/<int:tmdb_id>/", FilmDetailView.as_view(), name="film_detail"),
     path("add_film/", AddFilmView.as_view(), name="add_film"),
+    path("update-status/", UpdateFilmStatusView.as_view(), name="update_status"),
     path("delete/<int:tmdb_id>/", DeleteFilmView.as_view(), name="delete_film"),
 ]

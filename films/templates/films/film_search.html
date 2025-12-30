@@ -8,7 +8,13 @@
   <section class="homepage-section">
     <div class="glass-card movie-section-card">
       <div class="card-header">
-        <h2 class="card-title">Поиск фильмов{% if query %} по запросу "{{ query }}"{% endif %}</h2>
+        <h2 class="card-title">
+          {% if search_type == 'user_films' %}
+            Мои фильмы{% if query %}: "{{ query }}"{% endif %}
+          {% else %}
+            Поиск фильмов{% if query %}: "{{ query }}"{% endif %}
+          {% endif %}
+        </h2>
       </div>
 
       <div class="card-body movie-search-body">

@@ -104,7 +104,7 @@
 }
 
 .movie-card__footer--centered {
-  justify-content: center;  /* ← кнопка по центру */
+  justify-content: center;  /* кнопка по центру */
 }
 
 .movie-card__footer-label {

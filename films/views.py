@@ -7,7 +7,7 @@ from django.views import View
 from django.views.generic import ListView, TemplateView
 
 from films.models import Film
-from films.services import build_film_context, get_tmdb_movie_payload, save_film_from_tmdb, search_film
+from films.services import build_film_context, get_tmdb_movie_payload, save_film_from_tmdb, search_films
 
 
 class HomeView(TemplateView):
@@ -35,14 +35,27 @@ class UserListFilmView(LoginRequiredMixin, ListView):
     paginate_by = 12
 
     def get_queryset(self):
-        """Возвращает список пользователя 'Мои фильмы'"""
-        return Film.objects.filter(
-            user=self.request.user
-        ).select_related(
-            "director"
-        ).prefetch_related(
-            "genres", "actors"
-        )
+        """Возвращает список пользователя 'Мои фильмы', осуществляет поиск по q"""
+        queryset = Film.objects.filter(user=self.request.user).prefetch_related("genres", "actors", "crew").order_by("-created_at")
+
+        query = self.request.GET.get("q", "").strip()
+        if query:
+            queryset = queryset.filter(title__icontains=query)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        """Добавляет данные в контекст для поиска"""
+        context = super().get_context_data(**kwargs)
+        query = self.request.GET.get("q", "").strip()
+
+        context["search_type"] = "user_films"
+        context["query"] = query
+        context["params"] = f"&q={query}&source=user_films" if query else "&source=user_films"
+        context["view_url"] = "films:my_films"
+        context["template"] = "my_films"
+
+        return context
 
 
 class FilmDetailView(LoginRequiredMixin, TemplateView):
@@ -58,8 +71,7 @@ class FilmDetailView(LoginRequiredMixin, TemplateView):
         tmdb_id = self.kwargs["tmdb_id"]
 
         film = (
-            Film.objects.filter(tmdb_id=tmdb_id, user=self.request.user).select_related()
-            .prefetch_related("genres","filmactor_set__actor","filmcrew_set__person",).first()
+            Film.objects.filter(tmdb_id=tmdb_id, user=self.request.user).prefetch_related("genres", "actors", "crew",).first()
         )
         if film:
             context["film"] = build_film_context(film=film)  # одинаковый context["film"] если в БД и если из TMDB
@@ -113,6 +125,27 @@ class AddFilmView(LoginRequiredMixin, View):
                 return redirect("films:film_search")
 
 
+class UpdateFilmStatusView(LoginRequiredMixin, View):
+    """Обновляет статус фильма"""
+    def post(self, request, *args, **kwargs):
+        film_id = request.POST.get("film_id")
+        action = request.POST.get("action")  # 'plan' или 'favorite'
+
+        try:
+            film = Film.objects.get(id=film_id, user=request.user)
+
+            if action == 'plan':
+                film.is_watched = True
+                film.save()
+            elif action == 'favorite':
+                film.is_favorite = True
+                film.save()
+
+            return JsonResponse({'status': 'success'})
+        except Film.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Фильм не найден'}, status=404)
+
+
 class DeleteFilmView(LoginRequiredMixin, View):
     """Представление для удаления фильма из списка'Мои фильмы'"""
 
@@ -128,19 +161,24 @@ class DeleteFilmView(LoginRequiredMixin, View):
 
 
 def film_search_view(request):
-    """Осуществляет поисковый запрос фильма"""
+    """Осуществляет универсальный поисковый запрос фильма: по TMDB или фильмам пользователя"""
+
     query = request.GET.get("q", "").strip()
-    params = f"&q={query}" if query else ""
+    source = request.GET.get("source", "tmdb")  # 'tmdb' или 'user_films'
+    params = f"&q={query}&source={source}" if query else ""
     page_number = request.GET.get("page", 1)
-    results = search_film(query=query, page_num=page_number, user=request.user)
+
+    results = search_films(source=source, query=query, page_num=page_number, user=request.user)
 
     paginator = Paginator(results, 12)
     page_obj = paginator.get_page(page_number)
 
     context = {
-        "search_type": "films",
+        "search_type": "tmdb",
         "query": query,
         "page_obj": page_obj,
         "params": params,
+        "view_url": "films:film_search",
+        "template": "search",
     }
     return render(request, "films/film_search.html", context)

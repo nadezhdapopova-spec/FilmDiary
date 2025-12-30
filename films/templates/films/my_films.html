@@ -1,10 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Мои фильмы{% endblock %}
+
+{% block content %}
+<main class="main-content">
+  <section class="homepage-section">
+    <div class="glass-card movie-section-card">
+      <div class="card-header">
+        <h2 class="card-title">Мои фильмы</h2>
+      </div>
+
+      <div class="card-body movie-search-body">
+        <div class="movie-search-body__search mb-4">
+          {% include 'includes/search_bar.html' %}
+        </div>
+
+        {% if page_obj %}
+          <div class="movie-search-grid">
+            {% for obj in page_obj %}
+              {% include 'films/includes/my_film_preview_card.html' %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <h3 class="card-title movie-search-body__subtitle">У вас пока нет фильмов</h3>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+      <div class="mt-5">
+        {% include "includes/pagination.html" %}
+      </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/my_films_actions.js' %}"></script>
+{% endblock %}
