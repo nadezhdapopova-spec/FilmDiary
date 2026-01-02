@@ -11,6 +11,8 @@
         <h2 class="card-title">
           {% if search_type == 'user_films' %}
             Мои фильмы{% if query %}: "{{ query }}"{% endif %}
+          {% elif search_type == 'favorites' %}
+            Любимое{% if query %}: "{{ query }}"{% endif %}
           {% else %}
             Поиск фильмов{% if query %}: "{{ query }}"{% endif %}
           {% endif %}
@@ -30,7 +32,7 @@
           <!-- Сетка из 4 карточек -->
           <div class="movie-search-grid">
             {% for obj in page_obj %}
-              {% if search_type == 'user_films' %}
+              {% if search_type == 'user_films' or search_type == 'favorites' %}
                 {% include 'films/includes/my_film_preview_card.html' with obj=obj %}
               {% else %}
                 {% include 'films/includes/film_preview_card.html' with obj=obj %}
@@ -47,7 +49,7 @@
           {% include "includes/pagination.html" %}
         </div>
 
-        {% if search_type == 'user_films' %}
+        {% if search_type == 'user_films' or search_type == 'favorites' %}
           <div class="mt-3 text-start">
             <a class="auth-btn auth-btn--primary" href="{% url 'films:my_films' %}">Вернуться к списку</a>
           </div>
@@ -60,7 +62,7 @@
 
     {% else %}
       <div class="mt-5 text-center">
-        {% if search_type == 'user_films' %}
+        {% if search_type == 'user_films' or search_type == 'favorites' %}
           <a class="auth-btn auth-btn--primary" href="{% url 'films:my_films' %}">Вернуться к списку</a>
         {% else %}
           <a class="auth-btn auth-btn--primary" href="{% url 'films:home' %}">На главную</a>

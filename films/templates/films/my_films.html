@@ -8,7 +8,11 @@
   <section class="homepage-section">
     <div class="glass-card movie-section-card">
       <div class="card-header">
-        <h2 class="card-title">Мои фильмы 🎬</h2>
+        {% if search_type == "favorites" %}
+          <h2 class="card-title">Мои любимые фильмы 🔥</h2>
+        {% else %}
+          <h2 class="card-title">Мои фильмы 🎬</h2>
+        {% endif %}
       </div>
 
       <div class="card-body movie-search-body">
@@ -23,7 +27,11 @@
             {% endfor %}
           </div>
         {% else %}
-          <h3 class="card-title movie-search-body__subtitle">У вас пока нет фильмов</h3>
+          {% if search_type == "favorites" %}
+            <h3 class="card-title movie-search-body__subtitle">Ставь 🔥 на фильмы, формируй свой список фаворитов</h3>
+          {% else %}
+            <h3 class="card-title movie-search-body__subtitle">У вас пока нет фильмов</h3>
+          {% endif %}
         {% endif %}
       </div>
     </div>
@@ -37,5 +45,5 @@
 </main>
 {% endblock %}
 {% block extra_js %}
-<script src="{% static 'js/my_films_actions.js' %}"></script>
+  <script src="{% static 'js/my_films_actions.js' %}"></script>
 {% endblock %}

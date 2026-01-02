@@ -33,6 +33,7 @@ class UserListFilmView(LoginRequiredMixin, ListView):
     model = Film
     context_object_name = "films"
     paginate_by = 12
+    template_name = "films/my_films.html"
 
     def get_queryset(self):
         """Возвращает список пользователя 'Мои фильмы', осуществляет поиск по q"""
@@ -54,6 +55,39 @@ class UserListFilmView(LoginRequiredMixin, ListView):
         context["params"] = f"&q={query}&source=user_films" if query else "&source=user_films"
         context["view_url"] = "films:my_films"
         context["template"] = "my_films"
+
+        return context
+
+
+class FavoriteFilmsView(UserListFilmView):
+    """Список любимых фильмов пользователя"""
+    model = Film
+    context_object_name = "films"
+    paginate_by = 12
+    template_name = "films/my_films.html"
+
+    def get_queryset(self):
+        """Возвращает список пользователя 'Любимое', осуществляет поиск по q"""
+        queryset = Film.objects.filter(
+            user=self.request.user,
+            is_favorite=True
+        ).prefetch_related("genres", "actors", "crew").order_by("-created_at")
+
+        query = self.request.GET.get("q", "").strip()
+        if query:
+            queryset = queryset.filter(title__icontains=query)
+
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        """Добавляет данные в контекст для поиска в списке любимых фильмов"""
+        context = super().get_context_data(**kwargs)
+        query = self.request.GET.get("q", "").strip()
+
+        context["search_type"] = "favorites"  # любимые
+        context["query"] = query
+        context["params"] = f"&q={query}&source=favorites" if query else "&source=favorites"
+        context["view_url"] = "films:favorite_films"
 
         return context
 
@@ -135,16 +169,24 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
         try:
             film = Film.objects.get(id=film_id, user=request.user)
 
-            if action == 'plan':
+            if action == "plan":
                 film.is_watched = True
-                film.save()
-            elif action == 'favorite':
+                film.save(update_fields=["is_watched"])
+            elif action == "watched":
+                film.is_watched = True
+                film.save(update_fields=["is_watched"])
+            elif action == "favorite":
                 film.is_favorite = True
-                film.save()
+                film.save(update_fields=["is_favorite"])
+            elif action == "delete_favorite":
+                film.is_favorite = False
+                film.save(update_fields=["is_favorite"])
+            elif action == "delete":
+                film.delete()
 
-            return JsonResponse({'status': 'success'})
+            return JsonResponse({"status": "success", "action": action})
         except Film.DoesNotExist:
-            return JsonResponse({'status': 'error', 'message': 'Фильм не найден'}, status=404)
+            return JsonResponse({"status": "error"}, status=404)
 
 
 class DeleteFilmView(LoginRequiredMixin, View):
@@ -165,7 +207,7 @@ def film_search_view(request):
     """Осуществляет универсальный поисковый запрос фильма: по TMDB или фильмам пользователя"""
 
     query = request.GET.get("q", "").strip()
-    source = request.GET.get("source", "tmdb")  # 'tmdb' или 'user_films'
+    source = request.GET.get("source", "tmdb")  # 'tmdb' или 'user_films' или 'favorites'
     params = f"&q={query}&source={source}" if query else ""
     page_number = request.GET.get("page", 1)
 

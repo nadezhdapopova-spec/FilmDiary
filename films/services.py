@@ -337,6 +337,17 @@ def search_user_film(query: str, user, page_num: int = 1) -> list[Film]:
     return list(films_qs)
 
 
+def search_favorite_films(query: str, user, page_num: int = 1) -> list[Film]:
+    """Поиск только по любимым фильмам пользователя"""
+    films_qs = Film.objects.filter(
+        user=user,
+        is_favorite=True,
+        title__icontains=query
+    ).prefetch_related("genres", "actors", "crew").order_by("-created_at")[(page_num - 1) * 12: page_num * 12]
+
+    return list(films_qs)
+
+
 def search_films(query: str, user, page_num: int=1, source: str = 'tmdb') -> list:
     """
     Поиск фильмов: "tmdb_film" — глобальный поиск по TMDB,
@@ -345,8 +356,10 @@ def search_films(query: str, user, page_num: int=1, source: str = 'tmdb') -> lis
     if not query:
         return []
 
-    if source == 'user_films':
+    if source == "user_films":
         return search_user_film(query, user, page_num)  # list[Film]
+    elif source == "favorites":
+        return search_favorite_films(query, user, page_num)
     else:
         return search_tmdb_film(query, user, page_num)  # list[dict] для TMDB
 

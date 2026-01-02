@@ -48,8 +48,12 @@
       <span class="movie-card__footer-label">Добавить в:</span>
       <div class="movie-card__actions-row">
         <button class="btn-icon" data-action="plan" title="Запланировать">📅</button>
-        <button class="btn-icon" data-action="watched" title="Просмотрено">🍿</button>
-        <button class="btn-icon" data-action="delete" title="Удалить">❌</button>
+        {% if search_type == "favorites" %}
+          <button class="btn-icon" data-action="delete" title="Убрать из Любимого">⛔</button>
+        {% else %}
+          <button class="btn-icon" data-action="watched" title="Просмотрено">🍿</button>
+          <button class="btn-icon" data-action="delete" title="Удалить">❌</button>
+        {% endif %}
       </div>
     </div>
   </article>
