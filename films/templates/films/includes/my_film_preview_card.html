@@ -30,7 +30,7 @@
     </div>
 
     <div class="movie-meta mt-2">
-      <h3 class="movie-title">{{ obj.title }}</h3>
+      <a class="movie-title" href="{% url "films:film_detail" tmdb_id=obj.tmdb_id %}">{{ obj.title }}</a>
       <p class="movie-extra">
         {{ obj.release_date.year }}
         {% if obj.genres.exists %}

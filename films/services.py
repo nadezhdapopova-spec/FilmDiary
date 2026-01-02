@@ -35,6 +35,7 @@ def build_film_context(*, film=None, tmdb_data=None, credits=None):
         return {
             "source": "db",
             "in_library": True,
+            "tmdb_id": film.tmdb_id,
 
             "title": film.title,
             "original_title": film.original_title,
@@ -61,8 +62,8 @@ def build_film_context(*, film=None, tmdb_data=None, credits=None):
             "original_country": film.original_country,
             "runtime": film.runtime,
             "release_date": film.release_date,
-            "budget": film.budget,
-            "revenue": film.revenue,
+            "budget": format_nums(film.budget),
+            "revenue": format_nums(film.revenue),
             "production_company": film.production_company,
 
             "rating": film.vote_average,
@@ -78,6 +79,7 @@ def build_film_context(*, film=None, tmdb_data=None, credits=None):
         return {
             "source": "tmdb",
             "in_library": False,
+            "tmdb_id": tmdb_data.get("id"),
 
             "title": tmdb_data.get("title"),
             "original_title": tmdb_data.get("original_title"),
@@ -96,10 +98,10 @@ def build_film_context(*, film=None, tmdb_data=None, credits=None):
                 }
                 for actor in credits.get("cast", [])[:10]
             ],
-            "director": director.get("name") if director else None,
-            "writer": writer.get("name") if writer else None,
-            "composer": composer.get("name") if composer else None,
-            "producer": producer.get("name") if producer else None,
+            "director": [director.get("name")] if director else [],
+            "writer": [writer.get("name")] if writer else [],
+            "composer": [composer.get("name")] if composer else [],
+            "producer": [producer.get("name")] if producer else [],
 
             "original_country": (
                 tmdb_data.get("origin_country")[0]
@@ -108,8 +110,8 @@ def build_film_context(*, film=None, tmdb_data=None, credits=None):
             ),
             "runtime": tmdb_data.get("runtime"),
             "release_date": tmdb_data.get("release_date"),
-            "budget": tmdb_data.get("budget"),
-            "revenue": tmdb_data.get("revenue"),
+            "budget": format_nums(tmdb_data.get("budget")),
+            "revenue": format_nums(tmdb_data.get("revenue")),
             "production_company": (
                 tmdb_data["production_companies"][0]["name"]
                 if tmdb_data.get("production_companies")
@@ -335,3 +337,9 @@ def search_films(query: str, user, page_num: int=1, source: str = 'tmdb') -> lis
         return search_user_film(query, user, page_num)  # list[Film]
     else:
         return search_tmdb_film(query, user, page_num)  # list[dict] для TMDB
+
+
+def format_nums(value: int | None) -> int | str:
+    if not value:
+        return "-"
+    return f"{int(value):,}"

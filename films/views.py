@@ -61,6 +61,7 @@ class UserListFilmView(LoginRequiredMixin, ListView):
 class FilmDetailView(LoginRequiredMixin, TemplateView):
     """Представление для отображения подробной информации о фильме"""
     template_name = "films/film_detail.html"
+    context_object_name = "film"
 
     def get_context_data(self, **kwargs):
         """

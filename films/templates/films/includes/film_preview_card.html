@@ -4,19 +4,21 @@
     {% include 'films/includes/rating.html' %}
 
     <div class="movie-card__poster-wrapper">
-      {% if obj.poster_url %}
-        <img src="{{ obj.poster_url }}"
+      {% if obj.poster_url or obj.poster_path %}
+        <img src="{{ obj.poster_url|default:'https://image.tmdb.org/t/p/w342'}}{{ obj.poster_path|default:'' }}"
           alt="{{ obj.title }}"
-          class="movie-poster"
-          loading="lazy"
-          onerror="this.src='/static/no-poster.jpg'">
+          class="movie-poster">
       {% else %}
         <div class="no-poster">🎬</div>
       {% endif %}
     </div>
 
     <div class="movie-meta mt-2">
-      <h3 class="movie-title">{{ obj.title }}</h3>
+      {% if obj.tmdb_id %}
+        <a class="movie-title" href="{% url "films:film_detail" tmdb_id=obj.tmdb_id %}">{{ obj.title }}</a>
+      {% else %}
+        <span class="movie-title">{{ obj.title }}</span>
+      {% endif %}
       <p class="movie-extra">
         {{ obj.release_date|slice:":4" }}{% if obj.genres %}, {{ obj.genres }}{% endif %}
       </p>
