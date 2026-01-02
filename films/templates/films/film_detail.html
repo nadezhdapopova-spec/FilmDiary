@@ -26,13 +26,13 @@
             </div>
 
             <div class="film-rating__info">
-              <p><strong>Средняя оценка на TMDB:</strong> {{ vote_average|default:"—" }}</p>
-              <p><strong>Количество оценок:</strong> {{ vote_count|default:"—" }}</p>
+              <p><strong>Средняя оценка на TMDB:</strong> {{ film.rating|default:"—" }}</p>
+              <p><strong>Количество оценок:</strong> {{ film.vote_count|default:"—" }}</p>
             </div>
           </div>
 
           <div class="film-detail__info">
-            <p><strong>Год:</strong> {{ film.release_date|date:"Y" }}</p>
+            <p><strong>Год:</strong> {{ film.release_year|default:"—" }}</p>
             <p><strong>Оригинальное название:</strong> {{ film.original_title|default:"—" }}</p>
             <p><strong>Жанры:</strong>
               {% if film.genres %}
@@ -47,7 +47,7 @@
                 —
               {% endif %}
             </p>
-            <p><strong>Сценарий:</strong>
+            <p><strong>Сценарист:</strong>
               {% if film.writer %}
                 {{ film.writer|join:", " }}
               {% else %}
@@ -61,13 +61,6 @@
                 —
               {% endif %}
             </p>
-            <p><strong>Композитор:</strong>
-              {% if film.composer %}
-                {{ film.composer|join:", " }}
-              {% else %}
-                —
-              {% endif %}
-            </p>
             <p class="mt-3" align="justify"><strong>Описание:</strong> {{ film.overview|default:"Описание скоро будет" }}</p>
             <p class="mt-4"><strong>Страна:</strong> {{ film.original_country|default:"—" }}</p>
             <p><strong>Бюджет:</strong> {{ film.budget|default:"—" }}</p>
@@ -77,19 +70,18 @@
           </div>
         </div>
 
-        <!-- Актёры в два столбика -->
         {% if film.actors %}
           <div class="film-detail__cast">
             <h4 class="cast-title">В главных ролях</h4>
-            <div class="cast-grid">
-              <!-- Левая колонка -->
+            <div class="cast-grid cast-grid--3">
+              <!-- 1-я колонка -->
               <div class="cast-column">
                 <ul class="cast-list">
-                  {% for actor in film.actors|slice:":6" %}
+                  {% for actor in film.actors|slice:":4" %}
                     <li class="cast-item">
                       {% if actor.photo %}
-                        <img src="https://image.tmdb.org/t/p/w58{{ actor.photo }}"
-                             alt=" "
+                        <img src="https://image.tmdb.org/t/p/w92{{ actor.photo }}"
+                             alt="{{ actor.name }}"
                              class="cast-photo">
                       {% endif %}
                       <div class="cast-info">
@@ -103,13 +95,34 @@
                 </ul>
               </div>
 
-              <!-- Правая колонка -->
+              <!-- 2-я колонка -->
               <div class="cast-column">
                 <ul class="cast-list">
-                  {% for actor in film.actors|slice:"6:12" %}
+                  {% for actor in film.actors|slice:"4:8" %}
                     <li class="cast-item">
                       {% if actor.photo %}
-                        <img src="https://image.tmdb.org/t/p/w58{{ actor.photo }}"
+                        <img src="https://image.tmdb.org/t/p/w92{{ actor.photo }}"
+                             alt="{{ actor.name }}"
+                             class="cast-photo">
+                      {% endif %}
+                      <div class="cast-info">
+                        <strong>{{ actor.name }}</strong>
+                        {% if actor.character %}
+                          <span class="cast-role">{{ actor.character }}</span>
+                        {% endif %}
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+
+              <!-- 3-я колонка -->
+              <div class="cast-column">
+                <ul class="cast-list">
+                  {% for actor in film.actors|slice:"8:12" %}
+                    <li class="cast-item">
+                      {% if actor.photo %}
+                        <img src="https://image.tmdb.org/t/p/w92{{ actor.photo }}"
                              alt="{{ actor.name }}"
                              class="cast-photo">
                       {% endif %}
@@ -124,13 +137,16 @@
                 </ul>
               </div>
             </div>
-          </div>
-        {% endif %}
-      </div>
 
-      <div class="mt-3 text-center">
-        <a class="auth-btn auth-btn--primary" href="{% url 'films:home' %}">Назад</a>
-      </div>
+            <div class="mt-4 text-center">
+              <a class="auth-btn auth-btn--primary"
+                 href="{% if request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{% url 'films:home' %}{% endif %}">
+                 ← Назад
+              </a>
+            </div>
+          </div>
+        </div>
+      {% endif %}
 
     </div>
   </section>

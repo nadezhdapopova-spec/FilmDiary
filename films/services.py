@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Optional
 from django.db import transaction
 
@@ -61,13 +62,15 @@ def build_film_context(*, film=None, tmdb_data=None, credits=None):
 
             "original_country": film.original_country,
             "runtime": film.runtime,
-            "release_date": film.release_date,
+            "release_date": f"{film.release_date.strftime("%d %m %Y")} г.",
+            "release_year": film.release_date.year,
+
             "budget": format_nums(film.budget),
             "revenue": format_nums(film.revenue),
             "production_company": film.production_company,
 
-            "rating": film.vote_average,
-            "vote_count": film.vote_count
+            "rating": round(film.vote_average, 1),
+            "vote_count": format_nums(film.vote_count)
         }
 
     if tmdb_data and credits:
@@ -75,6 +78,14 @@ def build_film_context(*, film=None, tmdb_data=None, credits=None):
         writer = get_crew_member(credits, "Writer")
         composer = get_crew_member(credits, "Composer")
         producer = get_crew_member(credits, "Producer")
+        release_date_str = tmdb_data.get("release_date")
+        if release_date_str:
+            release = datetime.strptime(release_date_str, "%Y-%m-%d").date()
+            release_date = release.strftime("%d %m %Y")
+            release_year = release.year  # 2024
+        else:
+            release_date = "—"
+            release_year = "—"
 
         return {
             "source": "tmdb",
@@ -109,7 +120,8 @@ def build_film_context(*, film=None, tmdb_data=None, credits=None):
                 else None
             ),
             "runtime": tmdb_data.get("runtime"),
-            "release_date": tmdb_data.get("release_date"),
+            "release_date": f"{release_date} г.",
+            "release_year": release_year,
             "budget": format_nums(tmdb_data.get("budget")),
             "revenue": format_nums(tmdb_data.get("revenue")),
             "production_company": (
@@ -118,8 +130,8 @@ def build_film_context(*, film=None, tmdb_data=None, credits=None):
                 else None
             ),
 
-            "rating": tmdb_data.get("vote_average"),
-            "vote_count": tmdb_data.get("vote_count")
+            "rating": round(tmdb_data.get("vote_average"), 1),
+            "vote_count": format_nums(tmdb_data.get("vote_count"))
         }
     return None
 

@@ -105,3 +105,10 @@
   font-size: 0.82rem;
   margin-top: 0.125rem;
 }
+
+.cast-photo {
+  width: 44px;
+  height: 44px;
+  object-fit: cover;
+  border-radius: 50%;
+}
