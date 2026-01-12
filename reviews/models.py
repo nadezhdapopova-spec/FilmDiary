@@ -15,6 +15,7 @@ class Review(models.Model):
         verbose_name="Фильм")
     watched_at = models.DateField(verbose_name="Дата просмотра")
     user_rating = models.FloatField(verbose_name="Оценка")
+    review = models.TextField(blank=True, verbose_name="Отзыв")
     number_of_views = models.PositiveIntegerField(null=True, blank=True, verbose_name="Просмотров")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="Дата обновления")

@@ -3,7 +3,7 @@ from django.http import Http404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
-from common.permissions import can_user_view, can_user_edit, can_user_delete
+from services.permissions import can_user_view, can_user_edit, can_user_delete
 from reviews.forms import ReviewForm
 from reviews.models import Review
 
