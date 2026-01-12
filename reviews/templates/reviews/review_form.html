@@ -1,10 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+<div class="ratings-grid">
+    {{ form.plot_rating.label_tag }}
+    {{ form.plot_rating }}
 
-</body>
-</html>
+    {{ form.acting_rating.label_tag }}
+    {{ form.acting_rating }}
+    <!-- и т.д. -->
+</div>
+
+<p><strong>Общая оценка:</strong> <span id="avg-rating">-</span></p>

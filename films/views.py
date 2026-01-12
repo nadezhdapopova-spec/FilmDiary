@@ -214,7 +214,7 @@ def film_search_view(request):
 
     results = search_films(source=source, query=query, page_num=page_number, user=request.user)
 
-    is_user_films = source == "user_films"
+    is_user_films = source in ["user_films", "favorites", "watched", "reviewed"]
     paginator = Paginator(results, 12)
     page_obj = paginator.get_page(page_number)
 

@@ -1,4 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
+from django.db import models
 from django.http import Http404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
@@ -8,36 +10,79 @@ from reviews.forms import ReviewForm
 from reviews.models import Review
 
 
-class ReviewsListView(LoginRequiredMixin, ListView):
-    """Представление для отображения списка отзывов на фильм"""
+class WatchedListView(LoginRequiredMixin, ListView):
+    """Представление для отображения просмотренных фильмов"""
 
     model = Review
     template_name = "reviews/reviews.html"
     context_object_name = "reviews"
-    paginate_by = 10
+    paginate_by = 12
 
     def get_context_data(self, **kwargs):
         """Добавляет поиск по отзывам в контекст"""
         context = super().get_context_data(**kwargs)
         query = self.request.GET.get("q", "").strip()
 
-        context["search_type"] = "reviews"
+        context["search_type"] = "watched"
         context["query"] = query
-        context["params"] = f"&q={query}&source=reviews" if query else "&source=reviews"
-        # context["view_url"] = "films:my_films"
-        # context["template"] = "my_films"
+        context["params"] = f"&q={query}&source=watched" if query else "&source=watched"
+        # context["view_url"] = "reviews:reviews"
+        context["template"] = "reviews"
 
         return context
 
+
     def get_queryset(self):
         """Возвращает список отзывов пользователя на фильмы"""
-        queryset = Review.objects.filter(user=self.request.user).select_related("film").order_by("-updated_at")
+        queryset = (Review.objects
+                    .filter(user=self.request.user)
+                    .select_related("film", "user")
+                    .order_by("-updated_at"))
 
         query = self.request.GET.get("q", "").strip()
         if query:
-            queryset = queryset.filter(title__icontains=query)
+            queryset = queryset.filter(
+                models.Q(film__title__icontains=query) |
+                models.Q(user__username__icontains=query)
+            )
+        return queryset
+
+
+class ReviewsListView(WatchedListView):
+    """Представление для отображения списка отзывов на фильмы"""
+    model = Review
+    context_object_name = "reviews"
+    template_name = "reviews/reviews.html"
+    paginate_by = 12
+
+    def get_queryset(self):
+        """Возвращает список отзывов пользователя, осуществляет поиск по q"""
+        queryset = (Review.objects
+                    .filter(user=self.request.user, film__is_watched=True)
+                    .select_related("film", "user")
+                    .order_by("-updated_at"))
+
+        query = self.request.GET.get("q", "").strip()
+        if query:
+            queryset = queryset.filter(
+                       models.Q(film__title__icontains=query) |
+                       models.Q(user__username__icontains=query)
+                       )
 
         return queryset
+
+    def get_context_data(self, **kwargs):
+        """Добавляет данные в контекст для поиска в списке отзывов на фильмы"""
+        context = super().get_context_data(**kwargs)
+        query = self.request.GET.get("q", "").strip()
+
+        context["search_type"] = "reviewed"
+        context["query"] = query
+        context["params"] = f"&q={query}&source=reviewed" if query else "&source=reviewed"
+        # context["view_url"] = "reviews:reviews"
+        context["template"] = "reviews"
+
+        return context
 
 
 class ReviewDetailView(LoginRequiredMixin, DetailView):
@@ -50,8 +95,9 @@ class ReviewDetailView(LoginRequiredMixin, DetailView):
     def get_object(self, queryset=None):
         """Показывает отзыв, если пользователь имеет права на просмотр"""
         review = super().get_object(queryset)
-        can_user_view(self.request.user, review)
-        if not review:
+        try:
+            can_user_view(self.request.user, review)
+        except (Http404, PermissionDenied):
             raise Http404("Отзыв не найден")
         return review
 
