@@ -20,5 +20,6 @@ def can_user_view(user, obj):
     """Проверяет доступ к карточке объекта"""
     if not user.is_authenticated:
         raise Http404("Для просмотра необходимо пройти авторизацию")
-    if user.is_superuser or getattr(obj, "user", None) == user:
-        return
+    if user.is_superuser or obj.user == user:
+        return True
+    raise Http404("Нет доступа")
