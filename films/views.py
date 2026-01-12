@@ -162,6 +162,7 @@ class AddFilmView(LoginRequiredMixin, View):
 
 class UpdateFilmStatusView(LoginRequiredMixin, View):
     """Обновляет статус фильма"""
+
     def post(self, request, *args, **kwargs):
         film_id = request.POST.get("film_id")
         action = request.POST.get("action")  # 'plan' или 'favorite'
