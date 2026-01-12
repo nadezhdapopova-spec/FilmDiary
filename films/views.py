@@ -227,3 +227,12 @@ def film_search_view(request):
         "template": "search",
     }
     return render(request, "films/film_search.html", context)
+
+
+def custom_error(request, status_code=404, exception=None):
+    """Универсальная обработка всех ошибок status_code: 400, 403, 404, 500"""
+    context = {
+        "status_code": status_code,
+        "exception": str(exception)[:100] if exception else None,
+    }
+    return render(request, "error_page.html", context, status=status_code)
