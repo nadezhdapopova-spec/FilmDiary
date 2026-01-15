@@ -39,7 +39,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (data.status === 'added') {
                     this.outerHTML = `
-                        <span class="movie-card__footer-label">Мой статус:</span>
                         <span class="status-badge">
                             <span class="status-badge__text">Хочу посмотреть</span>
                         </span>
@@ -47,7 +46,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     showToast('✅ Фильм добавлен!');
                 } else if (data.status === 'exists') {
                     this.outerHTML = `
-                        <span class="movie-card__footer-label">Мой статус:</span>
                         <span class="status-badge">
                             <span class="status-badge__text">Уже в библиотеке</span>
                         </span>

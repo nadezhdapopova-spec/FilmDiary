@@ -91,67 +91,55 @@ async function updateFilmStatus(button, filmId, action, title) {
  */
 function applyStatusChanges(card, action, data) {
   const badgesGroup = card.querySelector('.movie-badge-group');
-  const footer = card.querySelector('.movie-card__footer--compact');
-  if (!footer) return;
+  const actionsRow  = card.querySelector('.movie-card__actions-row');
+  if (!actionsRow) return;
 
-  // 1. Обновляем бейджи над постером
   if (badgesGroup) {
     updateBadges(badgesGroup, data);
   }
 
-  // 2. Обновляем иконки в футере (data-action и title)
-  const actionsRow = footer.querySelector('.movie-card__actions-row');
-  if (!actionsRow) return;
+  const planBtn     = actionsRow.querySelector('[data-role="plan"]');
+  const favoriteBtn = actionsRow.querySelector('[data-role="favorite"]');
+  const watchBtn    = actionsRow.querySelector('[data-role="watch"]');
 
-  const buttons = actionsRow.querySelectorAll('.btn-icon');
-
-  buttons.forEach(btn => {
-    const btnAction = btn.dataset.action;
-
-    if (btnAction === 'plan' || btnAction === 'watch' || btnAction === 'unwatch') {
-      // Кнопка, связанная с просмотром / планами
-      if (data.is_watched) {
-        // Фильм в просмотренных: показываем "unwatch"
-        btn.dataset.action = 'unwatch';
-        btn.title = 'Убрать из просмотренного';
-        btn.innerHTML = `
-          <span class="btn-remove-watched__icon">👁️</span>
-          <span class="btn-remove-watched__cross">✕</span>
-        `;
-      } else if (data.is_planned) {
-        // Фильм запланирован: кнопка "watch"
-        btn.dataset.action = 'watch';
-        btn.title = 'Добавить в Просмотрено';
-        btn.textContent = '🍿';
-      } else {
-        // Ничего не запланировано: кнопка "plan"
-        btn.dataset.action = 'plan';
-        btn.title = 'Запланировать';
-        btn.textContent = '📅';
-      }
+  // PLAN / WATCH
+  if (planBtn) {
+    if (data.is_watched) {
+      planBtn.dataset.action = 'unwatch';
+      planBtn.title = 'Убрать из просмотренного';
+      planBtn.innerHTML = `
+        <span class="btn-remove-watched__icon">👁️</span>
+        <span class="btn-remove-watched__cross">✕</span>
+      `;
+    } else if (data.is_planned) {
+      planBtn.dataset.action = 'watch';
+      planBtn.title = 'Добавить в Просмотрено';
+      planBtn.textContent = '🍿';
+    } else {
+      planBtn.dataset.action = 'plan';
+      planBtn.title = 'Запланировать';
+      planBtn.textContent = '📅';
     }
+  }
 
-    if (btnAction === 'favorite' || btnAction === 'unfavorite') {
-      if (data.is_favorite) {
-        btn.dataset.action = 'unfavorite';
-        btn.title = 'Убрать из Любимого';
-        btn.textContent = '⛔';
-      } else {
-        btn.dataset.action = 'favorite';
-        btn.title = 'Добавить в Любимое';
-        btn.textContent = '🔥';
-      }
+  // FAVORITE
+  if (favoriteBtn) {
+    if (data.is_favorite) {
+      favoriteBtn.dataset.action = 'unfavorite';
+      favoriteBtn.title = 'Убрать из Любимого';
+      favoriteBtn.textContent = '⛔';
+    } else {
+      favoriteBtn.dataset.action = 'favorite';
+      favoriteBtn.title = 'Добавить в Любимое';
+      favoriteBtn.textContent = '🔥';
     }
+  }
 
-    if (btnAction === 'delete') {
-      // Поведение удаления карты зависит от логики на бэке:
-      // здесь предположим, что delete просто убирает фильм из списка.
-      if (action === 'delete' && data.removed) {
-        const outerCard = card.closest('.movie-card.glass-card') || card;
-        outerCard.remove();
-      }
-    }
-  });
+  // DELETE
+  if (action === 'delete') {
+    const outerCard = card.closest('.glass-card');
+    if (outerCard) outerCard.remove();
+  }
 }
 
 /**

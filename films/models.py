@@ -66,6 +66,7 @@ class Film(models.Model):
     vote_count = models.PositiveIntegerField(null=True, blank=True, verbose_name="Количество оценок")
     is_watched = models.BooleanField(default=False, verbose_name="Просмотрено")
     is_favorite = models.BooleanField(default=False, verbose_name="Любимое")
+    is_planned = models.BooleanField(default=False, verbose_name="Запланировано к просмотру")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
 
