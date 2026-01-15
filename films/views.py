@@ -171,23 +171,35 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
             film = Film.objects.get(id=film_id, user=request.user)
 
             if action == "plan":
+                film.is_planned = True
+            elif action == "watch":
                 film.is_watched = True
-                film.save(update_fields=["is_watched"])
-            elif action == "watched":
-                film.is_watched = True
-                film.save(update_fields=["is_watched"])
+                film.is_planned = False
+            elif action == "unwatch":
+                film.is_watched = False
             elif action == "favorite":
                 film.is_favorite = True
-                film.save(update_fields=["is_favorite"])
-            elif action == "delete_favorite":
+            elif action == "unfavorite":
                 film.is_favorite = False
-                film.save(update_fields=["is_favorite"])
             elif action == "delete":
                 film.delete()
-
-            return JsonResponse({"status": "success", "action": action})
+                return JsonResponse({
+                    "status": "success",
+                    "action": action,
+                    "removed": True
+                })
+            film.save()
+            return JsonResponse({
+                "status": "success",
+                "action": action,
+                "is_watched": film.is_watched,
+                "is_planned": film.is_planned,
+                "is_favorite": film.is_favorite
+            })
         except Film.DoesNotExist:
-            return JsonResponse({"status": "error"}, status=404)
+            return JsonResponse({"status": "error", "message": "Фильм не найден"}, status=404)
+        except Exception as e:
+            return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
 class DeleteFilmView(LoginRequiredMixin, View):
