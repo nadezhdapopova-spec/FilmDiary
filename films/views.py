@@ -173,14 +173,12 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
             if action == "plan":
                 film.is_planned = True
             elif action == "watch":
-                film.is_watched = True
-                film.is_planned = False
-            elif action == "unwatch":
-                film.is_watched = False
+                return JsonResponse({
+                    "status": "redirect",
+                    "url": f"/reviews/{film.id}/review/"
+                })
             elif action == "favorite":
                 film.is_favorite = True
-            elif action == "unfavorite":
-                film.is_favorite = False
             elif action == "delete":
                 film.delete()
                 return JsonResponse({

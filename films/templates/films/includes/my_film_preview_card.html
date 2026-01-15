@@ -29,6 +29,7 @@
             <span class="movie-badge movie-badge--favorite" title="Любимое">🔥</span>
           {% endif %}
         </div>
+
       </div>
     </div>
 
@@ -62,38 +63,22 @@
         <button
           class="btn-icon"
           data-role="watch"
-          data-action="{% if obj.is_watched %}unwatch{% else %}watch{% endif %}"
+          data-action="watch"
           data-id="{{ obj.id }}"
           data-title="{{ obj.title }}"
-          title="{% if obj.is_watched %}Сбросить просмотр{% else %}Добавить в Просмотрено{% endif %}">
-          {% if obj.is_watched %}
-              <span class="btn-remove-watched__icon">👁️</span>
-              <span class="btn-remove-watched__cross">✕</span>
-          {% else %}
-              🍿
-          {% endif %}
+          title="Добавить в Просмотрено">
+          🍿
         </button>
 
         <button
           class="btn-icon"
           data-role="favorite"
-          data-action="{% if obj.is_favorite %}unfavorite{% else %}favorite{% endif %}"
+          data-action="favorite"
           data-id="{{ obj.id }}"
           data-title="{{ obj.title }}"
-          title="{% if obj.is_favorite %}Убрать из Любимого{% else %}Добавить в Любимое{% endif %}">
-          {% if obj.is_favorite %}⛔{% else %}🔥{% endif %}
+          title="}Добавить в Любимое">
+          🔥
         </button>
-
-        {% if obj.is_watched %}
-          <button
-            class="btn-icon"
-            data-action="edit-review"
-            data-id="{{ obj.id }}"
-            data-title="{{ obj.title }}"
-            title="Изменить отзыв">
-            ✍️
-          </button>
-        {% endif %}
 
         <button
           class="btn-icon"

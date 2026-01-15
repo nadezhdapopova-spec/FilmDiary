@@ -19,9 +19,12 @@
         <div class="movie-badge-group">
           {% if obj.is_watched %}
             <span class="movie-badge movie-badge--watched" title="Просмотрено">🍿</span>
-          {% elif obj.is_planned %}
+          {% endif %}
+
+          {% if obj.is_planned %}
             <span class="movie-badge movie-badge--planned" title="Запланировано">📅</span>
           {% endif %}
+
           {% if obj.is_favorite %}
             <span class="movie-badge movie-badge--favorite" title="Любимое">🔥</span>
           {% endif %}
@@ -45,16 +48,46 @@
     <div class="movie-card__divider"></div>
 
     <div class="movie-card__footer movie-card__footer--compact">
-      <span class="movie-card__footer-label">Добавить в:</span>
       <div class="movie-card__actions-row">
-        <button class="btn-icon" data-action="plan" title="Запланировать">📅</button>
-        {% if search_type == "favorites" %}
-          <button class="btn-icon" data-action="delete" title="Убрать из Любимого">⛔</button>
-          <button class="btn-icon" data-action="delete" title="Удалить">❌</button>
-        {% else %}
-          <button class="btn-icon" data-action="watched" title="Просмотрено">🍿</button>
-          <button class="btn-icon" data-action="delete" title="Удалить">❌</button>
-        {% endif %}
+        <button
+          class="btn-icon"
+          data-role="plan"
+          data-action="plan"
+          data-id="{{ obj.id }}"
+          data-title="{{ obj.title }}"
+          title="Запланировать просмотр">
+          📅
+        </button>
+
+        <button
+          class="btn-icon"
+          data-role="watch"
+          data-action="unwatch"
+          data-id="{{ obj.id }}"
+          data-title="{{ obj.title }}"
+          title="Убрать из просмотренного">
+          <span class="btn-icon-text">➖</span>
+        </button>
+
+        <button
+          class="btn-icon"
+          data-role="favorite"
+          data-action="{% if obj.is_favorite %}unfavorite{% else %}favorite{% endif %}"
+          data-id="{{ obj.id }}"
+          data-title="{{ obj.title }}"
+          title="{% if obj.is_favorite %}Убрать из Любимого{% else %}Добавить в Любимое{% endif %}">
+          {% if obj.is_favorite %}⛔{% else %}🔥{% endif %}
+        </button>
+
+        <button
+          class="btn-icon"
+          data-action="edit-review"
+          data-id="{{ obj.id }}"
+          data-title="{{ obj.title }}"
+          title="Изменить отзыв">
+          ✍️
+        </button>
+
       </div>
     </div>
   </article>
