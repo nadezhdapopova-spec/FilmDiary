@@ -1,12 +1,13 @@
 from django.urls import path
 
-from reviews.views import WatchedListView, ReviewDetailView, ReviewUpdateView, ReviewDeleteView
+from reviews.views import WatchedListView, ReviewDetailView, ReviewUpdateView, ReviewDeleteView, ReviewsListView
 
 app_name = "reviews"
 
 
 urlpatterns = [
-    path("reviews/", WatchedListView.as_view(), name="reviews"),
+    path("watched/", WatchedListView.as_view(), name="watched"),
+    path("reviews/", ReviewsListView.as_view(), name="reviews"),
     path("reviews/<int:id>/", ReviewDetailView.as_view(), name="review_detail"),
     path("update/<int:id>/", ReviewUpdateView.as_view(), name="review_update"),
     path("delete/<int:id>/", ReviewDeleteView.as_view(), name="review_delete"),

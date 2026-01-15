@@ -60,7 +60,7 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
-  flex-grow: 1;  /* если в карточке есть свободное место, растягивай именно блок с заголовком/жанрами */
+  flex-grow: 1;
 }
 
 .movie-title {
@@ -90,22 +90,21 @@
   width: 100%;
   background: linear-gradient(90deg, #ff8a00, #ffb703);
   opacity: 0.9;
-  margin-top: 0.6rem;
+  margin: 0.6rem 0 0;
 }
 
 /* футер карточки */
 .movie-card__footer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  margin-top: auto;
-  font-size: 0.6rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+  min-height: 42px;
   color: rgb(255, 255, 255);
 }
 
 .movie-card__footer--centered {
-  justify-content: center;  /* кнопка по центру */
+  justify-content: center;
 }
 
 .movie-card__footer-label {
@@ -125,25 +124,31 @@
   width: 14px;
   height: 14px;
   border-radius: 4px;
+  flex-shrink: 0;
 }
 
 /* варианты цвета в зависимости от оценки */
 .status-badge__square--low {
-  background: #f97373;      /* красный */
+  background: #f97373;
 }
 .status-badge__square--medium {
-  background: #facc15;      /* жёлтый */
+  background: #facc15;
 }
 .status-badge__square--high {
-  background: #4ade80;      /* зелёный */
+  background: #4ade80;
 }
 
 .status-badge__text {
-  white-space: nowrap;
+  font-size: 1.2rem;
+  font-weight: bold;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
 }
 
 .status-badge__icon {
-  font-size: 0.9rem;
+  font-size: 1rem;
+  line-height: 1;
 }
 
 /* когда статуса нет */
@@ -215,8 +220,8 @@
 /* --- Компактный футер --- */
 .movie-card__footer--compact {
   display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: space-between;
   margin-top: 0.6rem;
   font-size: 0.9rem;
   color: rgba(255,255,255,0.9);
@@ -226,6 +231,8 @@
 .movie-card__actions-row {
   display: flex;
   gap: 0.7rem;
+  justify-content: center;
+  align-items: center;
 }
 
 .btn-icon {

@@ -31,7 +31,6 @@
     <div class="movie-card__footer{% if obj.status == 'none' %} movie-card__footer--centered{% endif %}">
 
       {% if obj.status == "watched" %}
-        <span class="movie-card__footer-label">Мой статус:</span>
         <span class="status-badge">
           <span class="status-badge__square status-badge__square--{{ obj.rating_color }}"></span>
           <span class="status-badge__text">Просмотрено ({{ obj.rating }})</span>
@@ -41,7 +40,6 @@
         </span>
 
       {% elif obj.status == "planned" %}
-        <span class="movie-card__footer-label">Мой статус:</span>
         <span class="status-badge">
           <span class="status-badge__text">Хочу посмотреть</span>
         </span>
