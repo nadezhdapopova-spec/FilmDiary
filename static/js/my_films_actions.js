@@ -60,7 +60,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ------------------ Actions ------------------
 function openReviewForm(filmId, title) {
-  window.location.href = `/reviews/create/`;
+  window.location.href = `/reviews/create/<int:film_id>/`;
 }
 
 function openPlanForm(filmId, title, button) {

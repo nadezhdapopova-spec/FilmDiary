@@ -2,9 +2,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
+from films.models import Film
 from services.permissions import can_user_view, can_user_edit, can_user_delete
 from reviews.forms import ReviewForm
 from reviews.models import Review
@@ -108,20 +110,31 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
     model = Review
     form_class = ReviewForm
     template_name = "reviews/review_form.html"
-    context_object_name = "review"
-    success_url = reverse_lazy("reviews:reviews")
+
+    def dispatch(self, request, *args, **kwargs):
+        self.film = get_object_or_404(Film, pk=kwargs["film_id"])
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         """Определяет в контексте объект отзыва"""
         context = super().get_context_data(**kwargs)
+        context["film"] = self.film
         context["obj"] = None
         return context
 
     def form_valid(self, form):
         """Присваивает текущего авторизованного пользователя как автора отзыва"""
         form.instance.user = self.request.user
-        response = super().form_valid(form)
-        return response
+        form.instance.film = self.film
+
+        if Review.objects.filter(user=self.request.user, film=self.film).exists():
+            form.add_error(None, "Вы уже оставили отзыв на этот фильм")
+            return self.form_invalid(form)
+
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        return reverse_lazy("reviews:review_detail", kwargs={"pk": self.object.pk})
 
 
 class ReviewUpdateView(LoginRequiredMixin, UpdateView):

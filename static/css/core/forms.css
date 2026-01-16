@@ -22,3 +22,48 @@ input[type="number"]::-webkit-outer-spin-button {
 input[type="number"] {
   -moz-appearance: textfield;
 }
+
+/* Форма для review фильма */
+.review-details {
+  margin-top: 1.5rem;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.75);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+  padding: 0.75rem 1rem;
+  color: #e5e7eb;
+}
+
+.review-details[open] {
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.85);
+  backdrop-filter: blur(16px);
+}
+
+.review-summary {
+  list-style: none;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.review-summary::-webkit-details-marker {
+  display: none;
+}
+
+/* Иконка-стрелка */
+.review-summary::after {
+  content: "▾";
+  font-size: 0.9rem;
+  transition: transform 0.2s ease;
+  opacity: 0.8;
+}
+
+.review-details[open] .review-summary::after {
+  transform: rotate(180deg);
+}
+
+/* Внутренняя панель с самим полем */
+.review-panel {
+  margin-top: 0.75rem;
+}

@@ -1,10 +1,87 @@
-<div class="ratings-grid">
-    {{ form.plot_rating.label_tag }}
-    {{ form.plot_rating }}
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
 
-    {{ form.acting_rating.label_tag }}
-    {{ form.acting_rating }}
-    <!-- и т.д. -->
+{% block title %}Оценка фильма{% endblock %}
+
+{% block body_class %}layout--auth{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card auth-register">
+
+    <!-- Левая часть: изображение -->
+    <div class="movie-card glass-card">
+      <article class="movie-card">
+
+        <div class="movie-card__poster-wrapper">
+          {% if obj.poster_url or obj.poster_path %}
+            <img src="{{ obj.poster_url|default:'https://image.tmdb.org/t/p/w342'}}{{ obj.poster_path|default:'' }}"
+              alt="{{ obj.title }}"
+              class="movie-poster">
+          {% else %}
+            <div class="no-poster">🎬</div>
+          {% endif %}
+        </div>
+
+        <div class="movie-meta mt-2">
+          {% if obj.tmdb_id %}
+            <a class="movie-title" href="{% url "films:film_detail" tmdb_id=obj.tmdb_id %}">{{ obj.title }}</a>
+          {% else %}
+            <span class="movie-title">{{ obj.title }}</span>
+          {% endif %}
+          <p class="movie-extra">
+            {{ obj.release_date|slice:":4" }}{% if obj.genres %}, {{ obj.genres }}{% endif %}
+          </p>
+        </div>
+      </article>
+    </div>
+
+    <!-- Правая часть: форма -->
+    <div class="auth-body">
+      <h2>Оценка фильма</h2>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {{ form.watched_at|as_crispy_field }}
+        {{ form.number_of_views|as_crispy_field }}
+
+        <div class="ratings-grid">
+          {{ form.plot_rating.label_tag }}
+          {{ form.plot_rating }}
+
+          {{ form.acting_rating.label_tag }}
+          {{ form.acting_rating }}
+
+          {{ form.directing_rating.label_tag }}
+          {{ form.directing_rating }}
+
+          {{ form.visuals_rating.label_tag }}
+          {{ form.visuals_rating }}
+        </div>
+
+        <p><strong>Общая оценка:</strong> <span id="avg-rating">-</span></p>
+
+        <details class="review-details">
+          <summary class="review-summary">
+            ✏️ Добавить отзыв (необязательно)
+          </summary>
+
+          <div class="review-panel mt-3">
+            {{ form.review|as_crispy_field }}
+          </div>
+        </details>
+
+        <div class=text-center>
+          <button class="btn btn-primary">
+            Сохранить
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
 </div>
-
-<p><strong>Общая оценка:</strong> <span id="avg-rating">-</span></p>
+{% endblock %}

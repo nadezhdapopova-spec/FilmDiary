@@ -13,7 +13,7 @@ class ReviewForm(forms.ModelForm):
 
     class Meta:
         model = Review
-        fields = ("watched_at", "number_of_views")  # user_rating НЕТ!
+        fields = ("watched_at", "number_of_views", "review")
         widgets = {
             "watched_at": forms.DateInput(attrs={"type": "date"}),
         }
