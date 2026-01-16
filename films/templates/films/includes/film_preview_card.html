@@ -14,7 +14,14 @@
     </div>
 
     <div class="movie-meta mt-2">
-      <a class="movie-title" href="{% url "films:film_detail" tmdb_id=film.tmdb_id %}">{{ film.title }}</a>
+      {% if film.tmdb_id %}
+        <a class="movie-title"
+          href="{% url "films:film_detail" tmdb_id=film.tmdb_id %}">
+            {{ film.title }}
+        </a>
+      {% else %}
+        <span class="movie-title">{{ film.title }}</span>
+      {% endif %}
       <p class="movie-extra">
         {{ film.release_date|slice:":4" }}
         {% if film.genres.exists %}

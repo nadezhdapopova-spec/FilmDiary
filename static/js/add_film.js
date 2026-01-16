@@ -11,12 +11,8 @@ document.addEventListener('DOMContentLoaded', function() {
             this.innerHTML = '<span>Добавляем...</span>';
             this.disabled = true;
 
-            let data = null;  // ← ИНИЦИАЛИЗИРУЕМ
-
             try {
                 const csrfToken = getCookie('csrftoken');
-                console.log('CSRF token:', csrfToken);  // ОТЛАДКА
-                console.log('tmdbId:', tmdbId);         // ОТЛАДКА
 
                 const response = await fetch('/films/add_film/', {
                     method: 'POST',
@@ -25,17 +21,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         'X-CSRFToken': csrfToken,
                         'X-Requested-With': 'XMLHttpRequest',
                     },
-                    body: `tmdb_id=${tmdbId}`
+                    body: `tmdb_id=${encodeURIComponent(tmdbId)}`
                 });
-
-                console.log('Response status:', response.status);  // ОТЛАДКА
 
                 if (!response.ok) {
                     throw new Error(`HTTP ${response.status}`);
                 }
 
-                data = await response.json();
-                console.log('Response data:', data);  // ОТЛАДКА
+                const data = await response.json();
 
                 if (data.status === 'added') {
                     this.outerHTML = `
@@ -43,23 +36,27 @@ document.addEventListener('DOMContentLoaded', function() {
                             <span class="status-badge__text">В моей библиотеке</span>
                         </span>
                     `;
-                    showToast('✅ Фильм добавлен!');
+                    showToast(`✅ Фильм "${title}" добавлен!`);
                 } else if (data.status === 'exists') {
                     this.outerHTML = `
                         <span class="status-badge">
                             <span class="status-badge__text">Уже в библиотеке</span>
                         </span>
                     `;
-                    showToast('ℹ️ Фильм уже есть');
-                } else {
+                    showToast(`ℹ️ Фильм "${title}" уже есть`);
+                } else if (data.status === 'error') {
                     throw new Error(data.message || 'Неизвестная ошибка');
+                } else {
+                    throw new Error('Неизвестный ответ сервера');
                 }
+
             } catch (error) {
                 console.error('Add film error:', error);
-                this.innerHTML = originalText;
+                if (document.body.contains(this)) {
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                }
                 showToast('❌ Ошибка: ' + error.message);
-            } finally {
-                this.disabled = false;
             }
         });
     });
@@ -70,9 +67,9 @@ function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
         const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
                 cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
                 break;
             }
@@ -81,14 +78,14 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// уведомления (простая версия)
+// уведомления
 function showToast(message) {
     const toast = document.createElement('div');
     toast.textContent = message;
     toast.style.cssText = `
-        position: fixed; top: 20px; right: 20px; 
-        background: rgba(0,0,0,0.9); color: white; 
-        padding: 1rem 1.5rem; border-radius: 12px; 
+        position: fixed; top: 20px; right: 20px;
+        background: rgba(0,0,0,0.9); color: white;
+        padding: 1rem 1.5rem; border-radius: 12px;
         backdrop-filter: blur(10px); z-index: 9999;
         box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         font-family: Poppins, sans-serif;

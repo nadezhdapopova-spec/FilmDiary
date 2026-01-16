@@ -5,6 +5,7 @@ from django.db import transaction
 from django.core.cache import cache
 
 from films.models import Film, Genre, Actor, FilmActor, Person, FilmCrew, UserFilm
+from reviews.models import Review
 from services.tmdb import Tmdb
 
 
@@ -170,86 +171,82 @@ def save_film_from_tmdb(*, tmdb_id: int, user):
     Создает и записывает объект фильма в БД, если еще не записан:
     если успешно - commit, если любая ошибка - rollback: или фильм сохранён в БД полностью, или не сохраняется вообще
     """
-    film = Film.objects.filter(tmdb_id=tmdb_id, user=user).first()  # проверяем, есть ли уже фильм у пользователя
-    if film:
-        return film, False
+    film = Film.objects.filter(tmdb_id=tmdb_id).first()  # проверяем, есть ли уже фильм с БД фильмов
+    created_film = False
 
-    payload = get_tmdb_movie_payload(tmdb_id)  # получаем TMDB данные из кэша
-    if not payload:
-        print(f"TMDB API returned None for tmdb_id={tmdb_id}")
-        return None, False
+    if not film:
+        payload = get_tmdb_movie_payload(tmdb_id)  # получаем TMDB данные из кэша
+        if not payload or "details" not in payload:
+            return None, False
 
-    if "details" not in payload:
-        print(f"No 'details' in payload for tmdb_id={tmdb_id}: {payload}")
-        return None, False
-    details = payload["details"]
-    credits = payload["credits"]
+        details = payload["details"]
+        credits = payload["credits"]
 
-    film = Film.objects.create(  # создаем фильм
-        user=user,
-        tmdb_id=tmdb_id,
-        title=details["title"],
-        original_title=details.get("original_title"),
-        tagline=details.get("tagline"),
-        overview=details.get("overview", ""),
-        runtime=details.get("runtime"),
-        original_country=details.get("original_country"),
-        release_date=details.get("release_date") or None,
-        production_company=details.get("production_company"),
-        poster_path=details.get("poster_path"),
-        backdrop_path=details.get("backdrop_path"),
-        vote_average=details.get("vote_average"),
-        vote_count=details.get("vote_count"),
-        budget=details.get("budget"),
-        revenue=details.get("revenue"),
-    )
-
-    for genre_data in details.get("genres", []):  # жанры без дублей
-        genre, _ = Genre.objects.get_or_create(
-            tmdb_id=genre_data["id"],
-            defaults={"name": genre_data["name"]}
+        film = Film.objects.create(  # создаем фильм
+            tmdb_id=tmdb_id,
+            title=details["title"],
+            original_title=details.get("original_title"),
+            tagline=details.get("tagline"),
+            overview=details.get("overview", ""),
+            runtime=details.get("runtime"),
+            original_country=details.get("original_country"),
+            release_date=details.get("release_date") or None,
+            production_company=details.get("production_company"),
+            poster_path=details.get("poster_path"),
+            backdrop_path=details.get("backdrop_path"),
+            vote_average=details.get("vote_average"),
+            vote_count=details.get("vote_count"),
+            budget=details.get("budget"),
+            revenue=details.get("revenue"),
         )
-        film.genres.add(genre)
+        created_film = True
 
-    for idx, actor_data in enumerate(credits.get("cast", [])[:20]):  # актеры без дублей
-        actor, _ = Actor.objects.get_or_create(
-            tmdb_id=actor_data["id"],
-            defaults={
-                "name": actor_data["name"],
-                "original_name": actor_data.get("original_name"),
-                "profile_path": actor_data.get("profile_path"),
-            }
-        )
+        for genre_data in details.get("genres", []):  # жанры без дублей
+            genre, _ = Genre.objects.get_or_create(
+                tmdb_id=genre_data["id"],
+                defaults={"name": genre_data["name"]}
+            )
+            film.genres.add(genre)
 
-        FilmActor.objects.create(
-            film=film,
-            actor=actor,
-            character=actor_data.get("character"),
-            order=idx
-        )
+        for idx, actor_data in enumerate(credits.get("cast", [])[:20]):  # актеры без дублей
+            actor, _ = Actor.objects.get_or_create(
+                tmdb_id=actor_data["id"],
+                defaults={
+                    "name": actor_data["name"],
+                    "original_name": actor_data.get("original_name"),
+                    "profile_path": actor_data.get("profile_path"),
+                }
+            )
+            FilmActor.objects.create(
+                film=film,
+                actor=actor,
+                character=actor_data.get("character"),
+                order=idx
+            )
 
-    important_jobs = {"Director", "Writer", "Producer", "Composer"}
+        important_jobs = {"Director", "Writer", "Producer", "Composer"}
 
-    for crew_data in credits.get("crew", []):
-        if crew_data["job"] not in important_jobs:
-            continue
+        for crew_data in credits.get("crew", []):
+            if crew_data["job"] not in important_jobs:
+                continue
 
-        person, _ = Person.objects.get_or_create(   # режиссер, сценарист, продюсер, композитор без дублей
-            tmdb_id=crew_data["id"],
-            defaults={
-                "name": crew_data["name"],
-                "original_name": crew_data.get("original_name"),
-                "profile_path": crew_data.get("profile_path"),
-            }
-        )
+            person, _ = Person.objects.get_or_create(   # режиссер, сценарист, продюсер, композитор без дублей
+                tmdb_id=crew_data["id"],
+                defaults={
+                    "name": crew_data["name"],
+                    "original_name": crew_data.get("original_name"),
+                    "profile_path": crew_data.get("profile_path"),
+                }
+            )
+            FilmCrew.objects.get_or_create(
+                film=film,
+                person=person,
+                job=crew_data["job"]
+            )
 
-        FilmCrew.objects.get_or_create(
-            film=film,
-            person=person,
-            job=crew_data["job"]
-        )
+    user_film, created_user_film = UserFilm.objects.get_or_create(user=user, film=film)  # проверяем, есть ли фильм у пользователя
 
-    return film, True
+    return film, created_film, user_film, created_user_film
 
 
 def map_status(user_film):
@@ -293,9 +290,9 @@ def search_tmdb_film(query: str, user, page_num: int=1) -> list[dict]:
 
     ids = [item.get("id") for item in results if item.get("id")]
 
-    user_films_qs = Film.objects.filter(tmdb_id__in=ids, user=user)
-    user_films = {film.tmdb_id: film for film in user_films_qs}
-    existing = set(user_films.keys())  # получаем ВСЕ фильмы пользователя одним запросом
+    user_films = (UserFilm.objects.select_related("film").filter(user=user, film__tmdb_id__in=ids))
+    user_films_map = {uf.film.tmdb_id: uf for uf in user_films}
+    existing = set(user_films_map.keys())  # получаем ВСЕ фильмы пользователя одним запросом
 
     all_genre_ids = set(
         g_id
@@ -308,7 +305,7 @@ def search_tmdb_film(query: str, user, page_num: int=1) -> list[dict]:
     films: list[dict] = []
     for item in results:
         tmdb_id = item.get("id")
-        user_film = user_films.get(tmdb_id)
+        user_film = user_films_map.get(tmdb_id)
         genre_ids = item.get("genre_ids", []) or []
         poster_path = item.get("poster_path")
         poster_url = None
@@ -333,57 +330,48 @@ def search_tmdb_film(query: str, user, page_num: int=1) -> list[dict]:
     return films
 
 
-def search_user_film(query: str, user, page_num: int = 1) -> list[Film]:
+def search_user_film(query: str, user, page_num: int = 1) -> list[UserFilm]:
     """Поиск по фильмам пользователя из БД"""
 
-    films_qs = Film.objects.filter(
+    films_qs = (UserFilm.objects.filter(
         user=user,
-        title__icontains=query
-    ).prefetch_related("genres", "actors", "crew").order_by("-created_at")[(page_num - 1) * 12: page_num * 12]
+        film__title__icontains=query
+    ).select_related("film").prefetch_related("film__genres", "film__actors", "film__crew").order_by("-created_at"))
 
-    return list(films_qs)
+    return list(films_qs[(page_num - 1) * 12: page_num * 12])
 
 
-def search_favorite_films(query: str, user, page_num: int = 1) -> list[Film]:
+def search_favorite_films(query: str, user, page_num: int = 1) -> list[UserFilm]:
     """Поиск только по любимым фильмам пользователя"""
-    films_qs = Film.objects.filter(
+    films_qs = UserFilm.objects.filter(
         user=user,
         is_favorite=True,
-        title__icontains=query
-    ).prefetch_related("genres", "actors", "crew").order_by("-created_at")[(page_num - 1) * 12: page_num * 12]
+        film__title__icontains=query
+    ).select_related("film").prefetch_related("film__genres", "film__actors", "film__crew").order_by("-created_at")
 
-    return list(films_qs)
+    return list(films_qs[(page_num - 1) * 12: page_num * 12])
 
 
-def search_watched_films(query: str, user, page_num: int = 1) -> list[Film]:
+def search_watched_films(query: str, user, page_num: int = 1) -> list[Review]:
     """Поиск только по просмотренным фильмам пользователя"""
-    films_qs = Film.objects.filter(
+    films_qs = Review.objects.filter(
         user=user,
-        is_watched=True,
-        title__icontains=query
-    ).prefetch_related("genres", "actors", "crew").order_by("-created_at")[(page_num - 1) * 12: page_num * 12]
+        film__title__icontains=query
+    ).select_related("film").prefetch_related("film__genres", "film__actors", "film__crew").order_by("-created_at")
 
-    return list(films_qs)
+    return list(films_qs[(page_num - 1) * 12: page_num * 12])
 
 
-def search_reviewed_films(query: str, user, page_num: int = 1) -> list[Film]:
-    """Поиск только по любимым фильмам пользователя"""
-    base_qs = (
-        Film.objects
-        .filter(
-            user=user,
-            is_watched=True,
-            title__icontains=query,
-            reviews__user=user,
-            reviews__review__isnull=False,
-        )
-        .exclude(reviews__review="")
-        .prefetch_related("genres", "actors", "crew")
-        .order_by("-created_at")
-    )
+def search_reviewed_films(query: str, user, page_num: int = 1) -> list[Review]:
+    """Поиск только по фильмам c отзывами"""
+    qs = (Review.objects.filter(
+        user=user,
+        film__title__icontains=query
+    ).exclude(review__isnull=True).exclude(review="")
+               .select_related("film").prefetch_related("film__genres", "film__actors", "film__crew")
+               .order_by("-created_at"))
 
-    films_qs = base_qs[(page_num - 1) * 12: page_num * 12]
-    return list(films_qs)
+    return list(qs[(page_num - 1) * 12: page_num * 12])
 
 
 def search_films(query: str, user, page_num: int=1, source: str = 'tmdb') -> list:
@@ -400,7 +388,7 @@ def search_films(query: str, user, page_num: int=1, source: str = 'tmdb') -> lis
         return search_favorite_films(query, user, page_num)
     elif source == "watched":
         return search_watched_films(query, user, page_num)
-    elif source == "watched":
+    elif source == "reviewed":
         return search_reviewed_films(query, user, page_num)
     else:
         return search_tmdb_film(query, user, page_num)  # list[dict] для TMDB
