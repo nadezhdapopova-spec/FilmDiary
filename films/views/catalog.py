@@ -6,6 +6,7 @@ from django.views.generic import TemplateView
 
 from films.models import Film
 from films.services import build_film_context, get_tmdb_movie_payload, search_films, get_user_film
+from reviews.models import Review
 
 
 class FilmDetailView(LoginRequiredMixin, TemplateView):
@@ -31,7 +32,14 @@ class FilmDetailView(LoginRequiredMixin, TemplateView):
                 raise Http404("Фильм не найден")
 
             user_film = get_user_film(self.request.user, film)
+            review = None
+            if user_film:
+                review = Review.objects.filter(
+                    user=self.request.user,
+                    film=film
+                ).first()
             context["user_film"] = user_film
+            context["review"] = review
             return context
 
         payload = get_tmdb_movie_payload(tmdb_id)

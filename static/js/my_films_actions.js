@@ -25,11 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
         break;
 
       case 'watch':
-        if (card.querySelector('.movie-badge--watched')) {
-          showToast(`🍿 Фильм "${title}" уже просмотрен`, 'info');
-          return;
-        }
-        openReviewForm(filmId, title);
+        openReviewForm(filmId);
         break;
 
       case 'favorite':
@@ -60,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // ------------------ Actions ------------------
 function openReviewForm(filmId, title) {
-  window.location.href = `/reviews/create/<int:film_id>/`;
+  window.location.href = `/reviews/create/${filmId}/`;
 }
 
 function openPlanForm(filmId, title, button) {
@@ -215,14 +211,6 @@ function applyStatusChanges(card, action, data) {
   const badgesGroup = card.querySelector('.movie-badge-group');
 
   if (badgesGroup) {
-    // WATCHED
-    if (data.is_watched && !badgesGroup.querySelector('.movie-badge--watched')) {
-      const span = document.createElement('span');
-      span.className = 'movie-badge movie-badge--watched';
-      span.title = 'Просмотрено';
-      span.textContent = '🍿';
-      badgesGroup.prepend(span);
-    }
 
     // PLANNED
     if (data.is_planned && !badgesGroup.querySelector('.movie-badge--planned')) {

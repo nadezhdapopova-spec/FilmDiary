@@ -4,9 +4,9 @@
     {% include 'films/includes/rating.html' %}
 
     <div class="movie-card__poster-wrapper">
-      {% if obj.poster_url or obj.poster_path %}
-        <img src="{{ obj.poster_url|default:'https://image.tmdb.org/t/p/w342'}}{{ obj.poster_path|default:'' }}"
-          alt="{{ obj.title }}"
+      {% if film.poster_url or film.poster_path %}
+        <img src="{{ film.poster_url|default:'https://image.tmdb.org/t/p/w342'}}{{ film.poster_path|default:'' }}"
+          alt="{{ film.title }}"
           class="movie-poster">
       {% else %}
         <div class="no-poster">🎬</div>
@@ -14,13 +14,15 @@
     </div>
 
     <div class="movie-meta mt-2">
-      {% if obj.tmdb_id %}
-        <a class="movie-title" href="{% url "films:film_detail" tmdb_id=obj.tmdb_id %}">{{ obj.title }}</a>
-      {% else %}
-        <span class="movie-title">{{ obj.title }}</span>
-      {% endif %}
+      <a class="movie-title" href="{% url "films:film_detail" tmdb_id=film.tmdb_id %}">{{ film.title }}</a>
       <p class="movie-extra">
-        {{ obj.release_date|slice:":4" }}{% if obj.genres %}, {{ obj.genres }}{% endif %}
+        {{ film.release_date|slice:":4" }}
+        {% if film.genres.exists %}
+          ,
+          {% for genre in film.genres.all %}
+            {{ genre.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        {% endif %}
       </p>
     </div>
 
@@ -28,26 +30,26 @@
     <div class="movie-card__divider"></div>
 
     <!-- футер статуса -->
-    <div class="movie-card__footer{% if obj.status == 'none' %} movie-card__footer--centered{% endif %}">
+    <div class="movie-card__footer
+      {% if not user_film %} movie-card__footer--centered{% endif %}">
 
-      {% if obj.status == "watched" %}
+      {% if review %}
         <span class="status-badge">
-          <span class="status-badge__square status-badge__square--{{ obj.rating_color }}"></span>
-          <span class="status-badge__text">Просмотрено ({{ obj.rating }})</span>
-          {% if obj.is_favorite %}
+          <span class="status-badge__text">Просмотрено ({{ review.user_rating }})</span>
+          {% if user_film and user_film.is_favorite %}
             <span class="status-badge__icon">🔥</span>
           {% endif %}
         </span>
 
-      {% elif obj.status == "planned" %}
+      {% elif user_film and user_film.is_planned %}
         <span class="status-badge">
-          <span class="status-badge__text">Хочу посмотреть</span>
+          <span class="status-badge__text">В моей библиотеке</span>
         </span>
 
       {% else %}
         <button class="btn-add-film glass-btn"
-            data-tmdb-id="{{ obj.tmdb_id }}"
-            data-title="{{ obj.title }}">
+            data-tmdb-id="{{ film.tmdb_id }}"
+            data-title="{{ film.title }}">
           <span class="btn-add-film__text">Хочу посмотреть</span>
           <span class="btn-add-film__icon">+</span>
         </button>

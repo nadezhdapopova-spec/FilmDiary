@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (data.status === 'added') {
                     this.outerHTML = `
                         <span class="status-badge">
-                            <span class="status-badge__text">Хочу посмотреть</span>
+                            <span class="status-badge__text">В моей библиотеке</span>
                         </span>
                     `;
                     showToast('✅ Фильм добавлен!');
