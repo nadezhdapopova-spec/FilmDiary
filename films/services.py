@@ -4,7 +4,7 @@ from django.db import transaction
 
 from django.core.cache import cache
 
-from films.models import Film, Genre, Actor, FilmActor, Person, FilmCrew
+from films.models import Film, Genre, Actor, FilmActor, Person, FilmCrew, UserFilm
 from services.tmdb import Tmdb
 
 
@@ -28,6 +28,13 @@ def get_crew_by_job(film, job):
 def get_crew_member(credits, job):
     """Возвращает данные из API TMDB о создателе фильма по конкретной должности"""
     return next((p for p in credits.get("crew", []) if p.get("job") == job), None)
+
+
+def get_user_film(user, film):
+    """Возвращает фильм, если пользователь авторизован и у него есть данный фильм в коллекции"""
+    if not user.is_authenticated:
+        return None
+    return UserFilm.objects.filter(user=user, film=film).first()
 
 
 def build_film_context(*, film=None, tmdb_data=None, credits=None):
@@ -349,7 +356,7 @@ def search_favorite_films(query: str, user, page_num: int = 1) -> list[Film]:
 
 
 def search_watched_films(query: str, user, page_num: int = 1) -> list[Film]:
-    """Поиск только по любимым фильмам пользователя"""
+    """Поиск только по просмотренным фильмам пользователя"""
     films_qs = Film.objects.filter(
         user=user,
         is_watched=True,

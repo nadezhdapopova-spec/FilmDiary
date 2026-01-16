@@ -1,13 +1,13 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.paginator import Paginator
-from django.http import Http404, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
-from films.models import Film
-from films.services import build_film_context, get_tmdb_movie_payload, save_film_from_tmdb, search_films
+from films.models import Film, UserFilm
+from films.services import save_film_from_tmdb
 
 
 class HomeView(TemplateView):
@@ -30,18 +30,18 @@ class HomeView(TemplateView):
 class UserListFilmView(LoginRequiredMixin, ListView):
     """Представление для отображения списка 'Мои фильмы'"""
 
-    model = Film
-    context_object_name = "films"
+    model = UserFilm
+    context_object_name = "items"
     paginate_by = 12
     template_name = "films/my_films.html"
 
     def get_queryset(self):
         """Возвращает список пользователя 'Мои фильмы', осуществляет поиск по q"""
-        queryset = Film.objects.filter(user=self.request.user).prefetch_related("genres", "actors", "crew").order_by("-created_at")
+        queryset = UserFilm.objects.filter(user=self.request.user).select_related("film").order_by("-created_at")
 
         query = self.request.GET.get("q", "").strip()
         if query:
-            queryset = queryset.filter(title__icontains=query)
+            queryset = queryset.filter(film__title__icontains=query)
 
         return queryset
 
@@ -61,21 +61,21 @@ class UserListFilmView(LoginRequiredMixin, ListView):
 
 class FavoriteFilmsView(UserListFilmView):
     """Список любимых фильмов пользователя"""
-    model = Film
-    context_object_name = "films"
+    model = UserFilm
+    context_object_name = "items"
     paginate_by = 12
     template_name = "films/my_films.html"
 
     def get_queryset(self):
         """Возвращает список пользователя 'Любимое', осуществляет поиск по q"""
-        queryset = Film.objects.filter(
+        queryset = UserFilm.objects.filter(
             user=self.request.user,
             is_favorite=True
-        ).prefetch_related("genres", "actors", "crew").order_by("-created_at")
+        ).select_related("film").order_by("-created_at")
 
         query = self.request.GET.get("q", "").strip()
         if query:
-            queryset = queryset.filter(title__icontains=query)
+            queryset = queryset.filter(film__title__icontains=query)
 
         return queryset
 
@@ -89,40 +89,6 @@ class FavoriteFilmsView(UserListFilmView):
         context["params"] = f"&q={query}&source=favorites" if query else "&source=favorites"
         context["view_url"] = "films:favorite_films"
 
-        return context
-
-
-class FilmDetailView(LoginRequiredMixin, TemplateView):
-    """Представление для отображения подробной информации о фильме"""
-    template_name = "films/film_detail.html"
-    context_object_name = "film"
-
-    def get_context_data(self, **kwargs):
-        """
-        Возвращает карточку фильма: если фильм есть в персональной БД, берет данные из БД,
-        если нет - формирует из данных сайта TMDB
-        """
-        context = super().get_context_data(**kwargs)
-        tmdb_id = self.kwargs["tmdb_id"]
-
-        film = (
-            Film.objects.filter(tmdb_id=tmdb_id, user=self.request.user).prefetch_related("genres", "actors", "crew",).first()
-        )
-        if film:
-            context["film"] = build_film_context(film=film)  # одинаковый context["film"] если в БД и если из TMDB
-            if not context["film"]:
-                raise Http404("Фильм не найден")
-            return context
-
-        payload = get_tmdb_movie_payload(tmdb_id)
-        if not payload:
-            raise Http404("Фильм не найден")
-        context["film"] = build_film_context(
-            tmdb_data=payload["details"],
-            credits=payload["credits"]
-        )
-        if not context["film"]:
-            raise Http404("Фильм не найден")
         return context
 
 
@@ -168,31 +134,34 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
         action = request.POST.get("action")  # 'plan' или 'favorite'
 
         try:
-            film = Film.objects.get(id=film_id, user=request.user)
+            film = Film.objects.get(id=film_id)
+            user_film, _ = UserFilm.objects.get_or_create(
+                user=request.user,
+                film=film
+            )
 
             if action == "plan":
-                film.is_planned = True
+                user_film.is_planned = True
             elif action == "watch":
                 return JsonResponse({
                     "status": "redirect",
-                    "url": f"/reviews/{film.id}/review/"
+                    "url": reverse("reviews:review_create", kwargs={"film_id": user_film.film.id})
                 })
             elif action == "favorite":
-                film.is_favorite = True
+                user_film.is_favorite = True
             elif action == "delete":
-                film.delete()
+                user_film.delete()
                 return JsonResponse({
                     "status": "success",
                     "action": action,
                     "removed": True
                 })
-            film.save()
+            user_film.save()
             return JsonResponse({
                 "status": "success",
                 "action": action,
-                "is_watched": film.is_watched,
-                "is_planned": film.is_planned,
-                "is_favorite": film.is_favorite
+                "is_planned": user_film.is_planned,
+                "is_favorite": user_film.is_favorite
             })
         except Film.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Фильм не найден"}, status=404)
@@ -205,39 +174,13 @@ class DeleteFilmView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         """Удаляет фильм из списка пользователя 'Мои фильмы'"""
-        Film.objects.filter(
+        UserFilm.objects.filter(
             user=request.user,
-            tmdb_id=self.kwargs["tmdb_id"]
+            film__tmdb_id=self.kwargs["tmdb_id"]
         ).delete()
 
         messages.info(request, "Фильм успешно удалён")
         return redirect("films:my_films")
-
-
-def film_search_view(request):
-    """Осуществляет универсальный поисковый запрос фильма: по TMDB или фильмам пользователя"""
-
-    query = request.GET.get("q", "").strip()
-    source = request.GET.get("source", "tmdb")  # 'tmdb' или 'user_films' или 'favorites'
-    params = f"&q={query}&source={source}" if query else ""
-    page_number = request.GET.get("page", 1)
-
-    results = search_films(source=source, query=query, page_num=page_number, user=request.user)
-
-    is_user_films = source in ["user_films", "favorites", "watched", "reviewed"]
-    paginator = Paginator(results, 12)
-    page_obj = paginator.get_page(page_number)
-
-    context = {
-        "search_type": source,
-        "is_user_films": is_user_films,
-        "query": query,
-        "page_obj": page_obj,
-        "params": params,
-        "view_url": "films:film_search",
-        "template": "search",
-    }
-    return render(request, "films/film_search.html", context)
 
 
 def custom_error(request, status_code=404, exception=None):
