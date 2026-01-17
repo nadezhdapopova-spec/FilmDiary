@@ -98,7 +98,7 @@ def build_film_context(*, film=None, tmdb_data=None, credits=None):
         return {
             "source": "tmdb",
             "in_library": False,
-            "tmdb_id": tmdb_data.get("id"),
+            "tmdb_id": tmdb_data["id"],
 
             "title": tmdb_data.get("title"),
             "original_title": tmdb_data.get("original_title"),

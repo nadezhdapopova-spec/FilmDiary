@@ -37,7 +37,10 @@ class UserListFilmView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """Возвращает список пользователя 'Мои фильмы', осуществляет поиск по q"""
-        queryset = UserFilm.objects.filter(user=self.request.user).select_related("film").order_by("-created_at")
+        queryset = (UserFilm.objects
+                    .filter(user=self.request.user, film__tmdb_id__isnull=False)
+                    .select_related("film")
+                    .order_by("-created_at"))
 
         query = self.request.GET.get("q", "").strip()
         if query:
@@ -55,6 +58,7 @@ class UserListFilmView(LoginRequiredMixin, ListView):
         context["params"] = f"&q={query}&source=user_films" if query else "&source=user_films"
         context["view_url"] = "films:my_films"
         context["template"] = "my_films"
+        context["favorites_page"] = False
 
         return context
 
@@ -88,6 +92,7 @@ class FavoriteFilmsView(UserListFilmView):
         context["query"] = query
         context["params"] = f"&q={query}&source=favorites" if query else "&source=favorites"
         context["view_url"] = "films:favorite_films"
+        context["favorites_page"] = True
 
         return context
 
@@ -122,15 +127,11 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
     """Обновляет статус фильма"""
 
     def post(self, request, *args, **kwargs):
-        film_id = request.POST.get("film_id")
+        user_film_id = request.POST.get("film_id")
         action = request.POST.get("action")  # 'plan' или 'favorite'
 
         try:
-            film = Film.objects.get(id=film_id)
-            user_film, _ = UserFilm.objects.get_or_create(
-                user=request.user,
-                film=film
-            )
+            user_film = UserFilm.objects.get(id=user_film_id, user=request.user)
 
             if action == "plan":
                 user_film.is_planned = True
@@ -148,6 +149,14 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
                     "action": action,
                     "removed": True
                 })
+            elif action == "unfavorite":
+                user_film.is_favorite = False
+                user_film.save()
+                return JsonResponse({
+                    "status": "success",
+                    "action": action,
+                    "is_favorite": user_film.is_favorite
+                })
             user_film.save()
             return JsonResponse({
                 "status": "success",
@@ -155,7 +164,7 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
                 "is_planned": user_film.is_planned,
                 "is_favorite": user_film.is_favorite
             })
-        except Film.DoesNotExist:
+        except UserFilm.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Фильм не найден"}, status=404)
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=500)

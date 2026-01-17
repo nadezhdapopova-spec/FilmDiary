@@ -23,7 +23,7 @@
         {% if page_obj %}
           <div class="movie-search-grid">
             {% for obj in page_obj %}
-              {% include 'films/includes/my_film_preview_card.html' %}
+              {% include 'films/includes/my_film_preview_card.html' with user_film=obj %}
             {% endfor %}
           </div>
         {% else %}

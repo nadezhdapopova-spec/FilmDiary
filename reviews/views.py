@@ -60,7 +60,7 @@ class ReviewsListView(WatchedListView):
     def get_queryset(self):
         """Возвращает список отзывов пользователя, осуществляет поиск по q"""
         queryset = (Review.objects
-                    .filter(user=self.request.user, film__is_watched=True)
+                    .filter(user=self.request.user)
                     .select_related("film", "user")
                     .order_by("-updated_at"))
 

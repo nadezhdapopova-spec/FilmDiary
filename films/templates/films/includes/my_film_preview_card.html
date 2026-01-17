@@ -80,15 +80,27 @@
           🔥
         </button>
 
-        <button
-          class="btn-icon"
-          data-role="delete"
-          data-action="delete"
-          data-id="{{ user_film.id }}"
-          data-title="{{ user_film.film.title }}"
-          title="Удалить">
-          ❌
-        </button>
+        {% if favorites_page %}
+          <button
+            class="btn-icon"
+            data-role="favorite"
+            data-action="unfavorite"
+            data-id="{{ user_film.id }}"
+            data-title="{{ user_film.film.title }}"
+            title="Убрать из Любимого">
+            ⛔️
+          </button>
+        {% else %}
+          <button
+            class="btn-icon"
+            data-role="delete"
+            data-action="delete"
+            data-id="{{ user_film.id }}"
+            data-title="{{ user_film.film.title }}"
+            title="Удалить">
+            ❌
+          </button>
+        {% endif %}
 
       </div>
     </div>
