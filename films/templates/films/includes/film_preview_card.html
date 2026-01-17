@@ -1,7 +1,9 @@
 <div class="movie-card glass-card">
   <article class="movie-card">
 
-    {% include 'films/includes/rating.html' %}
+    {% if film.has_review %}
+      {% include 'films/includes/rating.html' %}
+    {% endif %}
 
     <div class="movie-card__poster-wrapper">
       {% if film.poster_url or film.poster_path %}
@@ -38,19 +40,22 @@
 
     <!-- футер статуса -->
     <div class="movie-card__footer
-      {% if not user_film %} movie-card__footer--centered{% endif %}">
+      {% if not film.in_library %} movie-card__footer--centered{% endif %}">
 
-      {% if review %}
+      {% if film.has_review %}
         <span class="status-badge">
-          <span class="status-badge__text">Просмотрено ({{ review.user_rating }})</span>
-          {% if user_film and user_film.is_favorite %}
+          <span class="status-badge__text">Просмотрено ({{ film.rating }})</span>
+          {% if film.is_favorite %}
             <span class="status-badge__icon">🔥</span>
           {% endif %}
         </span>
 
-      {% elif user_film and user_film.is_planned %}
+      {% elif film.in_library %}
         <span class="status-badge">
           <span class="status-badge__text">В моей библиотеке</span>
+          {% if film.is_favorite %}
+            <span class="status-badge__icon">🔥</span>
+          {% endif %}
         </span>
 
       {% else %}

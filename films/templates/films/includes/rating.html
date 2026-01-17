@@ -1,11 +1,11 @@
 <span class="badge position-absolute top-0 end-0 m-2
-  {% if obj.rating >= 8.0 %}
+  {% if film.rating >= 8.0 %}
     bg-success
-  {% elif obj.rating >= 6.0 %}
+  {% elif film.rating >= 5.0 %}
     bg-warning
-  {% elif obj.rating < 6.0 %}
+  {% else %}
     bg-danger
   {% endif %}
-  ">
-  {{ obj.rating }}
+">
+  {{ film.rating }}
 </span>

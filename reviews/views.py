@@ -28,7 +28,6 @@ class WatchedListView(LoginRequiredMixin, ListView):
         context["search_type"] = "watched"
         context["query"] = query
         context["params"] = f"&q={query}&source=watched" if query else "&source=watched"
-        # context["view_url"] = "reviews:reviews"
         context["template"] = "reviews"
 
         return context

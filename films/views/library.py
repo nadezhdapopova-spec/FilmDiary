@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
-from films.models import Film, UserFilm
+from films.models import UserFilm
 from films.services import save_film_from_tmdb
 
 

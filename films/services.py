@@ -249,33 +249,33 @@ def save_film_from_tmdb(*, tmdb_id: int, user):
     return film, created_film, user_film, created_user_film
 
 
-def map_status(user_film):
+def map_status(user_film, has_review: bool, rating: float | None):
     """Формирует пользовательский статус фильма для карточки фильма"""
-    if user_film is None:
-        return {"status": "none"}
-
-    if user_film.is_watched:
-        if user_film.rating is not None:
-            if user_film.rating >= 8:
-                rating_color = "high"
-            elif user_film.rating >= 5:
-                rating_color = "medium"
-            else:
-                rating_color = "low"
-        else:
-            rating_color = "medium"
-
+    if user_film is None:    # нет в списке Мои фильмы
         return {
-            "status": "watched",
-            "rating": user_film.rating,
-            "rating_color": rating_color,
-            "is_favorite": user_film.is_favorite,
+            "is_favorite": False,
+            "has_review": False,
+            "rating": None,
+            "rating_color": None,
         }
 
-    if not user_film.is_watched:
-        return {"status": "planned"}
+    rating_color = None
+    if has_review:     # просмотрен - есть Review
+        if rating is None:
+            rating_color = "medium"
+        elif rating >= 8.0:
+            rating_color = "high"
+        elif rating >= 5.0:
+            rating_color = "medium"
+        else:
+            rating_color = "low"
 
-    return {"status": "none"}
+    return {
+        "is_favorite": user_film.is_favorite,
+        "has_review": has_review,
+        "rating": rating if has_review else None,
+        "rating_color": rating_color,
+    }
 
 
 def search_tmdb_film(query: str, user, page_num: int=1) -> list[dict]:
@@ -302,6 +302,14 @@ def search_tmdb_film(query: str, user, page_num: int=1) -> list[dict]:
     genres_qs = Genre.objects.filter(tmdb_id__in=all_genre_ids)  # формируем один раз для запроса
     genre_map = {g.tmdb_id: g.name for g in genres_qs}
 
+    reviews_map = {
+        r.film.tmdb_id: r
+        for r in Review.objects.filter(
+            user=user,
+            film__tmdb_id__in=ids
+        )
+    }
+
     films: list[dict] = []
     for item in results:
         tmdb_id = item.get("id")
@@ -323,7 +331,11 @@ def search_tmdb_film(query: str, user, page_num: int=1) -> list[dict]:
                 "rating": round(float(item.get("vote_average", 0)), 1),
                 "in_library": tmdb_id in existing,
             }
-        film_dict.update(map_status(user_film))  # получаем и добавляем пользовательский статус фильма
+        has_review = tmdb_id in reviews_map
+        review = reviews_map.get(tmdb_id)
+        rating = review.user_rating if review else None
+
+        film_dict.update(map_status(user_film, has_review, rating))  # получаем и добавляем пользовательский статус фильма
         films.append(film_dict)
     films.sort(key=lambda f: f["rating"], reverse=True)
 
