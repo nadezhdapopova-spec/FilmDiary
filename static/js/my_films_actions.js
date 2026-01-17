@@ -35,9 +35,6 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         await updateFilmStatus(button, filmId, action, title);
         showToast(`🔥 Фильм "${title}" добавлен в Любимое`, 'favorite');
-        button.disabled = true;
-        button.style.opacity = '0.5';
-        button.title = 'Уже в Любимых';
         break;
 
       case 'unfavorite': {
@@ -106,7 +103,7 @@ async function updateFilmStatus(button, filmId, action, title) {
     showToast('❌ Ошибка: ' + error.message, 'error');
   } finally {
     button.innerHTML = originalContent;
-    if (action !== 'favorite' && action !== 'plan') button.disabled = false;
+    button.disabled = false;
   }
 }
 
