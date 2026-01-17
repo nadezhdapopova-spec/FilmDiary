@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
         break;
 
       case 'unfavorite': {
-        const confirmedUnfav = await confirmDelete(filmId, title);
+        const confirmedUnfav = await confirmDelete('unfavorite', title);
         if (!confirmedUnfav) return;
 
         await updateFilmStatus(button, filmId, action, title);
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       case 'delete':
-        const confirmed = await confirmDelete(filmId, title);
+        const confirmed = await confirmDelete('delete', title);
         if (confirmed) {
           await updateFilmStatus(button, filmId, action, title);
           showToast(`❌ Фильм "${title}" удалён`, 'error');
@@ -152,41 +152,62 @@ function showToast(message, type = 'success') {
 }
 
 // ------------------ Confirm Delete Modal ------------------
-async function confirmDelete(filmId, title) {
+async function confirmDelete(action, title) {
   return new Promise((resolve) => {
+
+    const isUnfavorite = action === 'unfavorite';
+
+    const questionText = isUnfavorite
+      ? `💔 Убрать фильм <strong style='color:#ffa07a;'>${title}</strong> из Любимого?`
+      : `❌ Удалить фильм <strong style='color:#ffa07a;'>${title}</strong>?`;
+
     const modal = document.createElement('div');
     modal.style.cssText = `
-      position: fixed; top:0; left:0; width:100%; height:100%;
+      position: fixed; inset: 0;
       background: rgba(10, 10, 25, 0.8);
       backdrop-filter: blur(4px);
-      display: flex; justify-content: center; align-items: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       z-index: 10000;
     `;
 
     modal.innerHTML = `
       <div style="
         background: rgba(20,20,40,0.95);
-        padding: 2rem; border-radius: 14px;
-        max-width: 420px; width: 90%; text-align: center;
+        padding: 2rem;
+        border-radius: 14px;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
         font-family: Poppins, sans-serif;
-        box-shadow: 0 0 25px rgba(255,120,80,0.3), 0 0 40px rgba(80,160,255,0.3);
+        box-shadow: 0 0 25px rgba(255,120,80,0.3),
+                    0 0 40px rgba(80,160,255,0.3);
         color: #f5f5f5;
         transform: scale(0.8);
         opacity: 0;
         transition: transform 0.3s ease, opacity 0.3s ease;
       ">
-        <p style="font-size:1rem;">❌ Удалить фильм <strong style='color:#ffa07a;'>${title}</strong>?</p>
+        <p style="font-size:1rem;">${questionText}</p>
+
         <div style="margin-top: 1.5rem;">
           <button id="confirm-yes" style="
-            margin-right:1rem; padding:0.5rem 1.2rem; border:none;
+            margin-right:1rem;
+            padding:0.5rem 1.2rem;
+            border:none;
             background: linear-gradient(90deg, #ff6b6b, #ff4757);
-            color:white; border-radius:8px; cursor:pointer;
-            box-shadow: 0 0 10px #ff6b6b, 0 0 20px #ff7f7f;
+            color:white;
+            border-radius:8px;
+            cursor:pointer;
           ">Да</button>
+
           <button id="confirm-no" style="
-            padding:0.5rem 1.2rem; border:none;
+            padding:0.5rem 1.2rem;
+            border:none;
             background: rgba(140,140,160,0.4);
-            color:white; border-radius:8px; cursor:pointer;
+            color:white;
+            border-radius:8px;
+            cursor:pointer;
           ">Отмена</button>
         </div>
       </div>
@@ -200,15 +221,15 @@ async function confirmDelete(filmId, title) {
       dialog.style.opacity = '1';
     });
 
-    modal.querySelector('#confirm-yes').addEventListener('click', () => {
+    modal.querySelector('#confirm-yes').onclick = () => {
       modal.remove();
       resolve(true);
-    });
+    };
 
-    modal.querySelector('#confirm-no').addEventListener('click', () => {
+    modal.querySelector('#confirm-no').onclick = () => {
       modal.remove();
       resolve(false);
-    });
+    };
   });
 }
 
