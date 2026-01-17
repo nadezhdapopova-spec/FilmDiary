@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const title = button.dataset.title;
     if (!action || !filmId) return;
 
-    const card = button.closest('.movie-card');
+    const card = button.closest('.glass-card');
 
     e.preventDefault();
 
@@ -40,11 +40,20 @@ document.addEventListener('DOMContentLoaded', function () {
         button.title = 'Уже в Любимых';
         break;
 
+      case 'unfavorite': {
+        const confirmedUnfav = await confirmDelete(filmId, title);
+        if (!confirmedUnfav) return;
+
+        await updateFilmStatus(button, filmId, action, title);
+        showToast(`🔥 Фильм "${title}" убран из Любимого`, 'info');
+        break;
+      }
+
       case 'delete':
         const confirmed = await confirmDelete(filmId, title);
         if (confirmed) {
           await updateFilmStatus(button, filmId, action, title);
-          showToast(`Фильм "${title}" удалён`, 'error');
+          showToast(`❌ Фильм "${title}" удалён`, 'error');
         }
         break;
 
@@ -89,7 +98,7 @@ async function updateFilmStatus(button, filmId, action, title) {
     const data = await response.json();
     if (data.status !== 'success') throw new Error(data.message || 'Неизвестная ошибка');
 
-    const card = button.closest('.movie-card');
+    const card = button.closest('.glass-card');
     if (card) applyStatusChanges(card, action, data);
 
   } catch (error) {
@@ -222,12 +231,23 @@ function applyStatusChanges(card, action, data) {
     }
 
     // FAVORITE
-    if (data.is_favorite && !badgesGroup.querySelector('.movie-badge--favorite')) {
-      const span = document.createElement('span');
-      span.className = 'movie-badge movie-badge--favorite';
-      span.title = 'Любимое';
-      span.textContent = '🔥';
-      badgesGroup.append(span);
+    if (action === 'favorite' && data.is_favorite) {
+      if (!badgesGroup.querySelector('.movie-badge--favorite')) {
+        const span = document.createElement('span');
+        span.className = 'movie-badge movie-badge--favorite';
+        span.title = 'Любимое';
+        span.textContent = '🔥';
+        badgesGroup.append(span);
+      }
+    }
+
+    // UNFAVORITE
+    if (action === 'unfavorite') {
+      const favBadge = badgesGroup.querySelector('.movie-badge--favorite');
+      if (favBadge) favBadge.remove();
+
+      // если это страница Любимое — удаляем карточку
+      card.remove();
     }
   }
 
