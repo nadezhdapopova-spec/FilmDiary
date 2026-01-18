@@ -11,7 +11,6 @@ from reviews.models import Review
 
 class FilmDetailView(LoginRequiredMixin, TemplateView):
     """Представление для отображения подробной информации о фильме"""
-    model = Film
     template_name = "films/film_detail.html"
     context_object_name = "film"
 
@@ -23,35 +22,46 @@ class FilmDetailView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         tmdb_id = self.kwargs["tmdb_id"]
 
-        film = (
+        film_obj = (
             Film.objects.filter(tmdb_id=tmdb_id).prefetch_related("genres", "actors", "crew",).first()
         )
-        if film:
-            context["film"] = build_film_context(film=film)  # одинаковый context["film"] если в БД и если из TMDB
-            if not context["film"]:
-                raise Http404("Фильм не найден")
+        user_film = None
+        review = None
 
-            user_film = get_user_film(self.request.user, film)
-            review = None
+        if film_obj:
+            user_film = get_user_film(self.request.user, film_obj)  # model
+
             if user_film:
                 review = Review.objects.filter(
                     user=self.request.user,
-                    film=film
+                    film=film_obj
                 ).first()
-            context["user_film"] = user_film
-            context["review"] = review
-            return context
 
-        payload = get_tmdb_movie_payload(tmdb_id)
-        if not payload:
+            film_data = build_film_context(film=film_obj)  # dict для шаблона
+
+        else:
+            payload = get_tmdb_movie_payload(tmdb_id)
+            if not payload:
+                raise Http404("Фильм не найден")
+
+            film_data = build_film_context(
+                tmdb_data=payload["details"],
+                credits=payload["credits"]
+            )
+
+        if not film_data:
             raise Http404("Фильм не найден")
-        context["film"] = build_film_context(
-            tmdb_data=payload["details"],
-            credits=payload["credits"]
-        )
-        if not context["film"]:
-            raise Http404("Фильм не найден")
-        context["user_film"] = None
+
+        film_data.update({
+            "in_library": bool(user_film),
+            "has_review": bool(review),
+            "user_rating": review.user_rating if review else None,
+            "is_favorite": user_film.is_favorite if user_film else False,
+            })
+
+        context["film"] = film_data
+        context["user_film"] = user_film
+        context["review"] = review
         return context
 
 

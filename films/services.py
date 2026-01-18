@@ -139,6 +139,10 @@ def build_film_context(*, film=None, tmdb_data=None, credits=None):
             ),
 
             "rating": round(tmdb_data.get("vote_average"), 1),
+            "user_rating": None,
+            "has_review": False,
+            "is_favorite": False,
+            "rating_color": None,
             "vote_count": format_nums(tmdb_data.get("vote_count"))
         }
     return None
@@ -255,7 +259,7 @@ def map_status(user_film, has_review: bool, rating: float | None):
         return {
             "is_favorite": False,
             "has_review": False,
-            "rating": None,
+            "user_rating": None,
             "rating_color": None,
         }
 
@@ -273,7 +277,7 @@ def map_status(user_film, has_review: bool, rating: float | None):
     return {
         "is_favorite": user_film.is_favorite,
         "has_review": has_review,
-        "rating": rating if has_review else None,
+        "user_rating": rating if has_review else None,
         "rating_color": rating_color,
     }
 
@@ -328,7 +332,7 @@ def search_tmdb_film(query: str, user, page_num: int=1) -> list[dict]:
                 "poster_url": poster_url,
                 "release_date": item.get("release_date", "")[:4] or "----",
                 "genres": ", ".join([genre_map.get(g_id) for g_id in genre_ids[:2] if g_id in genre_map]),
-                "rating": round(float(item.get("vote_average", 0)), 1),
+                "tmdb_rating": round(float(item.get("vote_average", 0)), 1),
                 "in_library": tmdb_id in existing,
             }
         has_review = tmdb_id in reviews_map
@@ -337,7 +341,7 @@ def search_tmdb_film(query: str, user, page_num: int=1) -> list[dict]:
 
         film_dict.update(map_status(user_film, has_review, rating))  # получаем и добавляем пользовательский статус фильма
         films.append(film_dict)
-    films.sort(key=lambda f: f["rating"], reverse=True)
+    films.sort(key=lambda f: f["tmdb_rating"], reverse=True)
 
     return films
 

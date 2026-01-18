@@ -137,13 +137,13 @@
                 </ul>
               </div>
             </div>
+          </div>
 
-            <div class="mt-4 text-center">
-              <a class="auth-btn auth-btn--primary"
-                 href="{% if request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{% url 'films:home' %}{% endif %}">
-                 ← Назад
-              </a>
-            </div>
+          <div class="mt-5 text-center">
+            <a class="auth-btn auth-btn--primary"
+               href="{% if request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{% url 'films:home' %}{% endif %}">
+               ← Назад
+            </a>
           </div>
         </div>
       {% endif %}

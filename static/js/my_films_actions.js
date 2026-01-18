@@ -21,7 +21,8 @@ document.addEventListener('DOMContentLoaded', function () {
           showToast(`📅 Фильм "${title}" уже в Запланированных`, 'plan');
           return;
         }
-        openPlanForm(filmId, title, button);
+        // Иначе переход на страницу планирования
+        window.location.href = `/plans/create/${filmId}/`; // изменить путь
         break;
 
       case 'watch':
@@ -66,11 +67,13 @@ function openReviewForm(filmId, title) {
 }
 
 function openPlanForm(filmId, title, button) {
+  const card = button.closest('.glass-card');
+  if (card.querySelector('.movie-badge--planned')) {
+    showToast(`📅 Фильм "${title}" уже в Запланированных`, 'plan');
+    return;
+  }
   updateFilmStatus(button, filmId, 'plan', title).then(() => {
     showToast(`📅 Фильм "${title}" добавлен в Запланированные`, 'plan');
-    button.disabled = true;
-    button.style.opacity = '0.5';
-    button.title = 'Уже в Запланированных';
   });
 }
 

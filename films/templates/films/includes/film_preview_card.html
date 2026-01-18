@@ -2,7 +2,7 @@
   <article class="movie-card">
 
     {% if film.has_review %}
-      {% include 'films/includes/rating.html' %}
+      {% include 'films/includes/rating.html' with film=film %}
     {% endif %}
 
     <div class="movie-card__poster-wrapper">
@@ -44,7 +44,7 @@
 
       {% if film.has_review %}
         <span class="status-badge">
-          <span class="status-badge__text">Просмотрено ({{ film.rating }})</span>
+          <span class="status-badge__text">Просмотрено ({{ film.user_rating }})</span>
           {% if film.is_favorite %}
             <span class="status-badge__icon">🔥</span>
           {% endif %}
