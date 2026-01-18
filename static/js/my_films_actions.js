@@ -26,7 +26,10 @@ document.addEventListener('DOMContentLoaded', function () {
         break;
 
       case 'watch':
-        openReviewForm(filmId);
+        const response = await updateFilmStatus(button, filmId, action, title);
+        if (response && response.status === 'redirect') {
+          window.location.href = response.url;
+        }
         break;
 
       case 'favorite':
@@ -96,15 +99,27 @@ async function updateFilmStatus(button, filmId, action, title) {
 
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
+
+    // Редирект для "watch"
+    if (data.status === 'redirect' && data.url) {
+      window.location.href = data.url;
+      return; // больше ничего не выполняем
+    }
+
+    // Ошибка
     if (data.status !== 'success') throw new Error(data.message || 'Неизвестная ошибка');
 
+    // Применяем изменения статусов для карточки
     const card = button.closest('.glass-card');
     if (card) applyStatusChanges(card, action, data);
+
+    return data; // возвращаем JSON, чтобы можно было использовать в switch-case
 
   } catch (error) {
     console.error('Update status error:', error);
     showToast('❌ Ошибка: ' + error.message, 'error');
   } finally {
+    // Снимаем затемнение и восстанавливаем кнопку
     button.innerHTML = originalContent;
     button.disabled = false;
   }

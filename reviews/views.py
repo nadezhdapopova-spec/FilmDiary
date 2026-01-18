@@ -34,7 +34,7 @@ class WatchedListView(LoginRequiredMixin, ListView):
 
 
     def get_queryset(self):
-        """Возвращает список отзывов пользователя на фильмы"""
+        """Возвращает список просмотренных фильмов пользователя"""
         queryset = (Review.objects
                     .filter(user=self.request.user)
                     .select_related("film", "user")
@@ -44,7 +44,7 @@ class WatchedListView(LoginRequiredMixin, ListView):
         if query:
             queryset = queryset.filter(
                 models.Q(film__title__icontains=query) |
-                models.Q(user__username__icontains=query)
+                models.Q(user__email__icontains=query)
             )
         return queryset
 
@@ -60,6 +60,9 @@ class ReviewsListView(WatchedListView):
         """Возвращает список отзывов пользователя, осуществляет поиск по q"""
         queryset = (Review.objects
                     .filter(user=self.request.user)
+                    .exclude(review=None)
+                    .exclude(review="")
+                    .exclude(review=" ")
                     .select_related("film", "user")
                     .order_by("-updated_at"))
 
@@ -67,7 +70,7 @@ class ReviewsListView(WatchedListView):
         if query:
             queryset = queryset.filter(
                        models.Q(film__title__icontains=query) |
-                       models.Q(user__username__icontains=query)
+                       models.Q(user__email__icontains=query)
                        )
 
         return queryset
@@ -80,7 +83,6 @@ class ReviewsListView(WatchedListView):
         context["search_type"] = "reviewed"
         context["query"] = query
         context["params"] = f"&q={query}&source=reviewed" if query else "&source=reviewed"
-        # context["view_url"] = "reviews:reviews"
         context["template"] = "reviews"
 
         return context
