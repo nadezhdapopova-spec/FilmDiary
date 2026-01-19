@@ -10,25 +10,25 @@
   <div class="auth-card auth-register review-page-card">
 
     <!-- Левая часть: изображение -->
-    <div class="movie-card glass-card review-movie-container">
-      <div class="film-preview-card">
+    <div class="movie-card glass-card">
+      <div class="movie-card">
 
-        <div class="film-poster-block">
+        <div class="movie-card__poster-wrapper">
           {% if film.poster_url or film.poster_path %}
             <img src="{{ film.poster_url|default:'https://image.tmdb.org/t/p/w342'}}{{ film.poster_path|default:'' }}"
               alt="{{ film.title }}"
-              class="film-poster-img">
+              class="movie-poster">
           {% else %}
-            <div class="film no-poster">🎬</div>
+            <div class="no-poster">🎬</div>
           {% endif %}
         </div>
 
-        <div class="film-info-block">
-            <span class="film-title">{{ film.title }}</span>
-          <p class="film-meta">
+        <div class="movie-meta-review mt-2">
+          <span class="film-title">{{ film.title }}</span>
+          <p class="movie-extra mt-3">
             {{ film.release_date|date:"Y"|default:"—" }}
             {% if film.genres.exists %}
-              •
+              ,
               {% for genre in film.genres.all %}
                   {{ genre.name }}{% if not forloop.last %}, {% endif %}
                 {% endfor %}
@@ -73,15 +73,17 @@
 
         <div class="review-text-block">
           <details class="review-collapse">
-            <summary>Отзыв</summary>
+            <summary>🔽 Отзыв (можешь написать отзыв позже)</summary>
             {{ form.review }}
           </details>
         </div>
 
-        <div class="text-center mt-4">
-          <button class="btn btn-primary">
+        <div class="btn-group-review">
+          <button type="submit" class="btn btn-primary review btn-review-equal">
             Сохранить
           </button>
+          <a href="{{ back_url }}" class="btn btn-primary btn-review-equal">
+              Назад</a>
         </div>
       </form>
 

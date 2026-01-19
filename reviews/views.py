@@ -128,6 +128,7 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
             "visuals_rating",
         ]
         context["stars"] = range(1, 11)
+        context["back_url"] = self.request.META.get('HTTP_REFERER', '/')
         return context
 
     def form_valid(self, form):

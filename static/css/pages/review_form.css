@@ -2,70 +2,16 @@
 
 /* Базовая сетка только для этой страницы */
 .auth-card.review-page-card {
-  max-width: 1040px;
+  max-width: 900px;
   width: 100%;
   display: grid;
-  grid-template-columns: 360px 1fr;
+  grid-template-columns: 400px 1fr;
   gap: 32px;
   align-items: flex-start;
 }
 
 /* ===== ЛЕВАЯ КАРТОЧКА — УНИЧТОЖАЕМ БАЗОВЫЕ СТИЛИ ===== */
-.review-movie-container {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: fit-content;
-}
-
-.film-preview-card {
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 24px;
-  display: flex;
-  gap: 20px;
-  box-shadow: 0 12px 30px rgba(0,0,0,.08);
-  align-items: flex-start;
-  width: 100%;
-  max-width: 320px;
-  margin: 0 auto;
-}
-
-.film-poster-block {
-  flex-shrink: 0;
-}
-
-.film-poster-img {
-  width: 180px;
-  height: 270px;
-  object-fit: cover;
-  border-radius: 14px;
-  display: block;
-}
-
-.film-no-poster {
-  width: 180px;
-  height: 270px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 3rem;
-  background: #f3f4f6;
-  border-radius: 14px;
-  color: #6b7280;
-}
-
-.film-info-block {
-  flex: 1;
-  padding-left: 16px;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-
-.film-title {
+.movie-meta-review .film-title {
   font-size: 1.35rem;
   font-weight: 700;
   color: #1e1e2d;
@@ -73,7 +19,7 @@
   line-height: 1.3;
 }
 
-.film-meta {
+.movie-meta-review .movie-extra {
   font-size: 0.95rem;
   color: #6b7280;
   margin: 0;
@@ -118,9 +64,10 @@
 }
 
 .stars {
-  display: flex;
-  gap: 0.3rem;
-  cursor: pointer;
+  justify-content: flex-start;
+  /*display: flex;*/
+  /*gap: 0.3rem;*/
+  /*cursor: pointer;*/
 }
 
 .star {
@@ -137,6 +84,12 @@
   transform: scale(1.1);
 }
 
+.rating-row {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .avg-rating {
   margin-top: 16px;
   font-size: 1.05rem;
@@ -148,7 +101,6 @@
   color: #f59e0b;
   margin-left: 6px;
 }
-
 
 
 .review-text-block {
@@ -193,4 +145,120 @@
   outline: none;
   border-color: #f59e0b;
   box-shadow: 0 0 0 2px rgba(245,158,11,.2);
+}
+
+.btn-group-review {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.btn-review-equal {
+  flex: 1;
+  max-width: 180px;
+  min-width: 120px;
+}
+
+
+/* ===== АДАПТИВНОСТЬ ===== */
+
+/* Планшеты (768px - 1024px) */
+@media (max-width: 1024px) {
+  .auth-card.review-page-card {
+    grid-template-columns: 320px 1fr;
+    gap: 24px;
+    max-width: 768px;
+  }
+
+  .review-form {
+    padding: 20px 24px;
+  }
+}
+
+/* Маленькие планшеты и большие телефоны (576px - 768px) */
+@media (max-width: 768px) {
+  .auth-wrapper {
+    padding: 24px 16px;
+  }
+
+  .auth-card.review-page-card {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    max-width: 100%;
+  }
+
+  /* Левая карточка становится компактной */
+  .movie-card {
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .review-form {
+    padding: 20px 20px;
+    border-radius: 16px;
+  }
+
+  .ratings-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  .btn-group-review {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .btn-review-equal {
+    max-width: none;
+  }
+}
+
+/* Телефоны (до 576px) */
+@media (max-width: 576px) {
+  .auth-wrapper {
+    padding: 16px 12px;
+  }
+
+  .auth-card.review-page-card {
+    gap: 20px;
+  }
+
+  .movie-card__poster-wrapper img,
+  .movie-poster {
+    width: 140px !important;
+    height: 210px !important;
+  }
+
+  .film-title {
+    font-size: 1.2rem !important;
+  }
+
+  .review-form {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .ratings-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .stars {
+    justify-content: center;
+  }
+
+  .star {
+    font-size: 1.2rem;
+  }
+
+  .review-text-block textarea {
+    min-height: 120px;
+    font-size: 0.9rem;
+  }
+
+  .btn-group-review {
+    margin-top: 1.5rem;
+  }
 }
