@@ -121,6 +121,13 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context["film"] = self.film
         context["obj"] = None
+        context["rating_fields"] = [
+            "plot_rating",
+            "acting_rating",
+            "directing_rating",
+            "visuals_rating",
+        ]
+        context["stars"] = range(1, 11)
         return context
 
     def form_valid(self, form):

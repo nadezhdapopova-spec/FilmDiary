@@ -1,19 +1,38 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const ratings = ['plot_rating', 'acting_rating', 'directing_rating',
-                    'visuals_rating', 'soundtrack_rating'];
-    const avgDisplay = document.getElementById('avg-rating');
+document.addEventListener('DOMContentLoaded', () => {
+  const ratingBlocks = document.querySelectorAll('.stars');
+  const avgEl = document.getElementById('avg-rating');
 
-    ratings.forEach(field => {
-        const input = document.querySelector(`input[name="${field}"]`);
-        input.addEventListener('input', updateAverage);
+  function updateAverage() {
+    let sum = 0;
+    let count = 0;
+
+    document.querySelectorAll('.rating-row input[type="hidden"]').forEach(input => {
+      if (input.value) {
+        sum += parseFloat(input.value);
+        count++;
+      }
     });
 
-    function updateAverage() {
-        let sum = 0, count = 0;
-        ratings.forEach(field => {
-            const val = parseFloat(document.querySelector(`input[name="${field}"]`).value) || 0;
-            if (val) { sum += val; count++; }
+    document.getElementById('avg-rating').textContent =
+      count ? (sum / count).toFixed(1) : '—';
+  }
+
+  ratingBlocks.forEach(block => {
+    const inputId = block.dataset.inputId;
+    const input = document.getElementById(inputId);
+    const stars = block.querySelectorAll('.star');
+
+    stars.forEach(star => {
+      star.addEventListener('click', () => {
+        const value = parseInt(star.dataset.value);
+        input.value = value;
+
+        stars.forEach(s => {
+          s.classList.toggle('active', s.dataset.value <= value);
         });
-        avgDisplay.textContent = count ? (sum/count).toFixed(1) : '-';
-    }
+
+        updateAverage();
+      });
+    });
+  });
 });

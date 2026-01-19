@@ -1,0 +1,196 @@
+/* ===== Карточка фильма в форме отзыва ===== */
+
+/* Базовая сетка только для этой страницы */
+.auth-card.review-page-card {
+  max-width: 1040px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+/* ===== ЛЕВАЯ КАРТОЧКА — УНИЧТОЖАЕМ БАЗОВЫЕ СТИЛИ ===== */
+.review-movie-container {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: fit-content;
+}
+
+.film-preview-card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 24px;
+  display: flex;
+  gap: 20px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.08);
+  align-items: flex-start;
+  width: 100%;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.film-poster-block {
+  flex-shrink: 0;
+}
+
+.film-poster-img {
+  width: 180px;
+  height: 270px;
+  object-fit: cover;
+  border-radius: 14px;
+  display: block;
+}
+
+.film-no-poster {
+  width: 180px;
+  height: 270px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3rem;
+  background: #f3f4f6;
+  border-radius: 14px;
+  color: #6b7280;
+}
+
+.film-info-block {
+  flex: 1;
+  padding-left: 16px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.film-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #1e1e2d;
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.film-meta {
+  font-size: 0.95rem;
+  color: #6b7280;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.review-form {
+  font-family: "Inter", system-ui, sans-serif;
+  font-size: 0.95rem;
+  color: #1f2937;
+  background: rgba(255,255,255,0.9);
+  border-radius: 18px;
+  padding: 24px 28px;
+  box-shadow: 0 12px 30px rgba(0,0,0,.08);
+}
+
+.review-form h2 {
+  margin-bottom: 16px;
+}
+
+.review-form label {
+  font-weight: 600;
+  color: #374151;
+}
+
+.review-form input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* ===== Star rating ===== */
+
+.rating-row {
+  margin-bottom: 1rem;
+}
+
+.rating-label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+.stars {
+  display: flex;
+  gap: 0.3rem;
+  cursor: pointer;
+}
+
+.star {
+  font-size: 1.4rem;
+  color: #d1d5db; /* серые */
+  transition: color 0.15s ease, transform 0.1s ease;
+}
+
+.star.active {
+  color: #f59e0b; /* янтарные */
+}
+
+.star:hover {
+  transform: scale(1.1);
+}
+
+.avg-rating {
+  margin-top: 16px;
+  font-size: 1.05rem;
+}
+
+.avg-rating span {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #f59e0b;
+  margin-left: 6px;
+}
+
+
+
+.review-text-block {
+  margin-top: 20px;
+}
+
+.review-text-block h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+/* стили summary как заголовка блока */
+.review-collapse > summary {
+  list-style: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+/* убираем стандартный треугольник в разных браузерах */
+.review-collapse > summary::-webkit-details-marker {
+  display: none;
+}
+
+/* сам textarea */
+.review-text-block textarea {
+  width: 100%;
+  min-height: 160px;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  font-size: 0.95rem;
+  resize: vertical;
+  margin-top: 8px;
+}
+
+.review-text-block textarea:focus {
+  outline: none;
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245,158,11,.2);
+}

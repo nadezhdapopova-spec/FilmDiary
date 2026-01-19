@@ -5,42 +5,42 @@
 
 {% block title %}Оценка фильма{% endblock %}
 
-{% block body_class %}layout--auth{% endblock %}
-
 {% block content %}
 <div class="auth-wrapper">
-  <div class="auth-card auth-register">
+  <div class="auth-card auth-register review-page-card">
 
     <!-- Левая часть: изображение -->
-    <div class="movie-card glass-card">
-      <article class="movie-card">
+    <div class="movie-card glass-card review-movie-container">
+      <div class="film-preview-card">
 
-        <div class="movie-card__poster-wrapper">
-          {% if obj.poster_url or obj.poster_path %}
-            <img src="{{ obj.poster_url|default:'https://image.tmdb.org/t/p/w342'}}{{ obj.poster_path|default:'' }}"
-              alt="{{ obj.title }}"
-              class="movie-poster">
+        <div class="film-poster-block">
+          {% if film.poster_url or film.poster_path %}
+            <img src="{{ film.poster_url|default:'https://image.tmdb.org/t/p/w342'}}{{ film.poster_path|default:'' }}"
+              alt="{{ film.title }}"
+              class="film-poster-img">
           {% else %}
-            <div class="no-poster">🎬</div>
+            <div class="film no-poster">🎬</div>
           {% endif %}
         </div>
 
-        <div class="movie-meta mt-2">
-          {% if obj.tmdb_id %}
-            <a class="movie-title" href="{% url "films:film_detail" tmdb_id=obj.tmdb_id %}">{{ obj.title }}</a>
-          {% else %}
-            <span class="movie-title">{{ obj.title }}</span>
-          {% endif %}
-          <p class="movie-extra">
-            {{ obj.release_date|slice:":4" }}{% if obj.genres %}, {{ obj.genres }}{% endif %}
+        <div class="film-info-block">
+            <span class="film-title">{{ film.title }}</span>
+          <p class="film-meta">
+            {{ film.release_date|date:"Y"|default:"—" }}
+            {% if film.genres.exists %}
+              •
+              {% for genre in film.genres.all %}
+                  {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            {% endif %}
           </p>
         </div>
-      </article>
+      </div>
     </div>
 
     <!-- Правая часть: форма -->
-    <div class="auth-body">
-      <h2>Оценка фильма</h2>
+    <div class="review-form">
+      <h2>Оценка фильма 🍿</h2>
 
       <form method="post" novalidate>
         {% csrf_token %}
@@ -49,32 +49,36 @@
         {{ form.number_of_views|as_crispy_field }}
 
         <div class="ratings-grid">
-          {{ form.plot_rating.label_tag }}
-          {{ form.plot_rating }}
+          {% for field in form %}
+            {% if field.name in rating_fields %}
+              <div class="rating-row" data-field="{{ field.id_for_label }}">
+                <label class="rating-label">{{ field.label }}</label>
 
-          {{ form.acting_rating.label_tag }}
-          {{ form.acting_rating }}
+                {{ field.as_hidden }}
 
-          {{ form.directing_rating.label_tag }}
-          {{ form.directing_rating }}
-
-          {{ form.visuals_rating.label_tag }}
-          {{ form.visuals_rating }}
+                <div class="stars" data-input-id="{{ field.id_for_label }}">
+                  {% for i in stars %}
+                    <span class="star" data-value="{{ i }}">★</span>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
         </div>
 
-        <p><strong>Общая оценка:</strong> <span id="avg-rating">-</span></p>
+        <p class="avg-rating">
+          <strong>Общая оценка:</strong>
+          <span id="avg-rating">—</span>
+        </p>
 
-        <details class="review-details">
-          <summary class="review-summary">
-            ✏️ Добавить отзыв (необязательно)
-          </summary>
+        <div class="review-text-block">
+          <details class="review-collapse">
+            <summary>Отзыв</summary>
+            {{ form.review }}
+          </details>
+        </div>
 
-          <div class="review-panel mt-3">
-            {{ form.review|as_crispy_field }}
-          </div>
-        </details>
-
-        <div class=text-center>
+        <div class="text-center mt-4">
           <button class="btn btn-primary">
             Сохранить
           </button>
@@ -84,4 +88,7 @@
     </div>
   </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/rating_counter.js' %}"></script>
 {% endblock %}
