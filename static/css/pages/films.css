@@ -68,7 +68,7 @@
   -webkit-line-clamp: 2;   /* или 1–2 строки */
   -webkit-box-orient: vertical;
   overflow: hidden;
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
   color: #fff;
   margin: 0;

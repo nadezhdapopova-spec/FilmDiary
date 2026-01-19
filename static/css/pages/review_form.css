@@ -10,7 +10,7 @@
   align-items: flex-start;
 }
 
-/* ===== ЛЕВАЯ КАРТОЧКА — УНИЧТОЖАЕМ БАЗОВЫЕ СТИЛИ ===== */
+/* ===== ЛЕВАЯ КАРТОЧКА ===== */
 .movie-meta-review .film-title {
   font-size: 1.35rem;
   font-weight: 700;
@@ -19,11 +19,23 @@
   line-height: 1.3;
 }
 
-.movie-meta-review .movie-extra {
+.movie-meta-review .movie-extra-movie {
   font-size: 0.95rem;
   color: #6b7280;
   margin: 0;
   line-height: 1.4;
+  text-align: justify;
+  white-space: normal !important;  /* разрешаем перенос */
+  overflow: visible !important;   /* показываем весь текст */
+  text-overflow: clip !important; /* убираем многоточие */
+  word-break: break-word;         /* перенос длинных слов */
+}
+
+.movie-overview {
+  text-align: justify;
+  white-space: normal;
+  word-break: break-word;
+  line-height: 1.5;
 }
 
 .review-form {

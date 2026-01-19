@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.db import models
 from django.http import Http404
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
@@ -13,7 +13,7 @@ from reviews.models import Review
 
 
 class WatchedListView(LoginRequiredMixin, ListView):
-    """Представление для отображения просмотренных фильмов"""
+    """Представление для отображения просмотренных=оцененных фильмов"""
 
     model = Review
     template_name = "reviews/reviews.html"
@@ -21,7 +21,7 @@ class WatchedListView(LoginRequiredMixin, ListView):
     paginate_by = 12
 
     def get_context_data(self, **kwargs):
-        """Добавляет поиск по отзывам в контекст"""
+        """Добавляет поиск по просмотренному=оцененному в контекст"""
         context = super().get_context_data(**kwargs)
         query = self.request.GET.get("q", "").strip()
 
@@ -34,7 +34,7 @@ class WatchedListView(LoginRequiredMixin, ListView):
 
 
     def get_queryset(self):
-        """Возвращает список просмотренных фильмов пользователя"""
+        """Возвращает список просмотренных=оцененных фильмов пользователя"""
         queryset = (Review.objects
                     .filter(user=self.request.user)
                     .select_related("film", "user")
@@ -42,15 +42,12 @@ class WatchedListView(LoginRequiredMixin, ListView):
 
         query = self.request.GET.get("q", "").strip()
         if query:
-            queryset = queryset.filter(
-                models.Q(film__title__icontains=query) |
-                models.Q(user__email__icontains=query)
-            )
+            queryset = queryset.filter(models.Q(film__title__icontains=query))
         return queryset
 
 
 class ReviewsListView(WatchedListView):
-    """Представление для отображения списка отзывов на фильмы"""
+    """Представление для отображения списка текстовых отзывов на фильмы"""
     model = Review
     context_object_name = "reviews"
     template_name = "reviews/reviews.html"
@@ -59,10 +56,8 @@ class ReviewsListView(WatchedListView):
     def get_queryset(self):
         """Возвращает список отзывов пользователя, осуществляет поиск по q"""
         queryset = (Review.objects
-                    .filter(user=self.request.user)
-                    .exclude(review=None)
-                    .exclude(review="")
-                    .exclude(review=" ")
+                    .filter(user=self.request.user, review__isnull=False)
+                    .exclude(review__exact="")
                     .select_related("film", "user")
                     .order_by("-updated_at"))
 
@@ -89,35 +84,45 @@ class ReviewsListView(WatchedListView):
 
 
 class ReviewDetailView(LoginRequiredMixin, DetailView):
-    """Представление для отображения отзыва"""
+    """Представление для отображения карточки оцененного фильма"""
 
     model = Review
     template_name = "reviews/review_detail.html"
     context_object_name = "review"
 
     def get_object(self, queryset=None):
-        """Показывает отзыв, если пользователь имеет права на просмотр"""
+        """Показывает карточку оцененного фильма, если пользователь имеет права на просмотр"""
         review = super().get_object(queryset)
-        try:
-            can_user_view(self.request.user, review)
-        except (Http404, PermissionDenied):
-            raise Http404("Отзыв не найден")
+        can_user_view(self.request.user, review)
         return review
+
+    def get_queryset(self):
+        """Возвращает информацию о пользователе и фильме одним запросом"""
+        return super().get_queryset().select_related("film", "user")
 
 
 class ReviewCreateView(LoginRequiredMixin, CreateView):
-    """Представление для создания отзыва"""
+    """Представление для оценки фильма и создания текстового отзыва"""
 
     model = Review
     form_class = ReviewForm
     template_name = "reviews/review_form.html"
 
     def dispatch(self, request, *args, **kwargs):
+        """
+        Извлекает film_id из URL, загружает объект Film из базы по pk
+        и сохраняет в self.film для использования в любых методах класса
+        """
         self.film = get_object_or_404(Film, pk=kwargs["film_id"])
+
+        existing_review = Review.objects.filter(user=request.user, film=self.film).first()
+        if existing_review:
+            return redirect("reviews:review_detail", pk=existing_review.pk)
+
         return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
-        """Определяет в контексте объект отзыва"""
+        """Добавляет данные в контекст"""
         context = super().get_context_data(**kwargs)
         context["film"] = self.film
         context["obj"] = None
@@ -126,6 +131,7 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
             "acting_rating",
             "directing_rating",
             "visuals_rating",
+            "soundtrack_rating"
         ]
         context["stars"] = range(1, 11)
         context["back_url"] = self.request.META.get('HTTP_REFERER', '/')
@@ -142,7 +148,12 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
 
         return super().form_valid(form)
 
+    def form_invalid(self, form):
+        print(form.errors)
+        return super().form_invalid(form)
+
     def get_success_url(self):
+        """При успешном сохнанении перенаправляет на карточку оцененного фильма"""
         return reverse_lazy("reviews:review_detail", kwargs={"pk": self.object.pk})
 
 
@@ -160,6 +171,10 @@ class ReviewUpdateView(LoginRequiredMixin, UpdateView):
         context["obj"] = self.object
         return context
 
+    def get_queryset(self):
+        """Возвращает информацию о пользователе и фильме одним запросом"""
+        return super().get_queryset().select_related("film", "user")
+
     def get_object(self, queryset=None):
         """Возвращает объект отзыва, если пользователь — автор"""
         self.object = super().get_object(queryset)
@@ -172,7 +187,7 @@ class ReviewUpdateView(LoginRequiredMixin, UpdateView):
 
 
 class ReviewDeleteView(LoginRequiredMixin, DeleteView):
-    """Представление для удаления отзыва"""
+    """Представление для удаления фильма из промотренных=оцененных"""
 
     model = Review
     template_name = "reviews/review_confirm_delete.html"

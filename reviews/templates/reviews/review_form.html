@@ -25,13 +25,20 @@
 
         <div class="movie-meta-review mt-2">
           <span class="film-title">{{ film.title }}</span>
-          <p class="movie-extra mt-3">
+          <p class="movie-extra-movie mt-3">
             {{ film.release_date|date:"Y"|default:"—" }}
             {% if film.genres.exists %}
               ,
               {% for genre in film.genres.all %}
                   {{ genre.name }}{% if not forloop.last %}, {% endif %}
                 {% endfor %}
+            {% endif %}
+          </p>
+          <p class="movie-extra-movie mt-4 movie-overview">
+            {% if film.tagline %}
+              {{ film.tagline }}
+            {% elif film.overview %}
+              {{ film.overview }}
             {% endif %}
           </p>
         </div>

@@ -1,0 +1,136 @@
+/* ===== Review card ===== */
+
+.review-card {
+  max-width: 1200px;          /* ширина максимальная */
+  margin: 0 auto;            /* центрирование */
+  padding: 50px;             /* отступы от краев */
+}
+
+.review-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;   /* между заголовком и body */
+}
+
+.review-card__title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: rgb(255, 255, 255);
+}
+
+.review-card__updated {
+  font-size: 0.85rem;
+  color: rgba(255,255,255,.6);
+}
+
+/* ===== Body layout ===== */
+
+.review-card__body {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 40px;   /* между постером и второй колонкой */
+}
+
+/* ===== Poster ===== */
+
+.review-card__poster {
+  position: relative;
+}
+
+.review-card__poster img {
+  width: 100%;
+  border-radius: 14px;
+}
+
+.review-card__no-poster {
+  height: 360px;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  background: rgba(255,255,255,.08);
+}
+
+/* ===== Rating badge ===== */
+
+.review-card__rating-badge {
+  position: absolute;
+  bottom: -14px;
+  right: -14px;
+  background:  #ff8a00;
+  color: #111;
+  font-weight: 800;
+  font-size: 1.4rem;
+  padding: 10px 14px;
+  border-radius: 14px;
+}
+
+/* ===== Info ===== */
+
+.review-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.review-card__info .review-meta {
+  display: flex;
+  gap: 48px;
+  font-size: 1rem;
+  color: rgb(205, 200, 193);
+}
+
+.review-meta span {
+  display: block;
+  font-size: 1rem;
+  color: #cdc8c1;
+  margin-bottom: 6px;
+}
+
+/* ===== Scores ===== */
+
+.review-scores {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(160px, 1fr));
+  column-gap: 80px;   /* между колонками оценок */
+  row-gap: 12px;
+}
+
+.score-row {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+  color: #cdc8c1;
+}
+
+.score-row span:last-child {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* ===== Review text ===== */
+
+.review-text h4 {
+  margin-bottom: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #cdc8c1;
+}
+
+.review-text p {
+  line-height: 1.6;
+  color: rgba(255,255,255,.85);
+}
+
+/* ===== Footer ===== */
+
+.review-card__footer {
+  margin-top: 32px;
+  text-align: center;
+}
+
+.review-card__footer .auth-btn + .auth-btn {
+  margin-left: 24px;
+}

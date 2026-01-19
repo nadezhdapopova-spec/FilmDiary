@@ -1,10 +1,84 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% load static %}
 
-</body>
-</html>
+{% block title %}Моя оценка фильма{% endblock %}
+
+{% block content %}
+<main class="main-content">
+  <section class="homepage-section">
+    <div class="glass-card review-card">
+      <div class="review-card__header">
+        <h2 class="review-card__title">{{ review.film.title }}</h2>
+        <span class="review-card__updated">
+          обновлено {{ review.updated_at|date:"d.m.Y" }}
+        </span>
+      </div>
+
+      <div class="review-card__body">
+        <!-- Левая часть -->
+        <div class="review-card__poster">
+          {% if review.film.poster_path %}
+            <img src="https://image.tmdb.org/t/p/w342{{ review.film.poster_path }}"
+              alt="{{ review.film.title }}">
+          {% else %}
+            <div class="film-detail__no-poster">🎬</div>
+          {% endif %}
+
+          <div class="review-card__rating-badge">
+            {{ review.user_rating|floatformat:1 }}
+          </div>
+        </div>
+
+        <!-- Правая часть -->
+        <div class="review-card__info">
+          <div class="review-meta">
+            <div><span>Дата просмотра</span>{{ review.watched_at|date:"d.m.Y" }}</div>
+            <div><span>Просмотров</span>{{ review.number_of_views|default:1 }}</div>
+          </div>
+
+          <div class="review-scores mt-2">
+            <div class="score-row">
+              <span>Сценарий, сюжет</span>
+              <span>{{ review.plot_rating }} / 10</span>
+            </div>
+            <div class="score-row">
+              <span>Актёрская игра</span>
+              <span>{{ review.acting_rating }} / 10</span>
+            </div>
+            <div class="score-row">
+              <span>Режиссерская работа</span>
+              <span>{{ review.directing_rating }} / 10</span>
+            </div>
+            <div class="score-row">
+              <span>Визуал, атомосфера</span>
+              <span>{{ review.visuals_rating }} / 10</span>
+            </div>
+            <div class="score-row">
+              <span>Аудиоэффекты, саундтрек</span>
+              <span>{{ review.soundtrack_rating }} / 10</span>
+            </div>
+          </div>
+
+          <div class="review-text mt-2">
+            <h4>Мой отзыв</h4>
+            <p>{{ review.review|default:"—" }}</p>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Кнопка -->
+      <div class="review-card__footer">
+        <a class="auth-btn auth-btn--primary"
+           href="{% url 'reviews:review_update' pk=review.pk %}">Редактировать
+        </a>
+        <a class="auth-btn auth-btn--primary"
+           href="{% if request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{% url 'films:home' %}{% endif %}">
+          ← Назад
+        </a>
+      </div>
+
+    </div>
+  </section>
+</main>
+{% endblock %}
