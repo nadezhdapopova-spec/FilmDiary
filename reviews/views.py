@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.db.models import OuterRef, Exists
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
 from films.models import Film, UserFilm
@@ -179,8 +179,9 @@ class ReviewCreateView(LoginRequiredMixin, ReviewFormContextMixin, CreateView):
         return super().form_invalid(form)
 
     def get_success_url(self):
-        """При успешном сохнанении перенаправляет на карточку оцененного фильма"""
-        return reverse_lazy("reviews:review_detail", kwargs={"pk": self.object.pk})
+        """При успешном сохнанении перенаправляет на страницу Мои фильмы"""
+        return reverse("films:my_films")
+        # return reverse_lazy("reviews:review_detail", kwargs={"pk": self.object.pk})
 
 
 class ReviewUpdateView(LoginRequiredMixin, ReviewFormContextMixin, UpdateView):
@@ -216,9 +217,9 @@ class ReviewUpdateView(LoginRequiredMixin, ReviewFormContextMixin, UpdateView):
         return context
 
     def get_success_url(self):
-        """При успешном редактировании возвращает на страницу просмотра сообщения"""
-        return reverse_lazy("reviews:review_detail", kwargs={"pk": self.object.pk})
-
+        """При успешном редактировании возвращает на страницу Мои фильмы"""
+        # return reverse_lazy("reviews:review_detail", kwargs={"pk": self.object.pk})
+        return reverse("films:my_films")
 
 class ReviewDeleteView(LoginRequiredMixin, DeleteView):
     """Представление для удаления фильма из промотренных=оцененных"""

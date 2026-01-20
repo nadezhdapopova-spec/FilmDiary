@@ -21,7 +21,7 @@
         </div>
 
         {% if page_obj %}
-          <div class="movie-search-grid">
+          <div class="movie-search-grid" data-page="watched">
             {% for review in reviews %}
               {% include 'reviews/includes/review_card.html' with review=review %}
             {% endfor %}

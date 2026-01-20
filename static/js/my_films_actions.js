@@ -2,6 +2,8 @@ document.addEventListener('DOMContentLoaded', function () {
   const grid = document.querySelector('.movie-search-grid');
   if (!grid) return;
 
+  const page = grid.dataset.page; // 'my-films', 'favorites' и т.д.
+
   grid.addEventListener('click', async function (e) {
     const button = e.target.closest('.btn-icon');
     if (!button) return;
@@ -45,16 +47,38 @@ document.addEventListener('DOMContentLoaded', function () {
         const confirmedUnfav = await confirmDelete('unfavorite', title);
         if (!confirmedUnfav) return;
 
-        await updateFilmStatus(button, filmId, action, title);
+        const data = await updateFilmStatus(button, filmId, action, title);
         showToast(`🔥 Фильм "${title}" убран из Любимого`, 'info');
+
+        // Убираем карточку сразу на странице Любимое
+        if (page === 'favorites') card.remove();
         break;
       }
 
       case 'delete':
-        const confirmed = await confirmDelete('delete', title);
-        if (confirmed) {
+        const confirmedDelete = await confirmDelete('delete', title);
+        if (confirmedDelete) {
           await updateFilmStatus(button, filmId, action, title);
           showToast(`❌ Фильм "${title}" удалён`, 'error');
+          if (page === 'my-films') card.remove(); // удаляем с Мои фильмы
+        }
+        break;
+
+      case 'edit-review':
+        openReviewForm(filmId, title);
+        break;
+
+      case 'delete-watched':
+        const confirmedWatched = await confirmDelete('delete-watched', title);
+        if (confirmedWatched) {
+          await updateFilmStatus(button, filmId, action, title);
+          showToast(`➖ Фильм "${title}" убран из просмотренного`, 'error');
+          if (page === 'my-films') {
+            // оставляем карточку в Мои фильмы, но обновляем бейджи
+            applyStatusChanges(card, action, data);
+          } else {
+            card.remove();
+          }
         }
         break;
 
@@ -103,7 +127,7 @@ async function updateFilmStatus(button, filmId, action, title) {
     // Редирект для "watch"
     if (data.status === 'redirect' && data.url) {
       window.location.href = data.url;
-      return; // больше ничего не выполняем
+      return;
     }
 
     // Ошибка
@@ -177,7 +201,9 @@ async function confirmDelete(action, title) {
 
     const questionText = isUnfavorite
       ? `💔 Убрать фильм <strong style='color:#ffa07a;'>${title}</strong> из Любимого?`
-      : `❌ Удалить фильм <strong style='color:#ffa07a;'>${title}</strong>?`;
+      : action === 'delete-watched'
+        ? `➖ Убрать фильм <strong style='color:#ffa07a;'>${title}</strong> из просмотренного?`
+        : `❌ Удалить фильм <strong style='color:#ffa07a;'>${title}</strong>?`;
 
     const modal = document.createElement('div');
     modal.style.cssText = `
@@ -253,59 +279,111 @@ async function confirmDelete(action, title) {
 
 // ------------------ Status Changes ------------------
 function applyStatusChanges(card, action, data) {
+  const overlay = card.querySelector('.movie-card__overlay');
   const badgesGroup = card.querySelector('.movie-badge-group');
 
-  if (badgesGroup) {
+  if (!overlay || !badgesGroup) return;
 
-    // PLANNED
-    if (data.is_planned && !badgesGroup.querySelector('.movie-badge--planned')) {
-      const span = document.createElement('span');
-      span.className = 'movie-badge movie-badge--planned';
-      span.title = 'Запланировано';
-      span.textContent = '📅';
-      badgesGroup.prepend(span);
-    }
+  // 1. Очистка (UI ← сервер)
+  badgesGroup.innerHTML = '';
+  overlay.querySelector('.movie-badge--rating')?.remove();
 
-    // FAVORITE
-    if (action === 'favorite' && data.is_favorite) {
-      if (!badgesGroup.querySelector('.movie-badge--favorite')) {
-        const span = document.createElement('span');
-        span.className = 'movie-badge movie-badge--favorite';
-        span.title = 'Любимое';
-        span.textContent = '🔥';
-        badgesGroup.append(span);
-      }
-    }
-
-    // UNFAVORITE
-    if (action === 'unfavorite') {
-      const favBadge = badgesGroup.querySelector('.movie-badge--favorite');
-      if (favBadge) favBadge.remove();
-
-      // если это страница Любимое — удаляем карточку
-      card.remove();
-    }
+  if (data.has_review) {
+    badgesGroup.innerHTML += `<span class="movie-badge movie-badge--watched">🍿</span>`;
   }
 
-  // DELETE
-  if (action === 'delete') {
-    const outerCard = card.closest('.glass-card');
-    if (outerCard) outerCard.remove();
+  if (data.is_planned) {
+    badgesGroup.innerHTML += `<span class="movie-badge movie-badge--planned">📅</span>`;
   }
+
+  if (data.is_favorite) {
+    badgesGroup.innerHTML += `<span class="movie-badge movie-badge--favorite">🔥</span>`;
+  }
+
+  if (data.user_rating) {
+    const rating = document.createElement('div');
+    rating.className = 'movie-badge movie-badge--rating';
+    rating.textContent = data.user_rating;
+    overlay.prepend(rating);
+  }
+
+  if (action === 'delete') card.remove();
 }
 
+
+//   // ПРОСМОТРЕНО
+//   if (data.has_review && !badgesGroup.querySelector('.movie-badge--watched')) {
+//     const span = document.createElement('span');
+//     span.className = 'movie-badge movie-badge--watched';
+//     span.title = 'Просмотрено';
+//     span.textContent = '🍿';
+//     badgesGroup.prepend(span);
+//   }
+//
+//   // РЕЙТИНГ
+//   if (data.user_rating && !overlay.querySelector('.movie-badge--rating')) {
+//     const rating = document.createElement('div');
+//     rating.className = 'movie-badge movie-badge--rating';
+//     rating.textContent = data.user_rating;
+//     overlay.prepend(rating);
+//   }
+//
+//   // PLANNED
+//   if (data.is_planned && !badgesGroup.querySelector('.movie-badge--planned')) {
+//     const span = document.createElement('span');
+//     span.className = 'movie-badge movie-badge--planned';
+//     span.title = 'Запланировано';
+//     span.textContent = '📅';
+//     badgesGroup.prepend(span);
+//   }
+//
+//   // 🔥 FAVORITE
+//   if (data.is_favorite && !badgesGroup.querySelector('.movie-badge--favorite')) {
+//     const span = document.createElement('span');
+//     span.className = 'movie-badge movie-badge--favorite';
+//     span.title = 'Любимое';
+//     span.textContent = '🔥';
+//     badgesGroup.append(span);
+//   }
+//
+//   // UNFAVORITE
+//   if (action === 'unfavorite') {
+//     const favBadge = badgesGroup.querySelector('.movie-badge--favorite');
+//     if (favBadge) favBadge.remove();
+//
+//     // если это страница Любимое — удаляем карточку
+//     card.remove();
+//   }
+//
+//   // DELETE
+//   if (action === 'delete' || action === 'delete-watched') {
+//     const outerCard = card.closest('.glass-card');
+//     if (outerCard) outerCard.remove();
+//   }
+// }
+
 // ------------------ Get CSRF ------------------
+// function getCookie(name) {
+//   let cookieValue = null;
+//   if (document.cookie && document.cookie !== '') {
+//     const cookies = document.cookie.split(';');
+//     for (let c of cookies) {
+//       const cookie = c.trim();
+//       if (cookie.startsWith(name + '=')) {
+//         cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+//         break;
+//       }
+//     }
+//   }
+//   return cookieValue;
+// }
 function getCookie(name) {
   let cookieValue = null;
   if (document.cookie && document.cookie !== '') {
-    const cookies = document.cookie.split(';');
-    for (let c of cookies) {
+    document.cookie.split(';').forEach(c => {
       const cookie = c.trim();
-      if (cookie.startsWith(name + '=')) {
-        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-        break;
-      }
-    }
+      if (cookie.startsWith(name + '=')) cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+    });
   }
   return cookieValue;
 }

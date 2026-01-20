@@ -319,6 +319,7 @@ def search_tmdb_film(query: str, user, page_num: int=1) -> list[dict]:
         tmdb_id = item.get("id")
         user_film = user_films_map.get(tmdb_id)
         genre_ids = item.get("genre_ids", []) or []
+        film_genres = [genre_map[g_id] for g_id in genre_ids[:2] if g_id in genre_map]
         poster_path = item.get("poster_path")
         poster_url = None
         if poster_path:
@@ -331,7 +332,7 @@ def search_tmdb_film(query: str, user, page_num: int=1) -> list[dict]:
                 "title": item.get("title") or item.get("name", "Без названия"),
                 "poster_url": poster_url,
                 "release_date": item.get("release_date", "")[:4] or "----",
-                "genres": ", ".join([genre_map.get(g_id) for g_id in genre_ids[:2] if g_id in genre_map]),
+                "genres": ", ".join(film_genres) if film_genres else "",
                 "tmdb_rating": round(float(item.get("vote_average", 0)), 1),
                 "in_library": tmdb_id in existing,
             }

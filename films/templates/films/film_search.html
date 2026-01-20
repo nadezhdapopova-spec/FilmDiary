@@ -49,15 +49,18 @@
 
     {% if page_obj.has_other_pages %}
       <div class="mt-5 text-center">
-        <div class="d-flex justify-content-center">
+        <div class="d-flex justify-content-center mb-2">
           {% include "includes/pagination.html" %}
         </div>
 
-        <button type="button"
-          class="auth-btn auth-btn--primary"
-          onclick="history.back()">
-          Вернуться
-        </button>
+        <div>
+          <button type="button"
+            class="auth-btn auth-btn--primary"
+            onclick="history.back()">
+            Вернуться
+          </button>
+          <a class="auth-btn auth-btn--primary" href={% url "films:home" %}>На главную</a>
+        </div>
       </div>
 
     {% else %}
@@ -67,6 +70,7 @@
           onclick="history.back()">
           Вернуться
         </button>
+        <a class="auth-btn auth-btn--primary" href={% url "films:home" %}>На главную</a>
       </div>
     {% endif %}
 

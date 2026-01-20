@@ -26,11 +26,15 @@
       {% endif %}
       <p class="movie-extra">
         {{ film.release_date|slice:":4" }}
-        {% if film.genres.exists %}
+        {% if film.genres %}
           ,
-          {% for genre in film.genres.all %}
-            {{ genre.name }}{% if not forloop.last %}, {% endif %}
-          {% endfor %}
+          {% if film.genres.all %}  {# проверка на QuerySet #}
+            {% for genre in film.genres.all %}
+              {{ genre.name }}{% if not forloop.last %}, {% endif %}
+            {% endfor %}
+          {% else %}
+            {{ film.genres }}  {# строка для TMDB #}
+          {% endif %}
         {% endif %}
       </p>
     </div>
@@ -44,7 +48,7 @@
 
       {% if film.has_review %}
         <span class="status-badge">
-          <span class="status-badge__text">Просмотрено ({{ film.user_rating }})</span>
+          <span class="status-badge__text">Просмотрено</span>
           {% if film.is_favorite %}
             <span class="status-badge__icon">🔥</span>
           {% endif %}

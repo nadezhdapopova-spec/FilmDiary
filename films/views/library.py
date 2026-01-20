@@ -8,6 +8,7 @@ from django.views.generic import ListView, TemplateView
 
 from films.models import UserFilm
 from films.services import save_film_from_tmdb
+from reviews.models import Review
 
 
 class HomeView(TemplateView):
@@ -51,8 +52,19 @@ class UserListFilmView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         """Добавляет данные в контекст для поиска"""
         context = super().get_context_data(**kwargs)
-        query = self.request.GET.get("q", "").strip()
+        items = context[self.context_object_name]  # список user_films на странице
 
+        film_ids = [uf.film_id for uf in items]
+        reviews_map = {r.film_id: r for r in Review.objects.filter(user=self.request.user, film_id__in=film_ids)} # Получаем все отзывы пользователя на фильмы из текущего queryset
+
+        context[self.context_object_name] = [
+            {
+                "user_film": uf,
+                "review": reviews_map.get(uf.film_id)
+            }
+            for uf in items
+        ]
+        query = self.request.GET.get("q", "").strip()
         context["search_type"] = "user_films"
         context["query"] = query
         context["params"] = f"&q={query}&source=user_films" if query else "&source=user_films"
@@ -131,7 +143,7 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
         action = request.POST.get("action")  # 'plan' или 'favorite'
 
         try:
-            user_film = UserFilm.objects.get(id=user_film_id, user=request.user)
+            user_film = UserFilm.objects.select_related("film").get(id=user_film_id, user=request.user)
 
             if action == "plan":
                 user_film.is_planned = True
@@ -157,12 +169,25 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
                     "action": action,
                     "is_favorite": user_film.is_favorite
                 })
+            elif action == "delete-watched":
+                Review.objects.filter(user=request.user, film=user_film.film).delete()
+                return JsonResponse({
+                    "status": "success",
+                    "action": action,
+                    "is_planned": user_film.is_planned,
+                    "is_favorite": user_film.is_favorite,
+                    "has_review": False,
+                    "user_rating": None
+                })
             user_film.save()
+            review = Review.objects.filter(user=request.user, film=user_film.film).only("user_rating").first()
             return JsonResponse({
                 "status": "success",
                 "action": action,
                 "is_planned": user_film.is_planned,
-                "is_favorite": user_film.is_favorite
+                "is_favorite": user_film.is_favorite,
+                "has_review": bool(review),
+                "user_rating": review.user_rating if review else None
             })
         except UserFilm.DoesNotExist:
             return JsonResponse({"status": "error", "message": "Фильм не найден"}, status=404)
