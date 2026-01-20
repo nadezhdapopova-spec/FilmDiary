@@ -13,8 +13,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
-    document.getElementById('avg-rating').textContent =
-      count ? (sum / count).toFixed(1) : '—';
+    avgEl.textContent = count ? (sum / count).toFixed(1) : '—';
+  }
+
+  function initStarsFromInputs() {
+    ratingBlocks.forEach(block => {
+      const inputId = block.dataset.inputId;
+      const input = document.getElementById(inputId);
+      const stars = block.querySelectorAll('.star');
+
+      if (!input || !input.value) return;
+
+      const value = parseFloat(input.value);
+
+      stars.forEach(star => {
+        const starValue = parseInt(star.dataset.value, 10);
+        star.classList.toggle('active', starValue <= Math.round(value));
+      });
+    });
+
+    updateAverage();
   }
 
   ratingBlocks.forEach(block => {
@@ -24,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     stars.forEach(star => {
       star.addEventListener('click', () => {
-        const value = parseInt(star.dataset.value);
+        const value = parseInt(star.dataset.value, 10);
         input.value = value;
 
         stars.forEach(s => {
@@ -35,4 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   });
+
+  initStarsFromInputs();
 });

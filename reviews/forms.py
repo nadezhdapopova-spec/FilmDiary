@@ -11,7 +11,17 @@ class ReviewForm(forms.ModelForm):
     directing_rating = forms.FloatField(label="Режиссура", min_value=1, max_value=10)
     visuals_rating = forms.FloatField(label="Визуал", min_value=1, max_value=10)
     soundtrack_rating = forms.FloatField(label="Саундтрек", min_value=1, max_value=10)
-    number_of_views = forms.IntegerField(validators=[validate_number_of_views], required=False)
+    number_of_views = forms.IntegerField(
+        label="Всего просмотров",
+        validators=[validate_number_of_views],
+        required=False
+    )
+    watched_at = forms.DateField(
+        label="Дата просмотра",
+        required=True,
+        widget=forms.DateInput(attrs={"type": "date"}),
+        input_formats=["%Y-%m-%d"]
+    )
 
     class Meta:
         model = Review
@@ -26,5 +36,10 @@ class ReviewForm(forms.ModelForm):
             "review",
         )
         widgets = {
-            "watched_at": forms.DateInput(attrs={"type": "date"}),
+            "watched_at": forms.DateInput(attrs={"type": "date"}, format="%Y-%m-%d"),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.watched_at:  # Если у формы уже есть instance с датой, приводим её к строке ISO для календаря
+            self.initial["watched_at"] = self.instance.watched_at.strftime("%Y-%m-%d")

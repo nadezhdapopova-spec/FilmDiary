@@ -73,8 +73,8 @@
            href="{% url 'reviews:review_update' pk=review.pk %}">Редактировать
         </a>
         <a class="auth-btn auth-btn--primary"
-           href="{% if request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{% url 'films:home' %}{% endif %}">
-          ← Назад
+           href="{% url 'reviews:watched' %}">
+          ← Закрыть
         </a>
       </div>
 

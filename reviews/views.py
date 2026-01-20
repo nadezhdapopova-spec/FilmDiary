@@ -118,7 +118,25 @@ class ReviewDetailView(LoginRequiredMixin, DetailView):
         return super().get_queryset().select_related("film", "user")
 
 
-class ReviewCreateView(LoginRequiredMixin, CreateView):
+class ReviewFormContextMixin:
+    rating_fields = [
+        "plot_rating",
+        "acting_rating",
+        "directing_rating",
+        "visuals_rating",
+        "soundtrack_rating"
+    ]
+    stars = range(1, 11)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["rating_fields"] = self.rating_fields
+        context["stars"] = self.stars
+        context["back_url"] = self.request.META.get("HTTP_REFERER", "/")
+        return context
+
+
+class ReviewCreateView(LoginRequiredMixin, ReviewFormContextMixin, CreateView):
     """Представление для оценки фильма и создания текстового отзыва"""
 
     model = Review
@@ -143,15 +161,6 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
         context = super().get_context_data(**kwargs)
         context["film"] = self.film
         context["obj"] = None
-        context["rating_fields"] = [
-            "plot_rating",
-            "acting_rating",
-            "directing_rating",
-            "visuals_rating",
-            "soundtrack_rating"
-        ]
-        context["stars"] = range(1, 11)
-        context["back_url"] = self.request.META.get('HTTP_REFERER', '/')
         return context
 
     def form_valid(self, form):
@@ -174,7 +183,7 @@ class ReviewCreateView(LoginRequiredMixin, CreateView):
         return reverse_lazy("reviews:review_detail", kwargs={"pk": self.object.pk})
 
 
-class ReviewUpdateView(LoginRequiredMixin, UpdateView):
+class ReviewUpdateView(LoginRequiredMixin, ReviewFormContextMixin, UpdateView):
     """Представление для редактирования отзыва"""
 
     model = Review
@@ -182,21 +191,29 @@ class ReviewUpdateView(LoginRequiredMixin, UpdateView):
     form_class = ReviewForm
     context_object_name = "review"
 
-    def get_context_data(self, **kwargs):
-        """Добавляет в контекст объект отзыва"""
-        context = super().get_context_data(**kwargs)
-        context["obj"] = self.object
-        return context
+    def get_object(self, queryset=None):
+        """Возвращает объект отзыва с данными о фильме, если пользователь — автор"""
+        self.object = super().get_object(queryset)
+        can_user_edit(self.request.user, self.object)
+        self.film = self.object.film
+        return self.object
+
+    def get_form_kwargs(self):
+        """Передает корректный initial из Review в форму при редактировании - для отображения даты и просмотров"""
+        kwargs = super().get_form_kwargs()
+        kwargs["instance"] = self.object
+        return kwargs
 
     def get_queryset(self):
         """Возвращает информацию о пользователе и фильме одним запросом"""
         return super().get_queryset().select_related("film", "user")
 
-    def get_object(self, queryset=None):
-        """Возвращает объект отзыва, если пользователь — автор"""
-        self.object = super().get_object(queryset)
-        can_user_edit(self.request.user, self.object)
-        return self.object
+    def get_context_data(self, **kwargs):
+        """Добавляет в контекст объект отзыва"""
+        context = super().get_context_data(**kwargs)
+        context["obj"] = self.object
+        context["film"] = self.film
+        return context
 
     def get_success_url(self):
         """При успешном редактировании возвращает на страницу просмотра сообщения"""
