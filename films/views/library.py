@@ -196,11 +196,14 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
 
 
 class DeleteFilmView(LoginRequiredMixin, View):
-    """Представление для удаления фильма из списка'Мои фильмы'"""
+    """Представление для удаления фильма из коллекции пользователя"""
 
     def post(self, request, *args, **kwargs):
-        """Удаляет фильм из списка пользователя 'Мои фильмы'"""
+        """Удаляет фильм из коллекции пользователя"""
         tmdb_id = self.kwargs["tmdb_id"]
+        print(tmdb_id)
+        print("Deleting UserFilm:", UserFilm.objects.filter(user=request.user, film__tmdb_id=tmdb_id).query)
+        print("Deleting Review:", Review.objects.filter(user=request.user, film__tmdb_id=tmdb_id).query)
 
         Review.objects.filter(user=request.user, film__tmdb_id=tmdb_id).delete()
         UserFilm.objects.filter(user=request.user, film__tmdb_id=tmdb_id).delete()

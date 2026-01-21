@@ -28,12 +28,13 @@ document.addEventListener('DOMContentLoaded', function () {
         break;
 
       case 'watch': {
-          const response = await updateFilmStatus(button, filmId, action, title);
-          if (response && response.status === 'redirect') {
-              window.location.href = response.url;
-          }
-          break;
+        const response = await updateFilmStatus(button, filmId, action, title);
+        if (response && response.status === 'redirect') {
+           window.location.href = response.url;
+        }
+        break;
       }
+
       case 'favorite': {
         if (card.querySelector('.movie-badge--favorite')) {
           showToast(`🔥 Фильм "${title}" уже в Любимых`, 'info');
@@ -59,29 +60,38 @@ document.addEventListener('DOMContentLoaded', function () {
         break;
       }
 
-      case 'delete':
+      case 'delete': {
         const confirmedDelete = await confirmDelete('delete', title);
-        if (confirmedDelete) {
-          await updateFilmStatus(button, filmId, action, title);
-          showToast(`❌ Фильм "${title}" удалён`, 'error');
-          if (page === 'my-films') card.remove(); // удаляем с Мои фильмы
+        if (!confirmedDelete) return;
+
+        const response = await fetch(`/films/${filmId}/delete/`, {
+           method: 'POST',
+           headers: {
+               'X-CSRFToken': getCookie('csrftoken'),
+               'X-Requested-With': 'XMLHttpRequest'
+           }
+        });
+
+        if (!response.ok) {
+           showToast('❌ Ошибка при удалении фильма', 'error');
+           return;
         }
-        break;
 
-      case 'edit-review':
-        openReviewForm(filmId, title);
+        showToast(`❌ Фильм "${title}" удалён`, 'error');
+        if (page === 'my-films') card.remove(); // удаляем с Мои фильмы
         break;
+      }
 
-      case 'delete-watched':
+      case 'delete-watched': {
         const confirmedWatched = await confirmDelete('delete-watched', title);
         if (!confirmedWatched) return;
 
         const response = await fetch(`/reviews/${filmId}/delete/`, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': getCookie('csrftoken'),
-            'X-Requested-With': 'XMLHttpRequest'
-          }
+           method: 'POST',
+           headers: {
+              'X-CSRFToken': getCookie('csrftoken'),
+              'X-Requested-With': 'XMLHttpRequest'
+           }
         });
 
         if (!response.ok) {
@@ -92,6 +102,7 @@ document.addEventListener('DOMContentLoaded', function () {
         showToast(`➖ Фильм "${title}" убран из просмотренного`, 'info');
         card.remove();
         break;
+      }
 
       default:
         console.warn('Неизвестное действие:', action);
