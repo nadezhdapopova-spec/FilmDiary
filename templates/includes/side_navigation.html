@@ -14,7 +14,7 @@
       <span class="side-link__icon">🎬</span>
       <span class="side-link__text">Мои фильмы</span>
     </a>
-    <a href="/films/watched/" class="side-link {% if request.path|slice:'6:14' == '/watched' %}active{% endif %}">
+    <a href="/reviews/watched/" class="side-link {% if request.path|slice:'6:14' == '/watched' %}active{% endif %}">
       <span class="side-link__icon">🍿</span>
       <span class="side-link__text">Просмотрено</span>
     </a>
@@ -22,7 +22,7 @@
       <span class="side-link__icon">🔥</span>
       <span class="side-link__text">Любимое</span>
     </a>
-    <a href="/reviews/my_reviews" class="side-link {% if request.path|slice:'8:19' == '/my_reviews' %}active{% endif %}">
+    <a href="/reviews/reviews" class="side-link {% if request.path|slice:'8:19' == '/reviews' %}active{% endif %}">
       <span class="side-link__icon">✍️</span>
       <span class="side-link__text">Отзывы</span>
     </a>
@@ -56,11 +56,13 @@
   <div class="offcanvas-body">
     <nav class="side-nav-menu">
       <!-- те же ссылки, можно без span.side-link__text, иконки уже есть -->
-      <a href="/" class="side-link {% if request.path == '/' %}active{% endif %}">🏠 Главная</a>
-      <a href="/films" class="side-link {% if request.path|slice:':6' == '/films' %}active{% endif %}">🎬 Фильмы</a>
-      <a href="/my" class="side-link {% if request.path|slice:':3' == '/my' %}active{% endif %}">⭐ Мои фильмы</a>
-      <a href="/calendar" class="side-link {% if request.path|slice:':9' == '/calendar' %}active{% endif %}">📅 Календарь</a>
-      <a href="/profile" class="side-link {% if request.path|slice:':8' == '/profile' %}active{% endif %}">👤 Профиль</a>
+      <a href="/films/home/" class="side-link {% if request.path|slice:'6:11' == '/home' %}active{% endif %}">🏠 Главная</a>
+      <a href="/films/my_films/" class="side-link {% if request.path|slice:'6:15' == '/my_films' %}active{% endif %}">🎬 Мои фильмы</a>
+      <a href="/reviews/watched/" class="side-link {% if request.path|slice:'6:14' == '/watched' %}active{% endif %}">🍿 Просмотрено</a>
+      <a href="/films/favorite/" class="side-link {% if request.path|slice:'6:16' == '/favorite' %}active{% endif %}">🔥 Любимое</a>
+      <a href="/reviews/reviews" class="side-link {% if request.path|slice:'8:19' == '/reviews' %}active{% endif %}">✍️ Отзывы</a>
+      <a href="/calendar/my_calendar" class="side-link {% if request.path|slice:'9:21' == '/my_calendar' %}active{% endif %}">📅 Календарь</a>
+      <a href="/users/profile" class="side-link {% if request.path|slice:'6:14' == '/profile' %}active{% endif %}">🧑 Профиль </a>
     </nav>
   </div>
 </aside>

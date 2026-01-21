@@ -2,7 +2,9 @@
   <div class="movie-search-bar">
     <input name="q"
            value="{{ request.GET.q }}"
-           placeholder="{% if template == 'my_films' %}Поиск по моим фильмам...{% else %}Поиск фильмов...{% endif %}"
+           placeholder="{% if template == 'my_films' %}Поиск по моим фильмам...
+                        {% elif template == 'reviews' %}Поиск по просмотренным фильмам...
+                        {% else %}Поиск фильмов...{% endif %}"
            class="form-control movie-search-bar__input" />
     <input type="hidden" name="source" value="{{ search_type }}">
     <button type="submit"

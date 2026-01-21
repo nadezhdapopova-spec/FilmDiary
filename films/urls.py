@@ -13,5 +13,5 @@ urlpatterns = [
     path("film/<int:tmdb_id>/", FilmDetailView.as_view(), name="film_detail"),
     path("add_film/", AddFilmView.as_view(), name="add_film"),
     path("update-status/", UpdateFilmStatusView.as_view(), name="update_status"),
-    path("delete/<int:tmdb_id>/", DeleteFilmView.as_view(), name="delete_film"),
+    path("<int:tmdb_id>/delete/", DeleteFilmView.as_view(), name="delete_film"),
 ]

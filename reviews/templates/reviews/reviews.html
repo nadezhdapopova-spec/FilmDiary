@@ -1,17 +1,17 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block title %}Мои фильмы{% endblock %}
+{% block title %}Просмотрено{% endblock %}
 
 {% block content %}
 <main class="main-content">
   <section class="homepage-section">
     <div class="glass-card movie-section-card">
       <div class="card-header">
-        {% if search_type == "favorites" %}
-          <h2 class="card-title">Мои любимые фильмы 🔥</h2>
+        {% if search_type == "reviewed" %}
+          <h2 class="card-title">Мои отзывы ✍️</h2>
         {% else %}
-          <h2 class="card-title">Мои фильмы 🎬</h2>
+          <h2 class="card-title">Просмотрено 🍿</h2>
         {% endif %}
       </div>
 
@@ -21,16 +21,16 @@
         </div>
 
         {% if page_obj %}
-          <div class="movie-search-grid" data-page="{% if search_type == 'favorites' %}favorites{% else %}my-films{% endif %}">
-            {% for obj in items %}
-              {% include 'films/includes/my_film_preview_card.html' with user_film=obj.user_film review=obj.review %}
+          <div class="movie-search-grid" data-page="watched">
+            {% for review in reviews %}
+              {% include 'reviews/includes/review_card.html' with review=review %}
             {% endfor %}
           </div>
         {% else %}
-          {% if search_type == "favorites" %}
-            <h3 class="card-title movie-search-body__subtitle">Ставь 🔥 на фильмы, формируй свой список фаворитов</h3>
+          {% if search_type == "reviewed" %}
+            <h3 class="card-title movie-search-body__subtitle">У вас пока нет отзывов</h3>
           {% else %}
-            <h3 class="card-title movie-search-body__subtitle">У вас пока нет фильмов</h3>
+            <h3 class="card-title movie-search-body__subtitle">Добавляй фильмы в просмотренные, формируй свою библиотеку</h3>
           {% endif %}
         {% endif %}
       </div>

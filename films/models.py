@@ -36,13 +36,8 @@ class Person(models.Model):
 
 class Film(models.Model):
     """Класс модели фильма"""
-    user = models.ForeignKey(
-        to="users.CustomUser",
-        on_delete=models.CASCADE,
-        related_name="films",
-        verbose_name="Пользователь")
     title = models.CharField(max_length=500, verbose_name="Название")
-    tmdb_id = models.PositiveIntegerField(verbose_name="TMDB ID")
+    tmdb_id = models.PositiveIntegerField(unique=True, verbose_name="TMDB ID")
     tagline = models.CharField(max_length=255, blank=True, null=True, verbose_name="Короткое описание")
     original_title = models.CharField(max_length=500, blank=True, null=True, verbose_name="Оригинальное название")
     genres = models.ManyToManyField(to="films.Genre", related_name="films", verbose_name="Жанры")
@@ -64,8 +59,6 @@ class Film(models.Model):
     production_company = models.CharField(null=True, blank=True, verbose_name="Производство")
     vote_average = models.FloatField(null=True, blank=True, verbose_name="Средняя оценка")
     vote_count = models.PositiveIntegerField(null=True, blank=True, verbose_name="Количество оценок")
-    is_watched = models.BooleanField(default=False, verbose_name="Просмотрено")
-    is_favorite = models.BooleanField(default=False, verbose_name="Любимое")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
 
@@ -73,7 +66,6 @@ class Film(models.Model):
         return self.title
 
     class Meta:
-        unique_together = ("user", "tmdb_id")
         verbose_name = "фильм"
         verbose_name_plural = "фильмы"
         ordering = [
@@ -101,3 +93,28 @@ class FilmCrew(models.Model):
 
     class Meta:
         unique_together = ("film", "person", "job")
+
+
+class UserFilm(models.Model):
+    user = models.ForeignKey(
+        to="users.CustomUser",
+        on_delete=models.CASCADE,
+        related_name="user_films",
+        verbose_name="Пользователь")
+    film = models.ForeignKey(
+        Film,
+        on_delete=models.CASCADE,
+        related_name="user_relations"
+    )
+    is_favorite = models.BooleanField(default=False, verbose_name="Любимое")
+    is_planned = models.BooleanField(default=False, verbose_name="Запланировано к просмотру")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user} — {self.film}"
+
+    class Meta:
+        unique_together = ("user", "film")
+        indexes = [
+            models.Index(fields=["user", "film"]),
+        ]
