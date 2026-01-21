@@ -26,7 +26,8 @@
         </div>
 
         {% if review.user_rating %}
-          <div class="movie-badge movie-badge--rating">{{ review.user_rating|floatformat:1 }}</div>
+{#          <div class="movie-badge movie-badge--rating">{{ review.user_rating|floatformat:1 }}</div>#}
+          {% include 'films/includes/rating.html' with film=review %}
         {% endif %}
       </div>
 
@@ -53,7 +54,7 @@
           class="btn-icon"
           data-role="plan"
           data-action="plan"
-          data-id="{{ review.film.id }}"
+          data-id="{{ review.film.tmdb_id }}"
           data-title="{{ review.film.title }}"
           title="Запланировать новый просмотр">
           📅
@@ -62,7 +63,8 @@
       <button
           class="btn-icon"
           data-action="edit-review"
-          data-id="{{ review.film.id }}"
+          data-review-id="{{ review.id }}"
+          data-id="{{ review.film.tmdb_id }}"
           data-title="{{ review.film.title }}"
           title="Смотреть отзыв">
           ✍️
@@ -72,7 +74,7 @@
           class="btn-icon"
           data-role="favorite"
           data-action="favorite"
-          data-id="{{ review.user_film_id }}"
+          data-id="{{ review.film.tmdb_id }}"
           data-title="{{ review.film.title }}"
           title="Добавить в Любимое">
           🔥
@@ -81,7 +83,8 @@
       <button
           class="btn-icon"
           data-action="delete-watched"
-          data-id="{{ review.id }}"
+          data-review-id="{{ review.id }}"
+          data-id="{{ review.film.tmdb_id }}"
           data-title="{{ review.film.title }}"
           title="Убрать из просмотренного">
           <span class="btn-icon-text">➖</span>

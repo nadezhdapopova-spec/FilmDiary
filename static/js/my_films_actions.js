@@ -60,6 +60,13 @@ document.addEventListener('DOMContentLoaded', function () {
         break;
       }
 
+      case 'edit-review': {
+        const reviewId = button.dataset.reviewId;
+        if (!reviewId) return;
+        window.location.href = `/reviews/update/${reviewId}/`;
+        break;
+      }
+
       case 'delete': {
         const confirmedDelete = await confirmDelete('delete', title);
         if (!confirmedDelete) return;
@@ -83,10 +90,12 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       case 'delete-watched': {
+        const reviewId = button.dataset.reviewId;
+
         const confirmedWatched = await confirmDelete('delete-watched', title);
         if (!confirmedWatched) return;
 
-        const response = await fetch(`/reviews/${filmId}/delete/`, {
+        const response = await fetch(`/reviews/${reviewId}/delete/`, {
            method: 'POST',
            headers: {
               'X-CSRFToken': getCookie('csrftoken'),
@@ -140,7 +149,7 @@ async function updateFilmStatus(button, filmId, action, title) {
         'X-CSRFToken': getCookie('csrftoken'),
         'X-Requested-With': 'XMLHttpRequest'
       },
-      body: `film_id=${encodeURIComponent(filmId)}&action=${encodeURIComponent(action)}`
+      body: `tmdb_id=${encodeURIComponent(filmId)}&action=${encodeURIComponent(action)}`
     });
 
     if (!response.ok) throw new Error(`HTTP ${response.status}`);

@@ -139,18 +139,18 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
     """Обновляет статус фильма"""
 
     def post(self, request, *args, **kwargs):
-        user_film_id = request.POST.get("film_id")
+        tmdb_id = request.POST.get("tmdb_id")
         action = request.POST.get("action")  # 'plan' или 'favorite'
 
         try:
-            user_film = UserFilm.objects.select_related("film").get(id=user_film_id, user=request.user)
+            user_film = UserFilm.objects.select_related("film").get(user=request.user, film__tmdb_id=tmdb_id)
 
             if action == "plan":
                 user_film.is_planned = True
             elif action == "watch":
                 return JsonResponse({
                     "status": "redirect",
-                    "url": reverse("reviews:review_create", kwargs={"film_id": user_film.film.id})
+                    "url": reverse("reviews:review_create", kwargs={"tmdb_id": user_film.film.tmdb_id})
                 })
             elif action == "favorite":
                 user_film.is_favorite = True
@@ -201,9 +201,9 @@ class DeleteFilmView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         """Удаляет фильм из коллекции пользователя"""
         tmdb_id = self.kwargs["tmdb_id"]
-        print(tmdb_id)
-        print("Deleting UserFilm:", UserFilm.objects.filter(user=request.user, film__tmdb_id=tmdb_id).query)
-        print("Deleting Review:", Review.objects.filter(user=request.user, film__tmdb_id=tmdb_id).query)
+        # print(tmdb_id)
+        # print("Deleting UserFilm:", UserFilm.objects.filter(user=request.user, film__tmdb_id=tmdb_id).query)
+        # print("Deleting Review:", Review.objects.filter(user=request.user, film__tmdb_id=tmdb_id).query)
 
         Review.objects.filter(user=request.user, film__tmdb_id=tmdb_id).delete()
         UserFilm.objects.filter(user=request.user, film__tmdb_id=tmdb_id).delete()

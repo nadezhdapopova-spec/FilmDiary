@@ -149,7 +149,7 @@ class ReviewCreateView(LoginRequiredMixin, ReviewFormContextMixin, CreateView):
         Извлекает film_id из URL, загружает объект Film из базы по pk
         и сохраняет в self.film для использования в любых методах класса
         """
-        self.film = get_object_or_404(Film, pk=kwargs["film_id"])
+        self.film = get_object_or_404(Film, tmdb_id=kwargs["tmdb_id"])
 
         existing_review = Review.objects.filter(user=request.user, film=self.film).first()
         if existing_review:
@@ -226,7 +226,6 @@ class ReviewDeleteView(LoginRequiredMixin, DeleteView):
     """Представление для удаления фильма из промотренных=оцененных"""
 
     model = Review
-    template_name = "reviews/review_confirm_delete.html"
     context_object_name = "review"
     success_url = reverse_lazy("reviews:reviews")
 
