@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function () {
       case 'edit-review': {
         const reviewId = button.dataset.reviewId;
         if (!reviewId) return;
-        window.location.href = `/reviews/update/${reviewId}/`;
+        window.location.href = `/reviews/reviews/${reviewId}/`;
         break;
       }
 
