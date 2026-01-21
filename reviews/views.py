@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.db.models import OuterRef, Exists
+from django.db.models import OuterRef, Exists, Subquery
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
@@ -32,6 +32,7 @@ class BaseReviewListView(LoginRequiredMixin, ListView):
         )
 
         return qs.annotate(
+            user_film_id=Subquery(user_films.values("id")[:1]),   #
             is_favorite=Exists(user_films.filter(is_favorite=True)),
             is_planned=Exists(user_films.filter(is_planned=True))
         )

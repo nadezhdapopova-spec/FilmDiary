@@ -22,8 +22,8 @@
 
         {% if page_obj %}
           <div class="movie-search-grid" data-page="{% if search_type == 'favorites' %}favorites{% else %}my-films{% endif %}">
-            {% for obj in page_obj %}
-              {% include 'films/includes/my_film_preview_card.html' with user_film=obj %}
+            {% for obj in items %}
+              {% include 'films/includes/my_film_preview_card.html' with user_film=obj.user_film review=obj.review %}
             {% endfor %}
           </div>
         {% else %}

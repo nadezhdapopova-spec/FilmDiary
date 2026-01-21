@@ -6,7 +6,7 @@ from django.urls import reverse
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
-from films.models import UserFilm
+from films.models import UserFilm, Film
 from films.services import save_film_from_tmdb
 from reviews.models import Review
 
@@ -200,10 +200,10 @@ class DeleteFilmView(LoginRequiredMixin, View):
 
     def post(self, request, *args, **kwargs):
         """Удаляет фильм из списка пользователя 'Мои фильмы'"""
-        UserFilm.objects.filter(
-            user=request.user,
-            film__tmdb_id=self.kwargs["tmdb_id"]
-        ).delete()
+        tmdb_id = self.kwargs["tmdb_id"]
+
+        Review.objects.filter(user=request.user, film__tmdb_id=tmdb_id).delete()
+        UserFilm.objects.filter(user=request.user, film__tmdb_id=tmdb_id).delete()
 
         messages.info(request, "Фильм успешно удалён")
         return redirect("films:my_films")

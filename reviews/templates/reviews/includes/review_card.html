@@ -1,5 +1,6 @@
 <div class="movie-card glass-card">
   <article class="movie-card">
+
     <div class="movie-card__poster-wrapper">
       {% if review.film.poster_path %}
         <img src="https://image.tmdb.org/t/p/w342{{ review.film.poster_path }}"
@@ -12,10 +13,6 @@
       {% endif %}
 
       <div class="movie-card__overlay">
-        {% if review.user_rating %}
-          <div class="movie-badge movie-badge--rating">{{ review.user_rating|floatformat:1 }}</div>
-        {% endif %}
-
         <div class="movie-badge-group">
           <span class="movie-badge movie-badge--watched" title="Просмотрено">🍿</span>
 
@@ -27,7 +24,12 @@
             <span class="movie-badge movie-badge--favorite" title="Любимое">🔥</span>
           {% endif %}
         </div>
+
+        {% if review.user_rating %}
+          <div class="movie-badge movie-badge--rating">{{ review.user_rating|floatformat:1 }}</div>
+        {% endif %}
       </div>
+
     </div>
 
     <div class="movie-meta mt-2">
@@ -69,18 +71,18 @@
         <button
           class="btn-icon"
           data-role="favorite"
-          data-action="{% if review.is_favorite %}unfavorite{% else %}favorite{% endif %}"
-          data-id="{{ review.film.id }}"
+          data-action="favorite"
+          data-id="{{ review.user_film_id }}"
           data-title="{{ review.film.title }}"
-          title="{% if review.is_favorite %}Убрать из Любимого{% else %}Добавить в Любимое{% endif %}">
-          {% if review.is_favorite %}⛔{% else %}🔥{% endif %}
+          title="Добавить в Любимое">
+          🔥
         </button>
 
       <button
           class="btn-icon"
-          data-role="watch"
+{#          data-role="watch"#}
           data-action="delete-watched"
-          data-id="{{ review.film.id }}"
+          data-id="{{ review.id }}"
           data-title="{{ review.film.title }}"
           title="Убрать из просмотренного">
           <span class="btn-icon-text">➖</span>

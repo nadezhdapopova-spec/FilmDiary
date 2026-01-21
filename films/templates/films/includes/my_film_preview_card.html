@@ -1,5 +1,6 @@
 <div class="movie-card glass-card">
   <article class="movie-card">
+
     <div class="movie-card__poster-wrapper">
       {% if user_film.film.poster_path %}
         <img src="https://image.tmdb.org/t/p/w342{{ user_film.film.poster_path }}"
@@ -12,10 +13,6 @@
       {% endif %}
 
       <div class="movie-card__overlay">
-        {% if review %}
-          <div class="movie-badge movie-badge--rating">{{ review.user_rating }}</div>
-        {% endif %}
-
         <div class="movie-badge-group">
           {% if review %}
             <span class="movie-badge movie-badge--watched" title="Просмотрено">🍿</span>
@@ -30,7 +27,11 @@
           {% endif %}
         </div>
 
+        {% if review %}
+          <div class="movie-badge movie-badge--rating">{{ review.user_rating|floatformat:1 }}</div>
+        {% endif %}
       </div>
+
     </div>
 
     <div class="movie-meta mt-2">
@@ -50,36 +51,6 @@
 
     <div class="movie-card__footer movie-card__footer--compact">
       <div class="movie-card__actions-row">
-        <button
-          class="btn-icon"
-          data-role="plan"
-          data-action="plan"
-          data-id="{{ user_film.id }}"
-          data-title="{{ user_film.film.title }}"
-          title="Запланировать просмотр">
-          📅
-        </button>
-
-        <button
-          class="btn-icon"
-          data-role="watch"
-          data-action="watch"
-          data-id="{{ user_film.id }}"
-          data-title="{{ user_film.film.title }}"
-          title="Добавить в Просмотрено">
-          🍿
-        </button>
-
-        <button
-          class="btn-icon"
-          data-role="favorite"
-          data-action="favorite"
-          data-id="{{ user_film.id }}"
-          data-title="{{ user_film.film.title }}"
-          title="}Добавить в Любимое">
-          🔥
-        </button>
-
         {% if favorites_page %}
           <button
             class="btn-icon"
@@ -88,9 +59,39 @@
             data-id="{{ user_film.id }}"
             data-title="{{ user_film.film.title }}"
             title="Убрать из Любимого">
-            ⛔️
+            🔥⛔️
           </button>
         {% else %}
+          <button
+            class="btn-icon"
+            data-role="plan"
+            data-action="plan"
+            data-id="{{ user_film.id }}"
+            data-title="{{ user_film.film.title }}"
+            title="Запланировать просмотр">
+            📅
+          </button>
+
+          <button
+            class="btn-icon"
+            data-role="watch"
+            data-action="watch"
+            data-id="{{ user_film.id }}"
+            data-title="{{ user_film.film.title }}"
+            title="Добавить в Просмотрено">
+            🍿
+          </button>
+
+          <button
+            class="btn-icon"
+            data-role="favorite"
+            data-action="favorite"
+            data-id="{{ user_film.id }}"
+            data-title="{{ user_film.film.title }}"
+            title="}Добавить в Любимое">
+            🔥
+          </button>
+
           <button
             class="btn-icon"
             data-role="delete"
