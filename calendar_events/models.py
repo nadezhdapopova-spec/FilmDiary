@@ -38,6 +38,10 @@ class CalendarEvent(models.Model):
         blank=True,
         verbose_name="Комментарий"
     )
+    reminder_sent = models.BooleanField(
+        default=False,
+        verbose_name="Отправлено"
+    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         verbose_name="Дата создания"
@@ -63,5 +67,5 @@ class CalendarEvent(models.Model):
         ordering = ["-planned_date",]
         indexes = [
             models.Index(fields=["user", "film"]),
-            models.Index(fields=["planned_date", "film"]),
+            models.Index(fields=["status", "reminder_sent", "planned_date"]),
         ]

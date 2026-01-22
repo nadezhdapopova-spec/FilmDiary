@@ -3,6 +3,7 @@ import sys
 from datetime import timedelta
 from pathlib import Path
 
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -221,12 +222,13 @@ CELERY_ENABLE_UTC = False
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
-# CELERY_BEAT_SCHEDULE = {
-#     "send_habit_reminder": {
-#         "task": "habits.tasks.send_habit_reminder",
-#         "schedule": timedelta(minutes=1),
-#     },
-# }
+CELERY_BEAT_SCHEDULE = {
+    "send_daily_calendar_reminders": {
+        "task": "calendar_events.tasks.send_daily_reminders",
+        "schedule": crontab(minute="*/10"),  # каждые 10 минут
+    },
+}
+
 
 # Mail server settings
 
