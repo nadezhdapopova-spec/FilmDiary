@@ -1,4 +1,5 @@
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -35,6 +36,7 @@ INSTALLED_APPS = [
     "users",
     "films",
     "reviews",
+    "calendar_events",
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = ["bootstrap5"]
@@ -93,6 +95,14 @@ DATABASES = {
     }
 }
 
+if "test" in sys.argv:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "test_bd.sqlite3",
+        }
+    }
+
 # Default primary key field type
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -149,7 +159,7 @@ MESSAGE_TAGS = {
 
 AUTHENTICATION_BACKENDS = [
     "users.backends.EmailBackendAllowInactive",  # к кастомному backend
-    "django.contrib.auth.backends.ModelBackend",  # для админки
+    "django.contrib.auth.backends.ModelBackend",  # для админки, базовый бэкенд аутентификации, проверяет базу данных пользователей Django и запрашивает встроенные разрешения
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
