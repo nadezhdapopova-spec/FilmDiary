@@ -2,31 +2,46 @@ from datetime import date
 
 from django.db import models
 
-from rest_framework.exceptions import ValidationError
+from django.core.exceptions import ValidationError
 
 
 class CalendarEvent(models.Model):
     """Модель запланированного просмотра фильма"""
-    STATUS_CHOICES = [
-        ("planned", "Запланирован"),
-        ("watched", "Просмотрен"),
-        ("skipped", "Пропущен"),
-    ]
+
+    class Status(models.TextChoices):
+        PLANNED = "planned", "Запланирован"
+        WATCHED = "watched", "Просмотрен"
+        SKIPPED = "skipped", "Пропущен"
 
     user = models.ForeignKey(
         to="users.CustomUser",
         on_delete=models.CASCADE,
         related_name="calendar_events",
-        verbose_name="Пользователь")
+        verbose_name="Пользователь"
+    )
     film = models.ForeignKey(
         to="films.Film",
         on_delete=models.CASCADE,
         related_name="calendar_events",
-        verbose_name="Фильм")
-    planned_date = models.DateField(verbose_name="Дата просмотра")
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="planned", verbose_name="Статус")
-    note = models.TextField(blank=True, verbose_name="Комментарий")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+        verbose_name="Фильм"
+    )
+    planned_date = models.DateField(
+        verbose_name="Дата просмотра"
+    )
+    status = models.CharField(
+        max_length=10,
+        choices=Status.choices,
+        default=Status.PLANNED,
+        verbose_name="Статус"
+    )
+    note = models.TextField(
+        blank=True,
+        verbose_name="Комментарий"
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name="Дата создания"
+    )
 
     def clean(self):
         """Валидация поля Дата просмотра"""
@@ -39,14 +54,14 @@ class CalendarEvent(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.user.username} - {self.film.title}: {self.planned_date}"
+        return f"{self.film.title}: {self.planned_date}"
 
     class Meta:
-        unique_together = ("user", "film")
+        unique_together = ("user", "film", "planned_date")
         verbose_name = "просмотр"
         verbose_name_plural = "просмотры"
         ordering = ["-planned_date",]
         indexes = [
             models.Index(fields=["user", "film"]),
-            models.Index(fields=["-planned_date", "film"]),
+            models.Index(fields=["planned_date", "film"]),
         ]

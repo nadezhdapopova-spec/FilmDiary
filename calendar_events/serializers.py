@@ -10,5 +10,5 @@ class CalendarEventSerializer(serializers.ModelSerializer):
     class Meta:
         model = CalendarEvent
         fields = ["id", "user", "film", "film_title", "planned_date", "status", "note", "created_at"]
-        read_only_fields = ("user", "film", "film_title")
+        read_only_fields = ("id", "user", "film_title", "created_at")
         validators = []
