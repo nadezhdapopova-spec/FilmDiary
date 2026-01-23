@@ -33,6 +33,7 @@ urlpatterns = [
     path("films/", include("films.urls", namespace="films")),
     path("reviews/", include("reviews.urls", namespace="reviews")),
     path("api/", include("calendar_events.urls", namespace="calendar_events")),
+    path("", include("calendar_events.urls_pages", namespace="calendar_events_pages")),
     path("swagger/", schema_view.with_ui("swagger", cache_timeout=0), name="schema-swagger-ui"),
     path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
 ]

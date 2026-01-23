@@ -23,13 +23,14 @@ class CalendarEventViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Возвращает фильмы пользователя, запланированные к просмотру"""
-        return CalendarEvent.objects.filter(user=self.request.user)
+        return CalendarEvent.objects.filter(user=self.request.user).select_related("film")
 
     def perform_create(self, serializer):
         """При создании запланированного события устанавливает пользователя как владельца"""
         serializer.save(user=self.request.user)
 
-    @action(detail=False, methods=['get'])
+
+    @action(detail=False, methods=["get"])
     def upcoming(self, request):
         """Возвращает фильмы пользователя, запланированные на ближайшие 48 часов"""
         now = timezone.now().date()

@@ -1,0 +1,175 @@
+.calendar-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 20px;
+  color: #fff;
+}
+
+/* Header */
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+.calendar-header h1 {
+  font-size: 28px;
+  font-weight: 600;
+  text-shadow: 0 0 12px rgba(255, 140, 0, 0.6);
+}
+
+/* View switch */
+
+.view-switch {
+  display: flex;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px;
+  border-radius: 12px;
+  backdrop-filter: blur(8px);
+}
+
+.view-switch a {
+  padding: 8px 16px;
+  border-radius: 10px;
+  color: #aaa;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.view-switch a.active,
+.view-switch a:hover {
+  color: #fff;
+  background: linear-gradient(135deg, #ff8c00, #ff5f00);
+  box-shadow: 0 0 15px rgba(255, 140, 0, 0.6);
+}
+
+/* Date groups */
+
+.date-group {
+  margin-bottom: 36px;
+}
+
+.date-title {
+  font-size: 20px;
+  margin-bottom: 16px;
+  color: #ffb347;
+  text-shadow: 0 0 8px rgba(255, 179, 71, 0.5);
+}
+
+/* Event cards */
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.event-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-radius: 16px;
+  background: rgba(20, 20, 30, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(10px);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.event-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 25px rgba(255, 140, 0, 0.25);
+}
+
+/* Status colors */
+.status-planned { border-left: 4px solid #4caf50; }
+.status-watched { opacity: 0.6; filter: grayscale(0.6);}
+.status-skipped { border-left: 4px solid #999; }
+
+/* Event content */
+
+.event-title {
+  font-size: 18px;
+  font-weight: 500;
+}
+
+.event-note {
+  margin-top: 6px;
+  font-size: 14px;
+  color: #ccc;
+}
+
+/* Actions */
+
+.event-actions {
+  display: flex;
+  gap: 14px;
+}
+
+.event-actions a {
+  font-size: 18px;
+  text-decoration: none;
+  color: #aaa;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.event-actions a:hover {
+  color: #ffb347;
+  transform: scale(1.15);
+}
+
+/* Empty state */
+
+.empty-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: #ccc;
+}
+
+.btn-primary {
+  display: inline-block;
+  margin-top: 20px;
+  padding: 12px 26px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #ff8c00, #ff5f00);
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 0 20px rgba(255, 140, 0, 0.6);
+  transition: transform 0.2s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+}
+
+.date-group {
+  animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.mark-watched {
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #aaa;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+
+.mark-watched:hover {
+  color: #4caf50;
+  transform: scale(1.2);
+}
