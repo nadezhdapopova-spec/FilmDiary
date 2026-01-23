@@ -7,12 +7,6 @@ from django.core.exceptions import ValidationError
 
 class CalendarEvent(models.Model):
     """Модель запланированного просмотра фильма"""
-
-    class Status(models.TextChoices):
-        PLANNED = "planned", "Запланирован"
-        WATCHED = "watched", "Просмотрен"
-        SKIPPED = "skipped", "Пропущен"
-
     user = models.ForeignKey(
         to="users.CustomUser",
         on_delete=models.CASCADE,
@@ -27,12 +21,6 @@ class CalendarEvent(models.Model):
     )
     planned_date = models.DateField(
         verbose_name="Дата просмотра"
-    )
-    status = models.CharField(
-        max_length=10,
-        choices=Status.choices,
-        default=Status.PLANNED,
-        verbose_name="Статус"
     )
     note = models.TextField(
         blank=True,
@@ -67,5 +55,5 @@ class CalendarEvent(models.Model):
         ordering = ["-planned_date",]
         indexes = [
             models.Index(fields=["user", "film"]),
-            models.Index(fields=["status", "reminder_sent", "planned_date"]),
+            models.Index(fields=["reminder_sent", "planned_date"]),
         ]

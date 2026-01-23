@@ -36,7 +36,6 @@ def send_daily_reminders():
     now_utc = timezone.now()
     events = (CalendarEvent.objects.filter(
         user__tg_chat_id__isnull=False,
-        status="planned",
         reminder_sent=False
     ).select_related("user", "film"))
 

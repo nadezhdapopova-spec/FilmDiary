@@ -37,7 +37,6 @@ class CalendarEventViewSet(viewsets.ModelViewSet):
         events = self.get_queryset().filter(
             planned_date__gte=now,
             planned_date__lte=now + timedelta(days=2),  # ближайшие 48 часов
-            status=CalendarEvent.Status.PLANNED
         )
         serializer = self.get_serializer(events, many=True)
         return Response(serializer.data)
