@@ -108,8 +108,22 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         break;
       }
-
     }
+  });
+
+  window.addEventListener('calendarEventDeleted', (e) => {
+    const { filmTmdbId } = e.detail;
+    if (!filmTmdbId) return;
+
+    // Обновляем статусы ВСЕХ карточек этого фильма на текущей странице
+    document.querySelectorAll(`[data-id="${filmTmdbId}"]`).forEach(button => {
+      const card = button.closest('.glass-card');
+      if (card) {
+        updatePlannedStatus(card, false); // убираем badge 📅
+      }
+    });
+
+    showToast(`📅 Фильм убран из Запланированных`, 'info');
   });
 });
 
@@ -412,4 +426,22 @@ function getCookie(name) {
     .split('; ')
     .find(c => c.startsWith(name + '='))
     ?.split('=')[1];
+}
+
+// Функция обновления статуса "Запланировано"
+function updatePlannedStatus(card, isPlanned) {
+  const badges = card.querySelector('.movie-badge-group');
+  if (!badges) return;
+
+  // Удаляем существующий badge planned
+  const plannedBadge = badges.querySelector('.movie-badge--planned');
+  if (plannedBadge) plannedBadge.remove();
+
+  // Добавляем новый статус (если нужно)
+  if (isPlanned) {
+    badges.insertAdjacentHTML(
+      'beforeend',
+      `<span class="movie-badge movie-badge--planned" title="Запланировано">📅</span>`
+    );
+  }
 }

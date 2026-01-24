@@ -217,8 +217,8 @@ function deleteEvent(eventId, buttonEl) {
         }
         return Promise.resolve();
     })
-    .then(() => {
-        // УДАЛЕНИЕ ИЗ DOM
+    .then(async() => {
+        // УДАЛЕНИЕ ИЗ DOM - локальное удаление
         const card = buttonEl.closest(".event-card");
         if (card && card.parentNode) {
             card.parentNode.removeChild(card);
@@ -242,12 +242,31 @@ function deleteEvent(eventId, buttonEl) {
             `;
         }
 
+        const filmTmdbId = await getFilmTmdbIdFromEventId(eventId);
+        window.dispatchEvent(new CustomEvent('calendarEventDeleted', {
+            detail: {
+                eventId: eventId,
+                filmTmdbId: filmTmdbId
+            }
+        }));
+
         showSuccessToast("✅ Просмотр отменён");
     })
     .catch(error => {
         console.error("Ошибка:", error);
         showErrorToast("❌ Ошибка удаления");
     });
+}
+
+// Вспомогательная функция — получить tmdb_id по eventId
+async function getFilmTmdbIdFromEventId(eventId) {
+    try {
+        const response = await fetch(`/api/calendar_events/${eventId}/`);
+        const event = await response.json();
+        return event.film_tmdb_id;
+    } catch {
+        return null;
+    }
 }
 
 // Функция для получения CSRF токена (Django)
