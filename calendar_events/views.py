@@ -18,7 +18,7 @@ class CalendarEventViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [OrderingFilter]
     ordering_fields = ["planned_date", "film"]
-    ordering = ["-planned_date"]
+    ordering = ["planned_date"]
     pagination_class = CalendarEventPaginator
 
     def get_queryset(self):

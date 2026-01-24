@@ -4,8 +4,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 window.loadCalendarEvents = loadCalendarEvents;
 
-function loadCalendarEvents() {
-    fetch("/api/calendar_events/", {
+function loadCalendarEvents(page = 1) {
+    const url = page === 1 ? "/api/calendar_events/" : `/api/calendar_events/?page=${page}`;
+
+    fetch(url, {
         headers: {
             "X-Requested-With": "XMLHttpRequest"
         }
@@ -21,8 +23,9 @@ function loadCalendarEvents() {
             return response.json();
         })
         .then(data => {
-            const events = data.results || data;
-            renderEvents(events);
+            // const events = data.results || data;
+            // renderEvents(events);
+            renderEvents(data);
         })
         .catch(error => {
             console.error(error);
@@ -30,24 +33,79 @@ function loadCalendarEvents() {
         });
 }
 
+function renderPagination(apiResponse, hasEvents) {
+    const paginationContainer = document.getElementById("calendar-pagination");
+    if (!paginationContainer) return;
 
-function renderEvents(events) {
+    if (!hasEvents || !apiResponse.count || apiResponse.count <= 12) {
+        paginationContainer.innerHTML = "";
+        return;
+    }
+
+    const currentPage = getCurrentPage(apiResponse.next, apiResponse.previous);
+    const totalPages = Math.ceil(apiResponse.count / 12); // 12 = твой PAGE_SIZE
+
+    let paginationHTML = `
+        <div class="pagination-info">
+            Показаны ${currentPage === 1 ? 1 : (currentPage - 1) * 12 + 1}–${Math.min(currentPage * 12, apiResponse.count)} из ${apiResponse.count}
+        </div>
+    `;
+
+    paginationHTML += `
+        <div class="pagination-buttons">
+            ${apiResponse.previous ? `<button class="page-btn" data-page="${currentPage - 1}">‹ Назад</button>` : ''}
+            <span class="page-info">Страница ${currentPage} из ${totalPages}</span>
+            ${apiResponse.next ? `<button class="page-btn" data-page="${getNextPage(apiResponse.next)}">Вперед ›</button>` : ''}
+        </div>
+    `;
+
+    paginationContainer.innerHTML = paginationHTML;
+
+    // Обработчики кнопок пагинации
+    paginationContainer.querySelectorAll(".page-btn").forEach(btn => {
+        btn.addEventListener("click", (e) => {
+            e.preventDefault();
+            const page = parseInt(e.target.dataset.page);
+            loadCalendarEvents(page);
+        });
+    });
+}
+
+function getCurrentPage(next, previous) {
+    if (next) {
+        const match = next.match(/page=(\d+)/);
+        return match ? parseInt(match[1]) - 1 || 1 : 1;
+    }
+    return previous ? 2 : 1;
+}
+
+function getNextPage(nextUrl) {
+    const match = nextUrl.match(/page=(\d+)/);
+    return match ? parseInt(match[1]) : 2;
+}
+
+
+function renderEvents(apiResponse) {
     const container = document.getElementById("calendar-events-list");
+    const paginationContainer = document.getElementById("calendar-pagination");
     if (!container) return;
 
     const loader = container.querySelector(".loader");
     if (loader) loader.remove();
 
+    const events = apiResponse.results || apiResponse;
     container.innerHTML = "";
 
     if (!events.length) {
-        container.innerHTML = "<p class='empty-state'>Пока ничего не запланировано</p>";
+        container.innerHTML = `
+          <div class="empty-state">
+            <strong>Пока ничего не запланировано</strong>
+            <p>Добавь фильмы в план просмотра, чтобы они появились здесь.</p>
+          </div>
+        `;
+        paginationContainer.innerHTML = ""; // Скрываем пагинацию
         return;
     }
-
-    events.sort((a, b) =>
-        new Date(a.planned_date) - new Date(b.planned_date)
-    );
 
     const grouped = groupEventsByDate(events);
 
@@ -66,11 +124,16 @@ function renderEvents(events) {
             const card = document.createElement("div");
             card.className = "event-card";
 
+            const filmUrl = `/films/film/${event.film_tmdb_id}/`;
+
             card.innerHTML = `
                 <div class="event-main">
                     <div class="event-title">${event.film_title}</div>
                     ${event.note ? `<div class="event-note">${event.note}</div>` : ""}
-                    }
+                </div>
+                <div class="event-actions">
+                    <a href="${filmUrl}" title="Подробнее">🎬</a>
+                    <button class="mark-watched" data-event-id="${event.id}" title="Отменить просмотр">➖</button>
                 </div>
             `;
 
@@ -79,6 +142,7 @@ function renderEvents(events) {
 
         container.appendChild(group);
     });
+    renderPagination(apiResponse, container.children.length > 0);
 }
 
 function groupEventsByDate(events) {
@@ -117,4 +181,146 @@ function showError() {
 
     container.innerHTML =
         "<p class='error'>Не удалось загрузить события</p>";
+}
+
+// Делегирование кликов по кнопкам "Отменить просмотр"
+document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".mark-watched");
+    if (!btn) return;
+
+    e.preventDefault();
+
+    const eventId = btn.dataset.eventId;
+    if (!eventId) {
+        console.error("Нет event ID");
+        return;
+    }
+
+    showDeleteModal(eventId, btn);
+});
+
+function deleteEvent(eventId, buttonEl) {
+    fetch(`/api/calendar_events/${eventId}/`, {
+        method: "DELETE",
+        headers: {
+            "X-Requested-With": "XMLHttpRequest",
+            "X-CSRFToken": getCookie("csrftoken"), // для CSRF защиты Django
+        }
+    })
+    .then(response => {
+        if (response.status === 401 || response.status === 403) {
+            window.location.href = "/login/";
+            return;
+        }
+        if (!response.ok) {
+            throw new Error("Ошибка удаления события");
+        }
+        return Promise.resolve();
+    })
+    .then(() => {
+        // УДАЛЕНИЕ ИЗ DOM
+        const card = buttonEl.closest(".event-card");
+        if (card && card.parentNode) {
+            card.parentNode.removeChild(card);
+        }
+
+        const eventsList = buttonEl.closest(".events-list");
+        if (eventsList && eventsList.children.length === 0) {
+            const dateGroup = eventsList.closest(".date-group");
+            if (dateGroup && dateGroup.parentNode) {
+                dateGroup.parentNode.removeChild(dateGroup);
+            }
+        }
+
+        const container = document.getElementById("calendar-events-list");
+        if (container.children.length === 0) {
+            container.innerHTML = `
+                <div class="empty-state">
+                    <strong>Пока ничего не запланировано</strong>
+                    <p>Добавь фильмы в план просмотра, чтобы они появились здесь</p>
+                </div>
+            `;
+        }
+
+        showSuccessToast("✅ Просмотр отменён");
+    })
+    .catch(error => {
+        console.error("Ошибка:", error);
+        showErrorToast("❌ Ошибка удаления");
+    });
+}
+
+// Функция для получения CSRF токена (Django)
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Модальные окна
+function showDeleteModal(eventId, buttonEl) {
+    const modal = document.createElement("div");
+    modal.id = "delete-modal";
+    modal.className = "modal-overlay";
+    modal.innerHTML = `
+        <div class="modal-content">
+            <h3>Отменить просмотр?</h3>
+            <p><strong>${buttonEl.closest('.event-card').querySelector('.event-title').textContent}</strong></p>
+            <div class="modal-actions">
+                <button class="btn-cancel">Отмена</button>
+                <button class="btn-confirm" data-event-id="${eventId}">Удалить</button>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    // Закрытие по клику на фон
+    modal.addEventListener("click", (e) => {
+        if (e.target === modal) closeModal();
+    });
+
+    // Обработчик кнопки "Удалить"
+    modal.querySelector(".btn-confirm").addEventListener("click", () => {
+        deleteEvent(eventId, buttonEl);
+        closeModal();
+    });
+
+    // Обработчик кнопки "Отмена"
+    modal.querySelector(".btn-cancel").addEventListener("click", () => {
+        closeModal();
+    });
+}
+
+function closeModal() {
+    const modal = document.getElementById("delete-modal");
+    if (modal) modal.remove();
+}
+
+function showSuccessToast(message) {
+    const toast = document.createElement("div");
+    toast.className = "toast-success";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.remove(), 3000);
+}
+
+
+function showErrorToast(message) {
+    const toast = document.createElement("div");
+    toast.className = "toast-error";
+    toast.textContent = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => toast.remove(), 3000);
 }

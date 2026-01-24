@@ -4,21 +4,23 @@
 
 {% block content %}
 <section class="calendar-page">
-
-  <div class="calendar-header">
-    <h1>📅 Запланированные просмотры</h1>
-    <div class="view-switch">
-      <button class="active">Список</button>
-      <a href="{% url 'calendar_events_pages:calendar_list' %}?view=calendar">Календарь</a>
+  <div class="glass-card movie-section-card">
+    <div class="card-header mb-3">
+      <h2 class="card-title">📅 Запланированные просмотры</h2>
+{#      <div class="view-switch">#}
+{#        <button class="active">Список</button>#}
+{#        <a href="{% url 'calendar_events_pages:calendar_list' %}?view=calendar">Календарь</a>#}
+{#      </div>#}
     </div>
-  </div>
 
-  <!-- СЮДА JS ВСТАВИТ КАРТОЧКИ -->
-  <div id="calendar-events-list" class="calendar-list">
-    <div class="loader">Загрузка…</div>
-  </div>
+    <!-- СЮДА JS ВСТАВИТ КАРТОЧКИ -->
+    <div id="calendar-events-list" class="calendar-list">
+      <div class="loader">Загрузка…</div>
+    </div>
 
+    <div id="calendar-pagination" class="calendar-pagination"></div>
+
+  </div>
 </section>
-
 <script src="{% static 'js/calendar_list.js' %}"></script>
 {% endblock %}
