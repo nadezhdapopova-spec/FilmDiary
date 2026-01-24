@@ -2,6 +2,8 @@ document.addEventListener("DOMContentLoaded", () => {
     loadCalendarEvents();
 });
 
+window.loadCalendarEvents = loadCalendarEvents;
+
 function loadCalendarEvents() {
     fetch("/api/calendar_events/", {
         headers: {
@@ -28,19 +30,10 @@ function loadCalendarEvents() {
         });
 }
 
-function groupEventsByDate(events) {
-    return events.reduce((groups, event) => {
-        const date = event.planned_date;
-        if (!groups[date]) {
-            groups[date] = [];
-        }
-        groups[date].push(event);
-        return groups;
-    }, {});
-}
 
 function renderEvents(events) {
     const container = document.getElementById("calendar-events-list");
+    if (!container) return;
 
     const loader = container.querySelector(".loader");
     if (loader) loader.remove();
@@ -71,17 +64,12 @@ function renderEvents(events) {
 
         dateEvents.forEach(event => {
             const card = document.createElement("div");
-            card.className = `event-card status-${event.status}`;
+            card.className = "event-card";
 
             card.innerHTML = `
-                <div>
+                <div class="event-main">
                     <div class="event-title">${event.film_title}</div>
                     ${event.note ? `<div class="event-note">${event.note}</div>` : ""}
-                </div>
-                <div class="event-actions">
-                    ${event.status === "planned"
-                        ? `<button data-id="${event.id}" class="mark-watched">✔</button>`
-                        : ""
                     }
                 </div>
             `;
@@ -91,6 +79,17 @@ function renderEvents(events) {
 
         container.appendChild(group);
     });
+}
+
+function groupEventsByDate(events) {
+    return events.reduce((groups, event) => {
+        const date = event.planned_date;
+        if (!groups[date]) {
+            groups[date] = [];
+        }
+        groups[date].push(event);
+        return groups;
+    }, {});
 }
 
 
@@ -113,38 +112,9 @@ function formatDate(dateStr) {
 }
 
 function showError() {
-    document.getElementById("calendar-events-list").innerHTML =
+    const container = document.getElementById("calendar-events-list");
+    if (!container) return;
+
+    container.innerHTML =
         "<p class='error'>Не удалось загрузить события</p>";
-}
-
-function getCSRFToken() {
-    return document.cookie
-        .split("; ")
-        .find(row => row.startsWith("csrftoken="))
-        ?.split("=")[1];
-}
-
-document.addEventListener("click", (e) => {
-    if (e.target.classList.contains("mark-watched")) {
-        const eventId = e.target.dataset.id;
-        updateEventStatus(eventId, "watched");
-    }
-});
-
-function updateEventStatus(eventId, status) {
-    fetch(`/api/calendar_events/${eventId}/`, {
-        method: "PATCH",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRFToken": getCSRFToken()
-        },
-        body: JSON.stringify({ status })
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error("Ошибка обновления");
-        }
-        loadCalendarEvents(); // перерисовываем список
-    })
-    .catch(console.error);
 }
