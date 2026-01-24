@@ -252,3 +252,87 @@
   transform: scale(1.1);
   box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
 }
+
+/* ---- Модальное окно Запланировать просмотр фильма ---- */
+.plan-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.plan-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 25, 0.75);
+  backdrop-filter: blur(4px);
+}
+
+.plan-modal__content {
+  position: relative;
+  background: rgba(25, 25, 45, 0.95);
+  padding: 2rem;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 380px;
+  text-align: center;
+  color: #fff;
+  font-family: Poppins, sans-serif;
+  box-shadow:
+    0 0 30px rgba(255, 190, 80, 0.35),
+    0 0 50px rgba(80, 160, 255, 0.25);
+  animation: modalIn 0.3s ease-out;
+}
+
+.plan-modal__content h3 {
+  margin-bottom: 0.3rem;
+}
+
+.plan-title {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-bottom: 1rem;
+}
+
+.plan-modal input {
+  width: 100%;
+  margin-bottom: 0.8rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: none;
+}
+
+.plan-actions {
+  margin-top: 1rem;
+}
+
+.plan-actions button {
+  margin: 0 0.3rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.save-plan-btn {
+  background: linear-gradient(90deg, #ffbe50, #ff9f1c);
+  color: #000;
+}
+
+.cancel-plan-btn {
+  background: rgba(140, 140, 160, 0.4);
+  color: #fff;
+}
+
+@keyframes modalIn {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

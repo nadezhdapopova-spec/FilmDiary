@@ -20,14 +20,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     switch (action) {
       case 'plan': {
+          if (!filmDbId) {
+              showToast('❌ Ошибка: не найден ID фильма', 'error');
+              return;
+          }
           if (card.querySelector('.movie-badge--planned')) {
               showToast(`📅 Фильм "${title}" уже запланирован`, 'info');
               return;
           }
 
-          // Открыть мини-форму с выбором даты и заметкой
-          const form = createPlanForm(card, filmDbId, title);
-          if (form) card.appendChild(form);
+          // Открыть модальное окно с выбором даты и заметкой
+          createPlanModal(filmDbId, title);
           break;
       }
 
@@ -111,41 +114,49 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ------------------ Actions ------------------
-function createPlanForm(card, filmDbId, title) {
-  if (!filmDbId || card.querySelector('.plan-form')) return null;
+function createPlanModal(filmDbId, title) {
+  // if (!filmDbId || card.querySelector('.plan-form')) return null;
 
-  const form = document.createElement('div');
-  form.className = 'plan-form';
+  const modal = document.createElement('div');
+  modal.className = 'plan-modal';
 
-  form.innerHTML = `
-    <input type="date" class="planned-date"
-           value="${new Date().toISOString().slice(0, 10)}">
-    <input type="text" class="planned-note"
-           placeholder="Комментарий (необязательно)">
-    <div class="plan-actions">
-      <button class="save-plan-btn">Сохранить</button>
-      <button class="cancel-plan-btn">Отмена</button>
+  modal.innerHTML = `
+    <div class="plan-modal__overlay"></div>
+    <div class="plan-modal__content">
+      <h3>📅 Запланировать просмотр</h3>
+      <p class="plan-title">${title}</p>
+
+      <input type="date" class="planned-date"
+             value="${new Date().toISOString().slice(0, 10)}">
+
+      <input type="text" class="planned-note"
+             placeholder="Комментарий (необязательно)">
+
+      <div class="plan-actions">
+        <button class="save-plan-btn">Сохранить</button>
+        <button class="cancel-plan-btn">Отмена</button>
+      </div>
     </div>
   `;
 
-  form.querySelector('.cancel-plan-btn').onclick = () => form.remove();
+  document.body.appendChild(modal);
 
-  form.querySelector('.save-plan-btn').onclick = async () => {
-    const date = form.querySelector('.planned-date').value;
-    const note = form.querySelector('.planned-note').value;
+  // закрытие
+  modal.querySelector('.plan-modal__overlay').onclick =
+  modal.querySelector('.cancel-plan-btn').onclick = () => modal.remove();
+
+  modal.querySelector('.save-plan-btn').onclick = async () => {
+    const date = modal.querySelector('.planned-date').value;
+    const note = modal.querySelector('.planned-note').value;
 
     const success = await addPlannedFilmAPI(filmDbId, date, note);
     if (!success) return;
 
     showToast(`📅 Фильм "${title}" добавлен в Запланированные`, 'plan');
-    form.remove();
+    modal.remove();
 
-    if (window.loadCalendarEvents) {
-      window.loadCalendarEvents();
-    }
+    if (window.loadCalendarEvents) window.loadCalendarEvents();
   };
-
-  return form;
 }
 
 async function addPlannedFilmAPI(filmDbId, plannedDate, note = '') {
