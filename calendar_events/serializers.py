@@ -11,4 +11,26 @@ class CalendarEventSerializer(serializers.ModelSerializer):
         model = CalendarEvent
         fields = ["id", "user", "film", "film_title", "planned_date", "note", "reminder_sent", "created_at"]
         read_only_fields = ("id", "user", "film_title", "created_at")
-        validators = []
+
+    def validate(self, attrs):
+        """Проверяет, что указанный фильм еще не запланирован пользователем на выбранную дату"""
+        user = self.context["request"].user
+        film = attrs.get("film")
+        planned_date = attrs.get("planned_date")
+
+        exists = CalendarEvent.objects.filter(
+            user=user,
+            film=film,
+            planned_date=planned_date,
+        ).exists()
+
+        if exists:
+            raise serializers.ValidationError(
+                {
+                    "non_field_errors": [
+                        "Этот фильм уже запланирован на выбранную дату"
+                    ]
+                }
+            )
+
+        return attrs
