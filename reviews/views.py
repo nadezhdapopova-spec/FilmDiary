@@ -5,6 +5,7 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 
+from calendar_events.models import CalendarEvent
 from films.models import Film, UserFilm
 from services.permissions import can_user_view, can_user_edit, can_user_delete
 from reviews.forms import ReviewForm
@@ -30,11 +31,15 @@ class BaseReviewListView(LoginRequiredMixin, ListView):
             user=self.request.user,
             film=OuterRef("film")
         )
+        planned_events = CalendarEvent.objects.filter(
+            user=self.request.user,
+            film=OuterRef("film")
+        )
 
         return qs.annotate(
-            user_film_id=Subquery(user_films.values("id")[:1]),   #
+            user_film_id=Subquery(user_films.values("id")[:1]),
             is_favorite=Exists(user_films.filter(is_favorite=True)),
-            is_planned=Exists(user_films.filter(is_planned=True))
+            is_planned=Exists(planned_events)
         )
 
 

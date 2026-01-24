@@ -107,7 +107,6 @@ class UserFilm(models.Model):
         related_name="user_relations"
     )
     is_favorite = models.BooleanField(default=False, verbose_name="Любимое")
-    is_planned = models.BooleanField(default=False, verbose_name="Запланировано к просмотру")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

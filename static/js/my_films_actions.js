@@ -160,16 +160,25 @@ function createPlanModal(filmDbId, title) {
   modal.querySelector('.cancel-plan-btn').onclick = () => modal.remove();
 
   modal.querySelector('.save-plan-btn').onclick = async () => {
-    const date = modal.querySelector('.planned-date').value;
-    const note = modal.querySelector('.planned-note').value;
+      const date = modal.querySelector('.planned-date').value;
+      const note = modal.querySelector('.planned-note').value;
 
-    const success = await addPlannedFilmAPI(filmDbId, date, note);
-    if (!success) return;
+      const success = await addPlannedFilmAPI(filmDbId, date, note);
+      if (!success) return;
 
-    showToast(`📅 Фильм "${title}" добавлен в Запланированные`, 'plan');
-    modal.remove();
+      if (success) {
+          showToast(`📅 Фильм "${title}" добавлен в Запланированные`, 'plan');
 
-    if (window.loadCalendarEvents) window.loadCalendarEvents();
+          document.querySelectorAll(`[data-film-db-id="${filmDbId}"]`).forEach(btn => {
+              const card = btn.closest('.glass-card');
+              if (card) {
+                  updatePlannedStatus(card, true);
+              }
+          });
+
+          modal.remove();
+          if (window.loadCalendarEvents) window.loadCalendarEvents();
+      }
   };
 }
 

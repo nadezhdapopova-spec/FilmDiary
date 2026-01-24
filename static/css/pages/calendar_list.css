@@ -253,6 +253,10 @@
   font-weight: 700;
 }
 
+.modal-content p {
+  color: #989292;
+}
+
 .modal-actions {
   display: flex;
   gap: 12px;
