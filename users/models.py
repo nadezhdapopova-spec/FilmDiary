@@ -48,3 +48,24 @@ class CustomUser(AbstractUser):
         ordering = [
             "email",
         ]
+
+
+class MessageFeedback(models.Model):
+    """Класс обратной связи пользователей"""
+
+    name = models.CharField(max_length=150, verbose_name="Имя пользователя")
+    email = models.EmailField(verbose_name="E-mail пользователя")
+    message = models.TextField(max_length=2000, verbose_name="Сообщение пользователя")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+
+    def __str__(self):
+        return f"{self.email}: {self.message}"
+
+    class Meta:
+        verbose_name = "обратная связь"
+        verbose_name_plural = "обратная связь"
+        ordering = [
+            "name",
+            "email",
+            "created_at",
+        ]

@@ -16,7 +16,7 @@ from users.views import (
     RegisterView,
     ResendActivationView,
     UserLoginView,
-    UserProfileView,
+    UserProfileView, FeedbackView,
 )
 
 app_name = "users"
@@ -66,4 +66,5 @@ urlpatterns = [
         PasswordResetCompleteView.as_view(template_name="users/password_reset_complete.html"),
         name="password_reset_complete",
     ),
+    path("feedback/", FeedbackView.as_view(), name="feedback"),
 ]

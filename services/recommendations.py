@@ -276,7 +276,7 @@ def build_user_genre_profile(
         if not feats:
             continue
 
-        nr = normalize_rating(review.rating)
+        nr = normalize_rating(review.user_rating)
         created = getattr(review, "created_at", None)
         rec = recency_boost(created.date() if created else None)
 
@@ -457,7 +457,7 @@ def build_recommendations(
         if not user_feats:
             continue
 
-        nr = normalize_rating(review.rating)  # нормализованная оценка пользователя в диапазон [0,1]
+        nr = normalize_rating(review.user_rating)  # нормализованная оценка пользователя в диапазон [0,1]
         created = getattr(review, "created_at", None)
         if isinstance(created, datetime):
             created = created.date()

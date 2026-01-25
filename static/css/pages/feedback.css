@@ -1,0 +1,28 @@
+.feedback .cta-text {
+  font-size: 1.6rem;       /* меньше шрифт */
+  line-height: 1.4;
+}
+
+.feedback .hero-title {
+  font-size: 2rem;         /* меньше заголовок */
+}
+
+/* Мобильная адаптация */
+@media (max-width: 768px) {
+  .feedback .cta-section {
+    max-width: 100%;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .feedback .cta-text {
+    font-size: 1.3rem;
+  }
+}
+
+/* Мобильные */
+@media (max-width: 768px) {
+  .feedback-container {
+    padding: 0.5rem;
+  }
+}

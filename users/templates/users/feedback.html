@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
+
+{% block title %}Обратная связь{% endblock %}
+
+{% if not user.is_authenticated %}
+    {% block body_class %}layout--auth{% endblock %}
+{% endif %}
+
+{% block content %}
+<div class="feedback-container">
+    <!-- Баннер той же ширины что и форма -->
+    <div class="cta-section feedback">
+        <div class="hero-text">
+            <h2 class="hero-title">
+                <span class="gradient-text">Хотите поделиться с нами? Остались вопросы?</span>
+            </h2>
+        </div>
+        <p class="cta-text highlight">Напишите нам, мы постараемся ответить в ближайшее время</p>
+    </div>
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            <!-- Левая часть: изображение -->
+            <div class="auth-image"
+                style="background-image: url('{% static 'images/symbol_smile.png' %}')">
+            </div>
+
+            <!-- Правая часть: форма -->
+            <div class="auth-body mb-3">
+                <h2 class="mb-3">Форма обратной связи</h2>
+                {% if form.non_field_errors %}
+                    <div class="form-error">
+                        {{ form.non_field_errors|safe }}
+                    </div>
+                {% endif %}
+
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.name|as_crispy_field }}
+                    {{ form.email|as_crispy_field }}
+                    {{ form.message|as_crispy_field }}
+
+                    <div class=text-center>
+                        <button class="btn btn-primary mt-4 w-50">
+                            Отправить
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

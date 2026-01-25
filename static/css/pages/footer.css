@@ -1,6 +1,6 @@
 .app-footer.card {
     width: auto;
-    padding: 2.6rem 2.8rem;
+    padding: 2.6rem 2rem;
     /*border-radius: 26px;*/
     background:
         url("/static/images/footer_1.jpg") 0 0 / 100% 100% no-repeat;
@@ -19,4 +19,55 @@
   font-size: 1rem;
   font-weight: 300;
   color: #989292;
+  display: flex;
+  align-items: center;        /* все по одной линии */
+  justify-content: space-between; /* слева / справа */
+}
+
+.app-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.app-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 2rem;                /* расстояние между ссылкой и иконкой */
+}
+
+/* выделяем ссылку как кнопку */
+.footer-feedback {
+  padding: 0.8rem 1.2rem;
+  border-radius: 6px;
+  background-color: rgba(255, 255, 255, 0.14);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 500;
+  border: 1px solid rgba(255,255,255,0.35);
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out,
+              transform 0.15s ease-in-out,
+              box-shadow 0.15s ease-in-out;
+}
+
+.footer-feedback:hover,
+.footer-feedback:focus-visible {
+  background-color: rgba(255, 255, 255, 0.3);
+  box-shadow: 0 0 18px rgba(255,255,255,0.55);
+  transform: translateY(-1px);
+}
+
+/* иконка привязана к правому краю */
+.footer__logo-fixed {
+  /*position: absolute;*/
+  left: 1rem;
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+.social-icon {
+  width: 20px;
+  height: 20px;
 }
