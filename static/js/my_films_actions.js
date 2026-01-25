@@ -1,75 +1,77 @@
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
   const grid = document.querySelector('.movie-search-grid');
   if (!grid) return;
 
   const page = grid.dataset.page; // 'my-films', 'favorites' и т.д.
 
-  grid.addEventListener('click', async function (e) {
+  grid.addEventListener('click', async (e) => {
     const button = e.target.closest('.btn-icon');
     if (!button) return;
 
+    e.preventDefault();
+
     const action = button.dataset.action;
-    const filmId = button.dataset.id;
+    const filmId = button.dataset.id;  // tmdb_id
+    const filmDbId = button.dataset.filmDbId;  // Film.id
     const title = button.dataset.title;
     if (!action || !filmId) return;
 
     const card = button.closest('.glass-card');
 
-    e.preventDefault();
-
     switch (action) {
-      case 'plan':
-        if (card.querySelector('.movie-badge--planned')) {
-          showToast(`📅 Фильм "${title}" уже в Запланированных`, 'plan');
-          return;
-        }
-        // Иначе переход на страницу планирования
-        window.location.href = `/plans/create/${filmId}/`; // изменить путь
-        break;
+      case 'plan': {
+          if (!filmDbId) {
+              showToast('❌ Ошибка: не найден ID фильма', 'error');
+              return;
+          }
+          if (card.querySelector('.movie-badge--planned')) {
+              showToast(`📅 Фильм "${title}" уже запланирован`, 'info');
+              return;
+          }
 
-      case 'watch': {
-        const response = await updateFilmStatus(button, filmId, action, title);
-        if (response && response.status === 'redirect') {
-           window.location.href = response.url;
-        }
-        break;
+          // Открыть модальное окно с выбором даты и заметкой
+          createPlanModal(filmDbId, title);
+          break;
       }
 
+      case 'watch': {
+        const data = await updateFilmStatus(button, filmId, action);
+        if (!data || data.status !== 'success') return;
+        break;
+      }
       case 'favorite': {
+        // ⛔ Уже в Любимом — не шлём запрос
         if (card.querySelector('.movie-badge--favorite')) {
-          showToast(`🔥 Фильм "${title}" уже в Любимых`, 'info');
+          showToast(`🔥 Фильм "${title}" уже в Любимом`, 'info');
           return;
         }
-        const data = await updateFilmStatus(button, filmId, action, title);
-        // await updateFilmStatus(button, filmId, action, title);
-        // если сервер не ответил success — ничего не делаем
+
+        const data = await updateFilmStatus(button, filmId, action);
         if (!data || data.status !== 'success') return;
+
         showToast(`🔥 Фильм "${title}" добавлен в Любимое`, 'favorite');
         break;
       }
-
       case 'unfavorite': {
-        const confirmedUnfav = await confirmDelete('unfavorite', title);
-        if (!confirmedUnfav) return;
+        const data = await updateFilmStatus(button, filmId, action);
+        if (!data || data.status !== 'success') return;
 
-        const data = await updateFilmStatus(button, filmId, action, title);
-        showToast(`🔥 Фильм "${title}" убран из Любимого`, 'info');
-
-        // Убираем карточку сразу на странице Любимое
+        showToast(`💔 Фильм "${title}" убран из Любимого`, 'info');
         if (page === 'favorites') card.remove();
         break;
       }
 
       case 'edit-review': {
         const reviewId = button.dataset.reviewId;
-        if (!reviewId) return;
-        window.location.href = `/reviews/update/${reviewId}/`;
+        if (reviewId) {
+          window.location.href = `/reviews/reviews/${reviewId}/`;
+        }
         break;
       }
 
       case 'delete': {
-        const confirmedDelete = await confirmDelete('delete', title);
-        if (!confirmedDelete) return;
+        const confirmed = await confirmDelete('delete', title);
+        if (!confirmed) return;
 
         const response = await fetch(`/films/${filmId}/delete/`, {
            method: 'POST',
@@ -79,21 +81,18 @@ document.addEventListener('DOMContentLoaded', function () {
            }
         });
 
-        if (!response.ok) {
-           showToast('❌ Ошибка при удалении фильма', 'error');
-           return;
+        if (response.ok) {
+          showToast(`❌ Фильм "${title}" удалён`, 'error');
+          card.remove();
         }
-
-        showToast(`❌ Фильм "${title}" удалён`, 'error');
-        if (page === 'my-films') card.remove(); // удаляем с Мои фильмы
         break;
       }
 
       case 'delete-watched': {
         const reviewId = button.dataset.reviewId;
 
-        const confirmedWatched = await confirmDelete('delete-watched', title);
-        if (!confirmedWatched) return;
+        const confirmed = await confirmDelete('delete-watched', title);
+        if (!confirmed) return;
 
         const response = await fetch(`/reviews/${reviewId}/delete/`, {
            method: 'POST',
@@ -103,41 +102,124 @@ document.addEventListener('DOMContentLoaded', function () {
            }
         });
 
-        if (!response.ok) {
-          showToast('❌ Ошибка при удалении отзыва', 'error');
-          return;
+        if (response.ok) {
+            showToast(`➖ Фильм "${title}" убран из просмотренного`, 'info');
+            card.remove();
         }
-
-        showToast(`➖ Фильм "${title}" убран из просмотренного`, 'info');
-        card.remove();
         break;
       }
-
-      default:
-        console.warn('Неизвестное действие:', action);
     }
+  });
+
+  window.addEventListener('calendarEventDeleted', (e) => {
+    const { filmTmdbId } = e.detail;
+    if (!filmTmdbId) return;
+
+    // Обновляем статусы ВСЕХ карточек этого фильма на текущей странице
+    document.querySelectorAll(`[data-id="${filmTmdbId}"]`).forEach(button => {
+      const card = button.closest('.glass-card');
+      if (card) {
+        updatePlannedStatus(card, false); // убираем badge 📅
+      }
+    });
+
+    showToast(`📅 Фильм убран из Запланированных`, 'info');
   });
 });
 
 // ------------------ Actions ------------------
-function openReviewForm(filmId, title) {
-  window.location.href = `/reviews/create/${filmId}/`;
+function createPlanModal(filmDbId, title) {
+  // if (!filmDbId || card.querySelector('.plan-form')) return null;
+
+  const modal = document.createElement('div');
+  modal.className = 'plan-modal';
+
+  modal.innerHTML = `
+    <div class="plan-modal__overlay"></div>
+    <div class="plan-modal__content">
+      <h3>📅 Запланировать просмотр</h3>
+      <p class="plan-title">${title}</p>
+
+      <input type="date" class="planned-date"
+             value="${new Date().toISOString().slice(0, 10)}">
+
+      <input type="text" class="planned-note"
+             placeholder="Комментарий (необязательно)">
+
+      <div class="plan-actions">
+        <button class="save-plan-btn">Сохранить</button>
+        <button class="cancel-plan-btn">Отмена</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // закрытие
+  modal.querySelector('.plan-modal__overlay').onclick =
+  modal.querySelector('.cancel-plan-btn').onclick = () => modal.remove();
+
+  modal.querySelector('.save-plan-btn').onclick = async () => {
+      const date = modal.querySelector('.planned-date').value;
+      const note = modal.querySelector('.planned-note').value;
+
+      const success = await addPlannedFilmAPI(filmDbId, date, note);
+      if (!success) return;
+
+      if (success) {
+          showToast(`📅 Фильм "${title}" добавлен в Запланированные`, 'plan');
+
+          document.querySelectorAll(`[data-film-db-id="${filmDbId}"]`).forEach(btn => {
+              const card = btn.closest('.glass-card');
+              if (card) {
+                  updatePlannedStatus(card, true);
+              }
+          });
+
+          modal.remove();
+          if (window.loadCalendarEvents) window.loadCalendarEvents();
+      }
+  };
 }
 
-function openPlanForm(filmId, title, button) {
-  const card = button.closest('.glass-card');
-  if (card.querySelector('.movie-badge--planned')) {
-    showToast(`📅 Фильм "${title}" уже в Запланированных`, 'plan');
-    return;
+async function addPlannedFilmAPI(filmDbId, plannedDate, note = '') {
+  try {
+    const response = await fetch('/api/calendar_events/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({
+        film: filmDbId,
+        planned_date: plannedDate,
+        note: note,
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      const msg =
+        data?.non_field_errors?.[0] ||
+        'Не удалось запланировать фильм';
+
+      showToast(`📅 ${msg}`, 'info');
+      return false;
+    }
+
+    return true;
+
+  } catch (e) {
+    console.error('Ошибка планирования:', e);
+    showToast('❌ Не удалось запланировать фильм', 'error');
+    return false;
   }
-  updateFilmStatus(button, filmId, 'plan', title).then(() => {
-    showToast(`📅 Фильм "${title}" добавлен в Запланированные`, 'plan');
-  });
 }
 
 // ------------------ Update Film Status ------------------
-async function updateFilmStatus(button, filmId, action, title) {
-  const originalContent = button.innerHTML;
+async function updateFilmStatus(button, filmId, action) {
+  const original = button.innerHTML;
   button.innerHTML = '...';
   button.disabled = true;
 
@@ -162,20 +244,20 @@ async function updateFilmStatus(button, filmId, action, title) {
     }
 
     // Ошибка
-    if (data.status !== 'success') throw new Error(data.message || 'Неизвестная ошибка');
+    if (data.status !== 'success') throw new Error(data.message);
 
     // Применяем изменения статусов для карточки
     const card = button.closest('.glass-card');
-    if (card) applyStatusChanges(card, action, data);
+    if (card) applyStatusChanges(card, data);
 
     return data; // возвращаем JSON, чтобы можно было использовать в switch-case
 
-  } catch (error) {
-    console.error('Update status error:', error);
-    showToast('❌ Ошибка: ' + error.message, 'error');
+  } catch (e) {
+    console.error(e);
+    showToast('❌ Ошибка: ' + e.message, 'error');
   } finally {
     // Снимаем затемнение и восстанавливаем кнопку
-    button.innerHTML = originalContent;
+    button.innerHTML = original;
     button.disabled = false;
   }
 }
@@ -309,45 +391,66 @@ async function confirmDelete(action, title) {
 }
 
 // ------------------ Status Changes ------------------
-function applyStatusChanges(card, action, data) {
+function applyStatusChanges(card, data) {
+  const badges = card.querySelector('.movie-badge-group');
   const overlay = card.querySelector('.movie-card__overlay');
-  const badgesGroup = card.querySelector('.movie-badge-group');
-
-  if (!overlay || !badgesGroup) return;
+  if (!badges || !overlay) return;
 
   // 1. Очистка (UI ← сервер)
-  badgesGroup.innerHTML = '';
-  overlay.querySelector('.movie-badge--rating')?.remove();
+  badges.innerHTML = '';
+  overlay.querySelector('.movie-rating')?.remove();
 
   if (data.has_review) {
-    badgesGroup.innerHTML += `<span class="movie-badge movie-badge--watched">🍿</span>`;
+    badges.insertAdjacentHTML(
+      'beforeend',
+      `<span class="movie-badge movie-badge--watched" title="Просмотрено">🍿</span>`
+    );
   }
 
   if (data.is_planned) {
-    badgesGroup.innerHTML += `<span class="movie-badge movie-badge--planned">📅</span>`;
+    badges.insertAdjacentHTML(
+      'beforeend',
+      `<span class="movie-badge movie-badge--planned" title="Запланировано">📅</span>`
+    );
   }
 
   if (data.is_favorite) {
-    badgesGroup.innerHTML += `<span class="movie-badge movie-badge--favorite">🔥</span>`;
+    badges.insertAdjacentHTML(
+      'beforeend',
+      `<span class="movie-badge movie-badge--favorite" title="Любимое">🔥</span>`
+    );
   }
 
   if (data.user_rating) {
-    const rating = document.createElement('div');
-    rating.className = 'movie-badge movie-badge--rating';
+    const rating = document.createElement('span');
+    rating.className = 'movie-rating movie-badge movie-badge--rating';
     rating.textContent = data.user_rating;
-    overlay.prepend(rating);
+    overlay.appendChild(rating);
   }
 
-  if (action === 'delete') card.remove();
 }
 
 function getCookie(name) {
-  let cookieValue = null;
-  if (document.cookie && document.cookie !== '') {
-    document.cookie.split(';').forEach(c => {
-      const cookie = c.trim();
-      if (cookie.startsWith(name + '=')) cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-    });
+  return document.cookie
+    .split('; ')
+    .find(c => c.startsWith(name + '='))
+    ?.split('=')[1];
+}
+
+// Функция обновления статуса "Запланировано"
+function updatePlannedStatus(card, isPlanned) {
+  const badges = card.querySelector('.movie-badge-group');
+  if (!badges) return;
+
+  // Удаляем существующий badge planned
+  const plannedBadge = badges.querySelector('.movie-badge--planned');
+  if (plannedBadge) plannedBadge.remove();
+
+  // Добавляем новый статус (если нужно)
+  if (isPlanned) {
+    badges.insertAdjacentHTML(
+      'beforeend',
+      `<span class="movie-badge movie-badge--planned" title="Запланировано">📅</span>`
+    );
   }
-  return cookieValue;
 }

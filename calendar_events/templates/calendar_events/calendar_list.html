@@ -1,0 +1,32 @@
+<!-- calendar_events/list.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<section class="calendar-page">
+  <div class="cta-section calendar-section">
+    <p class="cta-text calendar-section">
+      <span class="highlight">Добавь в профиле свой Telegram-id, и мы отправим напоминание в день просмотра!</span>
+    </p>
+  </div>
+
+  <div class="glass-card movie-section-card">
+    <div class="card-header mb-3">
+      <h2 class="card-title">📅 Запланированные просмотры</h2>
+      <div class="view-switch">
+        <button class="view-btn active" data-view="active">📅 Планы</button>
+        <button class="view-btn" data-view="archive">📂 Архив</button>
+      </div>
+    </div>
+
+    <!-- СЮДА JS ВСТАВИТ КАРТОЧКИ -->
+    <div id="calendar-events-list" class="calendar-list">
+      <div class="loader">Загрузка…</div>
+    </div>
+
+    <div id="calendar-pagination" class="calendar-pagination"></div>
+
+  </div>
+</section>
+<script src="{% static 'js/calendar_list.js' %}"></script>
+{% endblock %}

@@ -3,10 +3,12 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
-from films.models import UserFilm, Film
+from calendar_events.models import CalendarEvent
+from films.models import UserFilm
 from films.services import save_film_from_tmdb
 from reviews.models import Review
 
@@ -57,10 +59,17 @@ class UserListFilmView(LoginRequiredMixin, ListView):
         film_ids = [uf.film_id for uf in items]
         reviews_map = {r.film_id: r for r in Review.objects.filter(user=self.request.user, film_id__in=film_ids)} # Получаем все отзывы пользователя на фильмы из текущего queryset
 
+        planned_film_ids = set(
+            CalendarEvent.objects
+            .filter(user=self.request.user, film_id__in=film_ids, planned_date__gte=timezone.now().date())
+            .values_list("film_id", flat=True)
+        )
+
         context[self.context_object_name] = [
             {
                 "user_film": uf,
-                "review": reviews_map.get(uf.film_id)
+                "review": reviews_map.get(uf.film_id),
+                "is_planned": uf.film_id in planned_film_ids,
             }
             for uf in items
         ]
@@ -145,9 +154,7 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
         try:
             user_film = UserFilm.objects.select_related("film").get(user=request.user, film__tmdb_id=tmdb_id)
 
-            if action == "plan":
-                user_film.is_planned = True
-            elif action == "watch":
+            if action == "watch":
                 return JsonResponse({
                     "status": "redirect",
                     "url": reverse("reviews:review_create", kwargs={"tmdb_id": user_film.film.tmdb_id})
@@ -174,7 +181,6 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
                 return JsonResponse({
                     "status": "success",
                     "action": action,
-                    "is_planned": user_film.is_planned,
                     "is_favorite": user_film.is_favorite,
                     "has_review": False,
                     "user_rating": None
@@ -184,7 +190,6 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
             return JsonResponse({
                 "status": "success",
                 "action": action,
-                "is_planned": user_film.is_planned,
                 "is_favorite": user_film.is_favorite,
                 "has_review": bool(review),
                 "user_rating": review.user_rating if review else None

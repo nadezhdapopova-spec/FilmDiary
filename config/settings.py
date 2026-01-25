@@ -1,7 +1,9 @@
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,6 +37,7 @@ INSTALLED_APPS = [
     "users",
     "films",
     "reviews",
+    "calendar_events",
 ]
 
 CRISPY_ALLOWED_TEMPLATE_PACKS = ["bootstrap5"]
@@ -93,6 +96,14 @@ DATABASES = {
     }
 }
 
+if "test" in sys.argv:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "test_bd.sqlite3",
+        }
+    }
+
 # Default primary key field type
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -149,7 +160,7 @@ MESSAGE_TAGS = {
 
 AUTHENTICATION_BACKENDS = [
     "users.backends.EmailBackendAllowInactive",  # к кастомному backend
-    "django.contrib.auth.backends.ModelBackend",  # для админки
+    "django.contrib.auth.backends.ModelBackend",  # для админки, базовый бэкенд аутентификации, проверяет базу данных пользователей Django и запрашивает встроенные разрешения
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
@@ -189,7 +200,7 @@ REST_FRAMEWORK = {
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 10,
+    "PAGE_SIZE": 12,
 }
 
 # CORS
@@ -211,12 +222,13 @@ CELERY_ENABLE_UTC = False
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
-# CELERY_BEAT_SCHEDULE = {
-#     "send_habit_reminder": {
-#         "task": "habits.tasks.send_habit_reminder",
-#         "schedule": timedelta(minutes=1),
-#     },
-# }
+CELERY_BEAT_SCHEDULE = {
+    "send_daily_calendar_reminders": {
+        "task": "calendar_events.tasks.send_daily_reminders",
+        "schedule": crontab(minute="*/10"),  # каждые 10 минут
+    },
+}
+
 
 # Mail server settings
 
