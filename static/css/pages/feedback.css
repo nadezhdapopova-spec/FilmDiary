@@ -1,10 +1,25 @@
+.feedback-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px 20px;
+  color: #fff;
+}
+
+.feedback.cta-section {
+    padding-bottom: 1px;   /* меньше отступ снизу */
+    opacity: 0.8;
+    background: #1e1e2d;
+}
+
 .feedback .cta-text {
   font-size: 1.6rem;       /* меньше шрифт */
   line-height: 1.4;
+  padding-bottom: 1px;
 }
 
 .feedback .hero-title {
   font-size: 2rem;         /* меньше заголовок */
+  padding-bottom: 1px;
 }
 
 /* Мобильная адаптация */

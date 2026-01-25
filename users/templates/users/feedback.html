@@ -5,10 +5,6 @@
 
 {% block title %}Обратная связь{% endblock %}
 
-{% if not user.is_authenticated %}
-    {% block body_class %}layout--auth{% endblock %}
-{% endif %}
-
 {% block content %}
 <div class="feedback-container">
     <!-- Баннер той же ширины что и форма -->
