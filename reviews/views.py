@@ -3,7 +3,9 @@ from django.db import models
 from django.db.models import OuterRef, Exists, Subquery
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
+from django.utils.timezone import now
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+
 
 from calendar_events.models import CalendarEvent
 from films.models import Film, UserFilm
@@ -33,7 +35,8 @@ class BaseReviewListView(LoginRequiredMixin, ListView):
         )
         planned_events = CalendarEvent.objects.filter(
             user=self.request.user,
-            film=OuterRef("film")
+            film=OuterRef("film"),
+            planned_date__gte=now().date()
         )
 
         return qs.annotate(

@@ -4,8 +4,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
 window.loadCalendarEvents = loadCalendarEvents;
 
+let currentView = "active";
+
 function loadCalendarEvents(page = 1) {
-    const url = page === 1 ? "/api/calendar_events/" : `/api/calendar_events/?page=${page}`;
+    let url = `/api/calendar_events/?view=${currentView}`;
+    if (page > 1) url += `&page=${page}`;
 
     fetch(url, {
         headers: {
@@ -197,6 +200,22 @@ document.addEventListener("click", (e) => {
     }
 
     showDeleteModal(eventId, btn);
+});
+
+// Переключение вкладок Активные / Архив
+document.addEventListener("click", (e) => {
+    const btn = e.target.closest(".view-btn");
+    if (!btn) return;
+
+    e.preventDefault();
+
+    document.querySelectorAll(".view-btn").forEach(b =>
+        b.classList.remove("active")
+    );
+    btn.classList.add("active");
+
+    currentView = btn.dataset.view;
+    loadCalendarEvents(1);
 });
 
 function deleteEvent(eventId, buttonEl) {

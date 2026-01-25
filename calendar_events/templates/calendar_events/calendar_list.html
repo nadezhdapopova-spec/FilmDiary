@@ -4,13 +4,19 @@
 
 {% block content %}
 <section class="calendar-page">
+  <div class="cta-section calendar-section">
+    <p class="cta-text calendar-section">
+      <span class="highlight">Добавь в профиле свой Telegram-id, и мы отправим напоминание в день просмотра!</span>
+    </p>
+  </div>
+
   <div class="glass-card movie-section-card">
     <div class="card-header mb-3">
       <h2 class="card-title">📅 Запланированные просмотры</h2>
-{#      <div class="view-switch">#}
-{#        <button class="active">Список</button>#}
-{#        <a href="{% url 'calendar_events_pages:calendar_list' %}?view=calendar">Календарь</a>#}
-{#      </div>#}
+      <div class="view-switch">
+        <button class="view-btn active" data-view="active">📅 Планы</button>
+        <button class="view-btn" data-view="archive">📂 Архив</button>
+      </div>
     </div>
 
     <!-- СЮДА JS ВСТАВИТ КАРТОЧКИ -->

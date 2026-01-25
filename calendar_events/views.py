@@ -1,6 +1,7 @@
 from datetime import timedelta
 
 from django.utils import timezone
+from django.utils.timezone import now
 from rest_framework import viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
@@ -23,7 +24,17 @@ class CalendarEventViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         """Возвращает фильмы пользователя, запланированные к просмотру"""
-        return CalendarEvent.objects.filter(user=self.request.user).select_related("film")
+        qs = CalendarEvent.objects.filter(user=self.request.user).select_related("film")
+
+        view = self.request.query_params.get("view", "active")
+        today = now().date()
+
+        if view == "archive":
+            qs = qs.filter(planned_date__lt=today)
+        else:
+            qs = qs.filter(planned_date__gte=today)
+
+        return qs.order_by("planned_date")
 
     def perform_create(self, serializer):
         """При создании запланированного события устанавливает пользователя как владельца"""

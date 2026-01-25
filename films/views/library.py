@@ -3,6 +3,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
@@ -60,7 +61,7 @@ class UserListFilmView(LoginRequiredMixin, ListView):
 
         planned_film_ids = set(
             CalendarEvent.objects
-            .filter(user=self.request.user, film_id__in=film_ids)
+            .filter(user=self.request.user, film_id__in=film_ids, planned_date__gte=timezone.now().date())
             .values_list("film_id", flat=True)
         )
 
