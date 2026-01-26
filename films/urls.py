@@ -1,12 +1,13 @@
 from django.urls import path
 
 from films.views import UserListFilmView, FilmDetailView, AddFilmView, DeleteFilmView, HomeView, film_search_view, \
-    UpdateFilmStatusView, FavoriteFilmsView
+    UpdateFilmStatusView, FavoriteFilmsView, RecommendsView
 
 app_name = "films"
 
 urlpatterns = [
     path("home/", HomeView.as_view(), name="home"),
+    path("recommends/", RecommendsView.as_view(), name="recommends"),
     path("search/", film_search_view, name="film_search"),
     path("my_films/", UserListFilmView.as_view(), name="my_films"),
     path("favorite/", FavoriteFilmsView.as_view(), name="favorite_films"),

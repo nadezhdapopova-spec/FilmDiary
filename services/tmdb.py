@@ -9,6 +9,7 @@ from django.core.cache import cache
 from dotenv import load_dotenv
 
 from services.cache_ttl import TMDB_TTL
+from services.recommendations import TmdbFilm
 
 load_dotenv()
 
@@ -24,6 +25,72 @@ class Tmdb:
         """Конструктор для получения вакансий через API"""
         self._base_url: str = BASE
         self._base_params: dict = {"api_key": API_KEY, "language": LANG}
+
+
+    def _build_tmdb_film(self, raw: dict) -> TmdbFilm | None:
+        """Превращает сырые данные с фильмом-рекомендацией TMDB в структурированный TmdbFilm"""
+        tmdb_id = raw.get("id")
+        if not tmdb_id:
+            return None
+
+        details = self.get_movie_details(tmdb_id)
+        credits = self.get_credits(tmdb_id)
+
+        genres = [g["name"].lower() for g in details.get("genres", [])]
+
+        actors = [
+            c["name"].lower()
+            for c in credits.get("cast", [])[:5]
+            if c.get("name")
+        ]
+
+        director = None
+        for crew in credits.get("crew", []):
+            if crew.get("job") == "Director":
+                director = crew.get("name").lower()
+                break
+
+        return TmdbFilm(
+            tmdb_id=tmdb_id,
+            title=details.get("title", ""),
+            overview=details.get("overview", "") or "",
+            tagline=details.get("tagline", "") or "",
+            genres=genres,
+            actors=actors,
+            director=director,
+        )
+
+    def get_candidate_pool(self, limit: int = 1200) -> list[TmdbFilm]:
+        """Собирает пул фильмов из разных источников TMDB для построения рекомендаций"""
+        sources = [
+            self.get_popular(pages=3),
+            self.get_top_rated(pages=3),
+            self.get_trending("week").get("results", []),
+            self.get_upcoming(pages=2),
+        ]
+
+        raw_movies: dict[int, dict] = {}
+
+        for source in sources:
+            for m in source:
+                tmdb_id = m.get("id")
+                if tmdb_id and tmdb_id not in raw_movies:
+                    raw_movies[tmdb_id] = m
+                if len(raw_movies) >= limit:
+                    break
+            if len(raw_movies) >= limit:
+                break
+
+        films: list[TmdbFilm] = []
+
+        for raw in raw_movies.values():
+            try:
+                film = self._build_tmdb_film(raw)
+                if film:
+                    films.append(film)
+            except Exception:
+                continue
+        return films
 
     @staticmethod
     def _make_cache_key(prefix: str, path: str, params: dict) -> str:

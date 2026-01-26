@@ -227,6 +227,10 @@ CELERY_BEAT_SCHEDULE = {
         "task": "calendar_events.tasks.send_daily_reminders",
         "schedule": crontab(minute="*/10"),  # каждые 10 минут
     },
+    "recompute-recommendations-nightly": {
+        "task": "apps.recommendations.tasks.recompute_all_recommendations",
+        "schedule": crontab(hour=0, minute=0),
+    }
 }
 
 

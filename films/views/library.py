@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -21,12 +22,21 @@ class HomeView(TemplateView):
 
         if self.request.user.is_authenticated:
             context.update({
-                # "recs_for_me": get_recommendations(self.request.user, limit=4),
+                "recs_for_me": get_user_recommendations(self.request.user, limit=4),
                 # "planned_movies": get_planned(self.request.user, limit=4),
                 # "recent_movies": get_recent(self.request.user, limit=4),
             })
 
         context["search_type"] = "films"  # всегда для search_bar
+        return context
+
+
+class RecommendsView(LoginRequiredMixin, TemplateView):
+    template_name = "films/recommends.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["recommendations"] = get_user_recommendations(self.request.user, limit=50)
         return context
 
 
@@ -215,6 +225,18 @@ class DeleteFilmView(LoginRequiredMixin, View):
 
         messages.info(request, "Фильм успешно удалён")
         return redirect("films:my_films")
+
+
+def get_user_recommendations(user, *, limit=None):
+    if not user.is_authenticated:
+        return []
+    recs = cache.get(f"recs:user:{user.id}", [])
+    # if not recs:
+    #     return {
+    #         "status": "pending",
+    #         "message": "Добавляй фильмы в просмотренное — рекомендации скоро появятся"
+    #     }
+    return recs[:limit] if limit else recs
 
 
 def custom_error(request, status_code=404, exception=None):
