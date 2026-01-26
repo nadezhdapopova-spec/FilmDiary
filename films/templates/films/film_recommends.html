@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ recommend_title }}{% endblock %}
+
+{% block content %}
+<main class="main-content">
+  <section class="homepage-section">
+    <div class="glass-card movie-section-card">
+      <div class="card-header">
+        <h2 class="card-title">🎥📺 {{ recommend_title }}</h2>
+      </div>
+
+      <div class="card-body movie-search-body">
+        {% if films %}
+          <div class="movie-search-grid">
+            {% for film in films %}
+              {% include "films/includes/film_preview_card.html" with film=film user_film=None review=None %}
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="empty-text">
+            Пока здесь нет фильмов 😔
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if page_obj and page_obj.has_other_pages %}
+      <div class="mt-5">
+        {% include "includes/pagination.html" %}
+      </div>
+    {% endif %}
+    <div class="text-center mt-3">
+      <a href="{% url 'films:home' %}" class="auth-btn auth-btn--secondary">
+         ← На главную
+      </a>
+    </div>
+  </section>
+</main>
+{% endblock %}
+{% block extra_js %}
+  <script src="{% static 'js/add_film.js' %}"></script>
+{% endblock %}

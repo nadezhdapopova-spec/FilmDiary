@@ -1,17 +1,18 @@
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.core.cache import cache
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.timezone import now
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
 from calendar_events.models import CalendarEvent
 from films.models import UserFilm
-from films.services import save_film_from_tmdb
+from films.services import save_film_from_tmdb, build_recommendation_cards, build_tmdb_collection_cards
 from reviews.models import Review
+from services.tmdb import Tmdb
 
 
 class HomeView(TemplateView):
@@ -20,23 +21,70 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        today = now().date()
+        planned_films = (CalendarEvent.objects.filter(user=self.request.user, planned_date__gte=today)
+                         .select_related("film")[:4])
+
+        recent_watched = Review.objects.filter(user=self.request.user).select_related("film").order_by("-updated_at")
+
         if self.request.user.is_authenticated:
             context.update({
-                "recs_for_me": get_user_recommendations(self.request.user, limit=4),
-                # "planned_movies": get_planned(self.request.user, limit=4),
-                # "recent_movies": get_recent(self.request.user, limit=4),
+                "recs_for_me": build_recommendation_cards(self.request.user, limit=4),
+                "planned_films": planned_films,
+                "recent_watched": recent_watched,
             })
 
-        context["search_type"] = "films"  # всегда для search_bar
+        context["search_type"] = "films"
         return context
 
 
-class RecommendsView(LoginRequiredMixin, TemplateView):
-    template_name = "films/recommends.html"
+class FilmRecommendsView(LoginRequiredMixin, TemplateView):
+    template_name = "films/film_recommends.html"
+    paginate_by = 12
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context["recommendations"] = get_user_recommendations(self.request.user, limit=50)
+
+        recommend_type = self.request.GET.get("type", "recommended")
+        tmdb = Tmdb()
+
+        title = ""
+        cards = []
+
+        if recommend_type == "recommended":
+            title = "Персональные рекомендации"
+            cards = build_recommendation_cards(self.request.user, limit=50)
+
+        elif recommend_type == "popular":
+            title = "Популярные фильмы"
+            films = tmdb.get_popular(pages=3)
+            cards = build_tmdb_collection_cards(films)
+
+        elif recommend_type == "now_playing":
+            title = "Сейчас в кино"
+            films = tmdb.get_now_playing(pages=2)
+            cards = build_tmdb_collection_cards(films)
+
+        elif recommend_type == "upcoming":
+            title = "Скоро в кино"
+            films = tmdb.get_upcoming(pages=2)
+            cards = build_tmdb_collection_cards(films)
+
+        elif recommend_type == "trending":
+            title = "Тренды недели"
+            films = tmdb.get_trending().get("results", [])
+            cards = build_tmdb_collection_cards(films)
+
+        elif recommend_type == "top_rated":
+            title = "Топ-рейтинговые фильмы"
+            films = tmdb.get_top_rated(pages=2)
+            cards = build_tmdb_collection_cards(films)
+
+        context.update({
+            "films": cards,
+            "recommend_type": recommend_type,
+            "recommend_title": title,
+        })
         return context
 
 
@@ -225,18 +273,6 @@ class DeleteFilmView(LoginRequiredMixin, View):
 
         messages.info(request, "Фильм успешно удалён")
         return redirect("films:my_films")
-
-
-def get_user_recommendations(user, *, limit=None):
-    if not user.is_authenticated:
-        return []
-    recs = cache.get(f"recs:user:{user.id}", [])
-    # if not recs:
-    #     return {
-    #         "status": "pending",
-    #         "message": "Добавляй фильмы в просмотренное — рекомендации скоро появятся"
-    #     }
-    return recs[:limit] if limit else recs
 
 
 def custom_error(request, status_code=404, exception=None):

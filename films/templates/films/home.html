@@ -12,11 +12,20 @@
       <div class="glass-card movie-section-card">
         <div class="card-header">
           <h2 class="card-title">Персональные рекомендации на сегодня</h2>
-          for film in recommendations[:12]:
-            {% include 'films/includes/film_preview_card.html' %}
-          <a href="#" class="auth-btn auth-btn--primary">
+          <a href="{% url 'films:recommends' %}?type=recommended" class="auth-btn auth-btn--primary">
             Смотреть все
           </a>
+        </div>
+        <div class="card-body">
+          {% if recs_for_me %}
+            <div class="movie-grid">
+              {% for film in recs_for_me %}
+                {% include 'films/includes/film_preview_card.html' with film=film %}
+              {% endfor %}
+            </div>
+          {% else %}
+            <p>Добавляй фильмы в просмотренное 🍿 — рекомендации скоро появятся</p>
+          {% endif %}
         </div>
       </div>
 
@@ -37,33 +46,13 @@
             <h3 class="card-title movie-search-body__subtitle">Искать в подборках:</h3>
 
             <div class="movie-search-body__chips">
-              <a href="#" class="auth-btn auth-btn--primary">Сейчас в кино</a>
-              <a href="#" class="auth-btn auth-btn--primary">Скоро в кино</a>
-              <a href="#" class="auth-btn auth-btn--primary">Популярные фильмы</a>
-              <a href="#" class="auth-btn auth-btn--primary">Тренды недели</a>
-              <a href="#" class="auth-btn auth-btn--primary">Топ‑рейтинговые фильмы</a>
+              <a href="{% url 'films:recommends' %}?type=now_playing" class="auth-btn auth-btn--primary">Сейчас в кино</a>
+              <a href="{% url 'films:recommends' %}?type=upcoming" class="auth-btn auth-btn--primary">Скоро в кино</a>
+              <a href="{% url 'films:recommends' %}?type=popular" class="auth-btn auth-btn--primary">Популярные фильмы</a>
+              <a href="{% url 'films:recommends' %}?type=trending" class="auth-btn auth-btn--primary">Тренды недели</a>
+              <a href="{% url 'films:recommends' %}?type=top_rated" class="auth-btn auth-btn--primary">Топ‑рейтинговые фильмы</a>
             </div>
           </div>
-        </div>
-      </div>
-
-      <!-- Запланировано к просмотру -->
-      <div class="glass-card movie-section-card">
-        <div class="card-header">
-          <h2 class="card-title">Запланированные фильмы</h2>
-          <a href="#" class="auth-btn auth-btn--primary">Открыть список</a>
-        </div>
-
-        <div class="movie-grid">
-          {% for movie in planned_movies %}
-            <article class="movie-card">
-              <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="movie-poster">
-              <div class="movie-meta">
-                <h3 class="movie-title">{{ movie.title }}</h3>
-                <p class="movie-extra">План на {{ movie.planned_date }}</p>
-              </div>
-            </article>
-          {% endfor %}
         </div>
       </div>
 
@@ -71,18 +60,14 @@
       <div class="glass-card movie-section-card">
         <div class="card-header">
           <h2 class="card-title">Недавно просмотренные</h2>
-          <a href="#" class="auth-btn auth-btn--primary">Открыть список</a>
+          <a href="{% url 'reviews:watched' %}" class="auth-btn auth-btn--primary">Открыть список</a>
         </div>
 
         <div class="movie-grid">
-          {% for movie in planned_movies %}
-            <article class="movie-card">
-              <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="movie-poster">
-              <div class="movie-meta">
-                <h3 class="movie-title">{{ movie.title }}</h3>
-                <p class="movie-extra">Просмотрено: {{ movie.watched_date }}</p>
-              </div>
-            </article>
+          {% for review in recent_watched|slice:":4" %}
+            {% include 'reviews/includes/review_card.html' with review=review %}
+          {% empty %}
+            <p>Отмечай фильмы как просмотренные 🍿, и они появятся здесь</p>
           {% endfor %}
         </div>
       </div>

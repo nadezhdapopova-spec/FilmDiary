@@ -11,14 +11,14 @@ from services.tmdb import Tmdb
 
 tmdb = Tmdb()
 
-def get_movie_data(tmdb_id):
-    """Возвращает подробные данные о фильме из API TMDB"""
-    return tmdb.get_movie_details(tmdb_id)
-
-
-def get_movie_credits(tmdb_id):
-    """Возвращает данные об актерах и создателях фильма из API TMDB"""
-    return tmdb.get_credits(tmdb_id)
+# def get_movie_data(tmdb_id):
+#     """Возвращает подробные данные о фильме из API TMDB"""
+#     return tmdb.get_movie_details(tmdb_id)
+#
+#
+# def get_movie_credits(tmdb_id):
+#     """Возвращает данные об актерах и создателях фильма из API TMDB"""
+#     return tmdb.get_credits(tmdb_id)
 
 
 def get_crew_by_job(film, job):
@@ -36,6 +36,14 @@ def get_user_film(user, film):
     if not user.is_authenticated:
         return None
     return UserFilm.objects.filter(user=user, film=film).first()
+
+
+def get_user_recommendations(user, *, limit=None):
+    """Берет вычесленные для пользователя рекомендации из кэша"""
+    if not user.is_authenticated:
+        return []
+    recs = cache.get(f"recs:user:{user.id}", [])
+    return recs[:limit] if limit else recs
 
 
 def build_film_context(*, film=None, tmdb_data=None, credits=None):
@@ -251,6 +259,55 @@ def save_film_from_tmdb(*, tmdb_id: int, user):
     user_film, created_user_film = UserFilm.objects.get_or_create(user=user, film=film)  # проверяем, есть ли фильм у пользователя
 
     return film, created_film, user_film, created_user_film
+
+
+def build_recommendation_cards(user, limit=4) -> list[dict]:
+    recs = get_user_recommendations(user, limit=limit)
+    cards = []
+
+    for rec in recs:
+        tmdb_id = rec["tmdb_id"]
+
+        film = Film.objects.filter(tmdb_id=tmdb_id).first()
+        if film:
+            cards.append(
+                build_film_context(film=film)
+            )
+        else:
+            payload = get_tmdb_movie_payload(tmdb_id)
+            if payload:
+                cards.append(
+                    build_film_context(
+                        tmdb_data=payload["details"],
+                        credits=payload["credits"],
+                    )
+                )
+    return cards
+
+def build_tmdb_collection_cards(films):
+    cards = []
+
+    for film in films:
+        tmdb_id = film.get("id")
+        if not tmdb_id:
+            continue
+
+        db_film = Film.objects.filter(tmdb_id=tmdb_id).first()  #  из БД
+        if db_film:
+            cards.append(
+                build_film_context(film=db_film)
+            )
+            continue
+
+        payload = get_tmdb_movie_payload(tmdb_id)  # в TMDB
+        if payload:
+            cards.append(
+                build_film_context(
+                    tmdb_data=payload["details"],
+                    credits=payload["credits"],
+                )
+            )
+    return cards
 
 
 def map_status(user_film, has_review: bool, rating: float | None):

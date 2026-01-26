@@ -241,25 +241,6 @@ class Tmdb:
         return f"{BASE_URL}{size}{path}"
 
 
-# if __name__ == "__main__":
-#     tmdb = Tmdb()
-#     print(tmdb.search_movie("Битва за битвой", 1))
-    # print(tmdb.get_movie_details("1054867"))
-    # print(tmdb.get_config())
-    # print(tmdb.get_credits("1054867"))
-    # print([r for r in res.get("cast")][0])
-    # print([res.keys()])
-    # print(tmdb.get_now_playing(3))
-    # print(tmdb.get_upcoming(3))
-    # print(tmdb.get_popular(3))
-    # print(tmdb.get_trending())
-    # print(tmdb.get_top_rated(3))
-    # print(tmdb.get_similar_movies("280", 2))
-    # print(tmdb.get_recommended_movies("280", 2))
-    # print(tmdb.get_genres())
-    # print(tmdb.get_movies_by_genre("35", 1))
-
-
 # configs = {'change_keys': ['adult', 'air_date', 'also_known_as', 'alternative_titles', 'biography', 'birthday', 'budget', 'cast', 'certifications', 'character_names', 'created_by', 'crew', 'deathday', 'episode', 'episode_number', 'episode_run_time', 'freebase_id', 'freebase_mid', 'general', 'genres', 'guest_stars', 'homepage', 'images', 'imdb_id', 'languages', 'name', 'network', 'origin_country', 'original_name', 'original_title', 'overview', 'parts', 'place_of_birth', 'plot_keywords', 'production_code', 'production_companies', 'production_countries', 'releases', 'revenue', 'runtime', 'season', 'season_number', 'season_regular', 'spoken_languages', 'status', 'tagline', 'title', 'translations', 'tvdb_id', 'tvrage_id', 'type', 'video', 'videos'], 'images': {'base_url': 'http://image.tmdb.org/t/p/', 'secure_base_url': 'https://image.tmdb.org/t/p/', 'backdrop_sizes': ['w300', 'w780', 'w1280', 'original'], 'logo_sizes': ['w45', 'w92', 'w154', 'w185', 'w300', 'w500', 'original'], 'poster_sizes': ['w92', 'w154', 'w185', 'w342', 'w500', 'w780', 'original'], 'profile_sizes': ['w45', 'w185', 'h632', 'original'], 'still_sizes': ['w92', 'w185', 'w300', 'original']}}
 # genres = {'genres': [{'id': 28, 'name': 'боевик'}, {'id': 12, 'name': 'приключения'}, {'id': 16, 'name': 'мультфильм'}, {'id': 35, 'name': 'комедия'}, {'id': 80, 'name': 'криминал'}, {'id': 99, 'name': 'документальный'}, {'id': 18, 'name': 'драма'}, {'id': 10751, 'name': 'семейный'}, {'id': 14, 'name': 'фэнтези'}, {'id': 36, 'name': 'история'}, {'id': 27, 'name': 'ужасы'}, {'id': 10402, 'name': 'музыка'}, {'id': 9648, 'name': 'детектив'}, {'id': 10749, 'name': 'мелодрама'}, {'id': 878, 'name': 'фантастика'}, {'id': 10770, 'name': 'телевизионный фильм'}, {'id': 53, 'name': 'триллер'}, {'id': 10752, 'name': 'военный'}, {'id': 37, 'name': 'вестерн'}]}
 # credits_cast = {'Acting'}
