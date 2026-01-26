@@ -9,7 +9,8 @@ from django.core.cache import cache
 from dotenv import load_dotenv
 
 from services.cache_ttl import TMDB_TTL
-from services.recommendations import TmdbFilm
+from services.tmdb_film import TmdbFilm
+
 
 load_dotenv()
 

@@ -1,6 +1,5 @@
 import math
 from collections import defaultdict
-from dataclasses import dataclass
 from datetime import date, datetime
 from heapq import nlargest
 from typing import Dict, Iterable, List, Optional, Set, Tuple
@@ -10,6 +9,8 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 from config import settings
 from services.tmdb import Tmdb
+from services.tmdb_film import TmdbFilm
+
 
 FEATURE_WEIGHTS = getattr(
     settings,
@@ -43,18 +44,6 @@ TOP_K_BASE: int = getattr(settings, "RECOMMENDER_TOP_K_BASE", 200)
 
 _FEATURE_WEIGHT_CACHE: Dict[str, float] = {}  # Быстрый кэш весов по полному feature ("genre:Drama")
 _FEATURE_TYPE_WEIGHT_CACHE: Dict[str, float] = {}  # Быстрый кэш весов по типу ("genre")
-
-
-@dataclass
-class TmdbFilm:
-    """Простая dataclass модель фильма из Tmdb: используется как структура данных"""
-    tmdb_id: int
-    title: str
-    overview: str
-    tagline: str
-    genres: List[str]
-    actors: List[str]
-    director: Optional[str]
 
 
 def fast_feature_weight(feature: str) -> float:
