@@ -225,8 +225,14 @@ CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BEAT_SCHEDULE = {
     "send_daily_calendar_reminders": {
         "task": "calendar_events.tasks.send_daily_reminders",
-        "schedule": crontab(minute="*/10"),  # каждые 10 минут
+        "schedule": crontab(hour=12, minute=0),
+        # "schedule": crontab(minute="*/1"),   # каждую минуту
     },
+    "recompute-recommendations-nightly": {
+        "task": "films.tasks.recompute_all_recommendations",
+        "schedule": crontab(hour=8, minute=0),
+        # "schedule": crontab(minute="*/1"),
+    }
 }
 
 
@@ -248,7 +254,6 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 TELEGRAM_URL = "https://api.telegram.org/bot"
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 
-# Logging settings
 
 # recommendations.py
 # Вес признаков
@@ -286,3 +291,85 @@ RECOMMENDER_API_RECOMMENDED_WEIGHT = 0.2
 # Окончательное масштабирование: параметры мягкости, чтобы избежать полного обнуления
 RECOMMENDER_RATING_SOFTNESS = 0.5
 RECOMMENDER_RECENCY_SOFTNESS = 0.5
+
+
+# logging settings
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO")
+LOG_DIR = BASE_DIR / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+
+    "formatters": {
+        "verbose": {
+            "format": (
+                "%(asctime)s | %(levelname)s | %(name)s | "
+                "%(pathname)s:%(lineno)d | %(message)s"
+            ),
+        },
+        "simple": {
+            "format": "%(levelname)s | %(name)s | %(message)s",
+        },
+    },
+
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+            "level": LOG_LEVEL,
+        },
+        "file_app": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "verbose",
+            "level": LOG_LEVEL,
+            "filename": LOG_DIR / "app.log",
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 3,
+        },
+        # "file_tmdb": {
+        #     "class": "logging.handlers.RotatingFileHandler",
+        #     "formatter": "verbose",
+        #     "level": LOG_LEVEL,
+        #     "filename": LOG_DIR / "tmdb.log",
+        #     "maxBytes": 5 * 1024 * 1024,
+        #     "backupCount": 3,
+        # },
+        "file_telegram": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "verbose",
+            "level": LOG_LEVEL,
+            "filename": LOG_DIR / "telegram.log",
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 3,
+        },
+    },
+
+    # универсальный root-логгер для всего проекта
+    "root": {
+        "handlers": ["console", "file_app"],
+        "level": LOG_LEVEL,
+    },
+
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
+            "propagate": True,
+        },
+        # "filmdiary.tmdb": {
+        #     "handlers": ["file_tmdb"],
+        #     "level": LOG_LEVEL,
+        #     "propagate": False,
+        # },
+        "filmdiary.telegram": {
+            "handlers": ["file_telegram"],
+            "level": LOG_LEVEL,
+            "propagate": False,
+        }
+    },
+}

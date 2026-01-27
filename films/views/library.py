@@ -4,13 +4,16 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.timezone import now
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
 from calendar_events.models import CalendarEvent
 from films.models import UserFilm
-from films.services import save_film_from_tmdb
+from films.services.builders import build_recommendation_cards, build_tmdb_collection_cards
+from films.services.save_film import save_film_from_tmdb
 from reviews.models import Review
+from services.tmdb import Tmdb
 
 
 class HomeView(TemplateView):
@@ -20,13 +23,68 @@ class HomeView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         if self.request.user.is_authenticated:
-            context.update({
-                # "recs_for_me": get_recommendations(self.request.user, limit=4),
-                # "planned_movies": get_planned(self.request.user, limit=4),
-                # "recent_movies": get_recent(self.request.user, limit=4),
-            })
+            today = now().date()
+            planned_films = (CalendarEvent.objects.filter(user=self.request.user, planned_date__gte=today)
+            .select_related("film")[:4])
 
-        context["search_type"] = "films"  # всегда для search_bar
+            recent_watched = Review.objects.filter(user=self.request.user).select_related("film").order_by(
+                "-updated_at")
+            context.update({
+                "recs_for_me": build_recommendation_cards(self.request.user, limit=4),
+                "planned_films": planned_films,
+                "recent_watched": recent_watched,
+            })
+        context["search_type"] = "films"
+        return context
+
+
+class FilmRecommendsView(LoginRequiredMixin, TemplateView):
+    template_name = "films/film_recommends.html"
+    paginate_by = 12
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        recommend_type = self.request.GET.get("type", "recommended")
+        tmdb = Tmdb()
+
+        title = ""
+        cards = []
+
+        if recommend_type == "recommended":
+            title = "Персональные рекомендации"
+            cards = build_recommendation_cards(self.request.user, limit=50)
+
+        elif recommend_type == "popular":
+            title = "Популярные фильмы"
+            films = tmdb.get_popular(pages=3)
+            cards = build_tmdb_collection_cards(films)
+
+        elif recommend_type == "now_playing":
+            title = "Сейчас в кино"
+            films = tmdb.get_now_playing(pages=2)
+            cards = build_tmdb_collection_cards(films)
+
+        elif recommend_type == "upcoming":
+            title = "Скоро в кино"
+            films = tmdb.get_upcoming(pages=2)
+            cards = build_tmdb_collection_cards(films)
+
+        elif recommend_type == "trending":
+            title = "Тренды недели"
+            films = tmdb.get_trending().get("results", [])
+            cards = build_tmdb_collection_cards(films)
+
+        elif recommend_type == "top_rated":
+            title = "Топ-рейтинговые фильмы"
+            films = tmdb.get_top_rated(pages=2)
+            cards = build_tmdb_collection_cards(films)
+
+        context.update({
+            "films": cards,
+            "recommend_type": recommend_type,
+            "recommend_title": title,
+        })
         return context
 
 

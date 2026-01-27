@@ -5,7 +5,10 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 
 from films.models import Film
-from films.services import build_film_context, get_tmdb_movie_payload, search_films, get_user_film
+from films.services.context import build_film_context
+from films.services.search import search_films
+from films.services.tmdb_movie_payload import get_tmdb_movie_payload
+from films.services.user_film_services import get_user_film
 from reviews.models import Review
 
 

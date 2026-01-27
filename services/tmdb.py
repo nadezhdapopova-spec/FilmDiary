@@ -9,6 +9,8 @@ from django.core.cache import cache
 from dotenv import load_dotenv
 
 from services.cache_ttl import TMDB_TTL
+from services.tmdb_film import TmdbFilm
+
 
 load_dotenv()
 
@@ -24,6 +26,72 @@ class Tmdb:
         """Конструктор для получения вакансий через API"""
         self._base_url: str = BASE
         self._base_params: dict = {"api_key": API_KEY, "language": LANG}
+
+
+    def _build_tmdb_film(self, raw: dict) -> TmdbFilm | None:
+        """Превращает сырые данные с фильмом-рекомендацией TMDB в структурированный TmdbFilm"""
+        tmdb_id = raw.get("id")
+        if not tmdb_id:
+            return None
+
+        details = self.get_movie_details(tmdb_id)
+        credits = self.get_credits(tmdb_id)
+
+        genres = [g["name"].lower() for g in details.get("genres", [])]
+
+        actors = [
+            c["name"].lower()
+            for c in credits.get("cast", [])[:5]
+            if c.get("name")
+        ]
+
+        director = None
+        for crew in credits.get("crew", []):
+            if crew.get("job") == "Director":
+                director = crew.get("name").lower()
+                break
+
+        return TmdbFilm(
+            tmdb_id=tmdb_id,
+            title=details.get("title", ""),
+            overview=details.get("overview", "") or "",
+            tagline=details.get("tagline", "") or "",
+            genres=genres,
+            actors=actors,
+            director=director,
+        )
+
+    def get_candidate_pool(self, limit: int = 1200) -> list[TmdbFilm]:
+        """Собирает пул фильмов из разных источников TMDB для построения рекомендаций"""
+        sources = [
+            self.get_popular(pages=3),
+            self.get_top_rated(pages=3),
+            self.get_trending("week").get("results", []),
+            self.get_upcoming(pages=2),
+        ]
+
+        raw_movies: dict[int, dict] = {}
+
+        for source in sources:
+            for m in source:
+                tmdb_id = m.get("id")
+                if tmdb_id and tmdb_id not in raw_movies:
+                    raw_movies[tmdb_id] = m
+                if len(raw_movies) >= limit:
+                    break
+            if len(raw_movies) >= limit:
+                break
+
+        films: list[TmdbFilm] = []
+
+        for raw in raw_movies.values():
+            try:
+                film = self._build_tmdb_film(raw)
+                if film:
+                    films.append(film)
+            except Exception:
+                continue
+        return films
 
     @staticmethod
     def _make_cache_key(prefix: str, path: str, params: dict) -> str:
@@ -171,25 +239,6 @@ class Tmdb:
 
         BASE_URL = "https://image.tmdb.org/t/p/"
         return f"{BASE_URL}{size}{path}"
-
-
-# if __name__ == "__main__":
-#     tmdb = Tmdb()
-#     print(tmdb.search_movie("Битва за битвой", 1))
-    # print(tmdb.get_movie_details("1054867"))
-    # print(tmdb.get_config())
-    # print(tmdb.get_credits("1054867"))
-    # print([r for r in res.get("cast")][0])
-    # print([res.keys()])
-    # print(tmdb.get_now_playing(3))
-    # print(tmdb.get_upcoming(3))
-    # print(tmdb.get_popular(3))
-    # print(tmdb.get_trending())
-    # print(tmdb.get_top_rated(3))
-    # print(tmdb.get_similar_movies("280", 2))
-    # print(tmdb.get_recommended_movies("280", 2))
-    # print(tmdb.get_genres())
-    # print(tmdb.get_movies_by_genre("35", 1))
 
 
 # configs = {'change_keys': ['adult', 'air_date', 'also_known_as', 'alternative_titles', 'biography', 'birthday', 'budget', 'cast', 'certifications', 'character_names', 'created_by', 'crew', 'deathday', 'episode', 'episode_number', 'episode_run_time', 'freebase_id', 'freebase_mid', 'general', 'genres', 'guest_stars', 'homepage', 'images', 'imdb_id', 'languages', 'name', 'network', 'origin_country', 'original_name', 'original_title', 'overview', 'parts', 'place_of_birth', 'plot_keywords', 'production_code', 'production_companies', 'production_countries', 'releases', 'revenue', 'runtime', 'season', 'season_number', 'season_regular', 'spoken_languages', 'status', 'tagline', 'title', 'translations', 'tvdb_id', 'tvrage_id', 'type', 'video', 'videos'], 'images': {'base_url': 'http://image.tmdb.org/t/p/', 'secure_base_url': 'https://image.tmdb.org/t/p/', 'backdrop_sizes': ['w300', 'w780', 'w1280', 'original'], 'logo_sizes': ['w45', 'w92', 'w154', 'w185', 'w300', 'w500', 'original'], 'poster_sizes': ['w92', 'w154', 'w185', 'w342', 'w500', 'w780', 'original'], 'profile_sizes': ['w45', 'w185', 'h632', 'original'], 'still_sizes': ['w92', 'w185', 'w300', 'original']}}

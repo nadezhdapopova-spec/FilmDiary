@@ -103,7 +103,7 @@ function renderEvents(apiResponse) {
         container.innerHTML = `
           <div class="empty-state">
             <strong>Пока ничего не запланировано</strong>
-            <p>Добавь фильмы в план просмотра, чтобы они появились здесь.</p>
+            <p>Добавь фильмы в план просмотра, чтобы они появились здесь</p>
           </div>
         `;
         paginationContainer.innerHTML = ""; // Скрываем пагинацию
