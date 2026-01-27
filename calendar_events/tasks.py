@@ -1,6 +1,7 @@
+import logging
 from collections import defaultdict
-from zoneinfo import ZoneInfo
 from datetime import time
+from zoneinfo import ZoneInfo
 
 from celery import shared_task
 from django.utils import timezone
@@ -9,6 +10,10 @@ import requests
 
 from calendar_events.models import CalendarEvent
 from config.settings import TELEGRAM_URL, TELEGRAM_TOKEN
+
+
+logger = logging.getLogger("filmdiary.telegram")
+
 
 @shared_task
 def send_telegram_message(chat_id: int, message: str):
@@ -21,9 +26,10 @@ def send_telegram_message(chat_id: int, message: str):
 
     try:
         response = requests.post(url, params=params, timeout=5)
+        logger.info("TG response: %s status=%s", url, response.status_code)
         response.raise_for_status()
-    except requests.RequestException as e:
-        print(f"Telegram error: {e}")
+    except requests.RequestException as exc:
+        logger.error("TG error: %s (%s)", url, exc, exc_info=True)
 
 
 @shared_task
@@ -46,8 +52,8 @@ def send_daily_reminders():
         user_now = now_utc.astimezone(user_tz)
 
         if (
-                event.planned_date == user_now.date()
-                and time(12, 0) <= user_now.time() < time(12, 10)
+                event.planned_date == user_now.date() and
+                time(12, 0) <= user_now.time() < time(12, 30)
         ):
             events_by_user[event.user].append(event)
 
@@ -56,7 +62,8 @@ def send_daily_reminders():
             f"• {event.film.title}" for event in user_events
         )
 
-        message = f"🎬 Сегодня запланированы просмотры:\n{film_list}"
+        message = f"Привет!\nСегодня запланированы просмотры:\n{film_list}"
+        logger.info("Reminder → User=%s films=%d chat_id=%s", user.id, len(user_events), user.tg_chat_id)
         with transaction.atomic():  # защищает от частично выполненных действий
             send_telegram_message.delay(user.tg_chat_id, message)
             CalendarEvent.objects.filter(id__in=[event.id for event in user_events]).update(reminder_sent=True)

@@ -58,7 +58,7 @@ def fast_feature_weight(feature: str) -> float:
 
     ftype = feature.split(":", 1)[0]  # извлекаем тип (до первого ':')
 
-    w = _FEATURE_TYPE_WEIGHT_CACHE[ftype]  # извлекаем кэш по типу
+    w = _FEATURE_TYPE_WEIGHT_CACHE.get(ftype)  # извлекаем кэш по типу
     if w is None:
         w = FEATURE_WEIGHTS.get(ftype, 1.0)
         _FEATURE_TYPE_WEIGHT_CACHE[ftype] = w  # или кэшириуем по типу

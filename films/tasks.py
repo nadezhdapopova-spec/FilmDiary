@@ -10,15 +10,19 @@ User = get_user_model()
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_kwargs={"max_retries": 3})
 def recompute_user_recommendations(self, user_id):
-    user = User.objects.filter(id=user_id).first()
-    if not user:
-        return
+    try:
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            return
 
-    api = Tmdb()
-    recs = build_recommendations(user, api)
+        api = Tmdb()
+        recs = build_recommendations(user, api)
 
-    cache_key = f"recs:user:{user.id}"
-    cache.set(cache_key, recs, 60 * 60 * 24)  # 24 часа
+        cache_key = f"recs:user:{user.id}"
+        cache.set(cache_key, recs, 60 * 60 * 24)  # 24 часа
+    except Exception as e:
+        print(f"[recs error] user_id={user_id}, error={e}")
+        raise
 
 
 @shared_task
