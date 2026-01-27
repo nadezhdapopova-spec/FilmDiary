@@ -18,6 +18,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
   gap: 1.4rem;
+  justify-content: start;
 }
 
 
@@ -31,6 +32,11 @@
   border-radius: 18px;
   padding: 0.8rem;
   border: 1px solid rgba(255,255,255,0.06);
+}
+
+.movie-grid .movie-card {
+  max-width: 260px;
+  width: 100%;
 }
 
 .movie-card__poster-wrapper {

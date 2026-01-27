@@ -10,7 +10,8 @@ from django.views.generic import ListView, TemplateView
 
 from calendar_events.models import CalendarEvent
 from films.models import UserFilm
-from films.services import save_film_from_tmdb, build_recommendation_cards, build_tmdb_collection_cards
+from films.services.builders import build_recommendation_cards, build_tmdb_collection_cards
+from films.services.save_film import save_film_from_tmdb
 from reviews.models import Review
 from services.tmdb import Tmdb
 
