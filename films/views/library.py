@@ -21,19 +21,18 @@ class HomeView(TemplateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-        today = now().date()
-        planned_films = (CalendarEvent.objects.filter(user=self.request.user, planned_date__gte=today)
-                         .select_related("film")[:4])
-
-        recent_watched = Review.objects.filter(user=self.request.user).select_related("film").order_by("-updated_at")
-
         if self.request.user.is_authenticated:
+            today = now().date()
+            planned_films = (CalendarEvent.objects.filter(user=self.request.user, planned_date__gte=today)
+            .select_related("film")[:4])
+
+            recent_watched = Review.objects.filter(user=self.request.user).select_related("film").order_by(
+                "-updated_at")
             context.update({
                 "recs_for_me": build_recommendation_cards(self.request.user, limit=4),
                 "planned_films": planned_films,
                 "recent_watched": recent_watched,
             })
-
         context["search_type"] = "films"
         return context
 
