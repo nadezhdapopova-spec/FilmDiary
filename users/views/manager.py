@@ -32,9 +32,7 @@ class BlockUserView(View):
 
         if user == request.user:
             messages.error(request, "Нельзя заблокировать самого себя")
-            return redirect("users:manager_users")
-
-        if user.is_blocked:
+        elif user.is_blocked:
             messages.warning(request, f"Пользователь {user.username} уже заблокирован")
         else:
             user.is_blocked = True

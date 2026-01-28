@@ -8,11 +8,9 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link href="{% static 'css/pages/manager_panel.css' %}" rel="stylesheet">
-  {% csrf_token %}
 </head>
 
 <body class="mp-font-inter">
-  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
   <!-- Сайдбар -->
   <div class="mp-sidebar">
     <div class="mp-sidebar-header mp-font-inter">
@@ -21,7 +19,7 @@
       <span class="mp-stats-badge">{{ total_users }}</span>
     </div>
 
-    <!-- Навбар ВНУТРИ сайдбара -->
+    <!--Навбар -->
     <nav class="mp-sidebar-nav mt-4">
       <a href="{% url 'users:manager_users' %}?status=active" class="{% if status == 'active' %}mp-active{% endif %}">
         <i class="bi bi-people-fill"></i> Активные
@@ -93,18 +91,29 @@
             {% endif %}
 
             <div class="mp-btn-action-group">
-              <a href="{% url 'users:manager_user_overview' user.id %}"
-                 class="mp-btn-modern mp-btn-primary-modern">
+              <a href="{% url 'users:manager_user_overview' user.id %}" class="mp-btn-modern mp-btn-primary-modern">
                 <i class="bi bi-eye"></i> Подробнее
               </a>
+
               {% if user.is_blocked %}
-                <a href="#" class="mp-btn-modern mp-btn-success-modern" onclick="unblockUser({{ user.id }})">
-                  <i class="bi bi-unlock"></i> Разблокировать
-                </a>
+                <form id="unblock-form-{{ user.id }}" method="post"
+                      action="{% url 'users:manager_user_unblock' user.id %}" style="display: contents;">
+                  {% csrf_token %}
+                  <button type="submit" class="mp-btn-modern mp-btn-success-modern"
+                          onclick="return confirm('Разблокировать {{ user.username }}?')">
+                    <i class="bi bi-unlock"></i> Разблокировать
+                  </button>
+                </form>
               {% else %}
-                <a href="#" class="mp-btn-modern mp-btn-danger-modern" onclick="blockUser({{ user.id }})">
-                  <i class="bi bi-lock"></i> Блокировать
-                </a>
+
+                <form id="block-form-{{ user.id }}" method="post"
+                      action="{% url 'users:manager_user_block' user.id %}" style="display: contents;">
+                  {% csrf_token %}
+                  <button type="submit" class="mp-btn-modern mp-btn-danger-modern"
+                          onclick="return confirm('Заблокировать {{ user.username }}?')">
+                    <i class="bi bi-lock"></i> Блокировать
+                  </button>
+                </form>
               {% endif %}
             </div>
           </div>
@@ -115,6 +124,5 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{% static 'js/block_users.js' %}"></script>
 </body>
 </html>
