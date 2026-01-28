@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 
 from django.utils import timezone
@@ -10,6 +11,9 @@ from rest_framework.response import Response
 from calendar_events.models import CalendarEvent
 from calendar_events.paginators import CalendarEventPaginator
 from calendar_events.serializers import CalendarEventSerializer
+
+
+logger = logging.getLogger("filmdiary.events")
 
 
 class CalendarEventViewSet(viewsets.ModelViewSet):
@@ -39,15 +43,21 @@ class CalendarEventViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         """При создании запланированного события устанавливает пользователя как владельца"""
         serializer.save(user=self.request.user)
+        self.logger.info("Calendar CREATE: user=%s event=%s film=%s",
+                         self.request.user.id, serializer.instance.pk,
+                         serializer.instance.film.tmdb_id)
 
 
     @action(detail=False, methods=["get"])
     def upcoming(self, request):
         """Возвращает фильмы пользователя, запланированные на ближайшие 48 часов"""
+        self.logger.debug("Calendar upcoming: user=%s", request.user.id)
         now = timezone.now().date()
         events = self.get_queryset().filter(
             planned_date__gte=now,
             planned_date__lte=now + timedelta(days=2),  # ближайшие 48 часов
         )
+        self.logger.info("Calendar upcoming: user=%s count=%s",
+                         request.user.id, events.count())
         serializer = self.get_serializer(events, many=True)
         return Response(serializer.data)

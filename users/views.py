@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth import get_user_model
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -18,6 +20,8 @@ from users.forms.register_form import RegisterForm
 from users.forms.resend_activation_form import ResendActivationForm
 from users.tasks import send_activation_email_task, send_confirm_email_task
 
+
+logger = logging.getLogger("filmdiary.users")
 User = get_user_model()
 
 
@@ -33,6 +37,9 @@ class RegisterView(SuccessMessageMixin, FormView):
         user = form.save(commit=False)
         user.is_active = False
         user.save()
+
+        logger.info("User REGISTER: user=%s email_sent=True", user.pk)
+
         self.request.session["resend_user_id"] = user.pk  # Сохраняем user_id в сессии для повторной отправки письма
         self.send_activation_email(user)
         return super().form_valid(form)
@@ -44,6 +51,7 @@ class RegisterView(SuccessMessageMixin, FormView):
             reverse("users:activate", kwargs={"user_id": user.pk, "token": token})
         )
 
+        logger.debug("User ACTIVATE email queued: user=%s", user.pk)
         send_activation_email_task.delay(
             user_id=user.pk,
             email=user.email,
@@ -65,16 +73,19 @@ class ActivateAccountView(View):
         user = get_object_or_404(User, pk=user_id)
 
         if user.is_active:
+            logger.debug("User ACTIVATE: user=%s already active", user_id)
             messages.info(request, "Аккаунт уже активирован")
             return redirect("users:login")
 
         if default_token_generator.check_token(user, token):
             user.is_active = True
             user.save()
+            logger.info("User ACTIVATE success: user=%s", user_id)
             messages.success(request, "Аккаунт успешно активирован!")
             request.session.pop("resend_user_id", None)
             return redirect("users:login")
 
+        logger.warning("User ACTIVATE fail: user=%s invalid token", user_id)
         messages.error(request, "Неверная или устаревшая ссылка активации аккаунта")
         return redirect("users:activation_sent")
 
@@ -158,6 +169,7 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
                 profile_form.save()
 
                 if email_changed:
+                    logger.info("User EMAIL change queued: user=%s new_email=True", user.pk)
                     token = default_token_generator.make_token(user)
                     confirm_url = request.build_absolute_uri(reverse("users:confirm_email", args=[user.pk, token]))
 
@@ -169,6 +181,7 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
 
                     messages.warning(request, "Мы отправили письмо для подтверждения нового email")
 
+                logger.debug("User PROFILE updated: user=%s", user.pk)
                 messages.success(request, "Профиль обновлён")
                 return redirect("users:profile")
 
