@@ -49,6 +49,7 @@ class CalendarEvent(models.Model):
         return f"{self.film.title}: {self.planned_date}"
 
     class Meta:
+        permissions = [("view_user_calendar", "Может видеть запланированные просмотры пользователей"), ]
         unique_together = ("user", "film", "planned_date")
         verbose_name = "просмотр"
         verbose_name_plural = "просмотры"

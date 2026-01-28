@@ -113,7 +113,6 @@ class UserFilm(models.Model):
         return f"{self.user} — {self.film}"
 
     class Meta:
+        permissions = [("view_user_films", "Может просматривать фильмы пользователей"),]
         unique_together = ("user", "film")
-        indexes = [
-            models.Index(fields=["user", "film"]),
-        ]
+        indexes = [models.Index(fields=["user", "film"]),]

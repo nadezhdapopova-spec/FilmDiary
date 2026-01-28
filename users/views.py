@@ -72,6 +72,11 @@ class ActivateAccountView(View):
         """Проверяет ссылку для активации аккаунта пользователя, активирует аккаунт"""
         user = get_object_or_404(User, pk=user_id)
 
+        if user.is_blocked:
+            messages.error(request,
+                           "Аккаунт заблокирован администратором. Напишите нам, мы сообщим, что делать")
+            return redirect("users:activation_error")
+
         if user.is_active:
             logger.debug("User ACTIVATE: user=%s already active", user_id)
             messages.info(request, "Аккаунт уже активирован")

@@ -10,6 +10,7 @@ from rest_framework.response import Response
 
 from calendar_events.models import CalendarEvent
 from calendar_events.paginators import CalendarEventPaginator
+from calendar_events.permissions import ManagerOrOwnerPermission
 from calendar_events.serializers import CalendarEventSerializer
 
 
@@ -18,7 +19,7 @@ class CalendarEventViewSet(viewsets.ModelViewSet):
     """Вьюсет запланированных к просмотру фильмов пользователя"""
 
     serializer_class = CalendarEventSerializer
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [ManagerOrOwnerPermission]
     filter_backends = [OrderingFilter]
     ordering_fields = ["planned_date", "film"]
     ordering = ["planned_date"]

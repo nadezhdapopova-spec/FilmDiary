@@ -60,6 +60,7 @@ class Review(models.Model):
         return f"{self.user.username} - {self.film.title} ({self.user_rating})"
 
     class Meta:
+        permissions = [("view_user_reviews", "Может просматривать оценки и отзывы пользователей на фильмы"), ]
         unique_together = ("user", "film")
         verbose_name = "отзыв"
         verbose_name_plural = "отзывы"

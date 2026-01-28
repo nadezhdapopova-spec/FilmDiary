@@ -32,6 +32,7 @@ class CustomUser(AbstractUser):
     )
     timezone = models.CharField(max_length=32, choices=TIMEZONES, default="Europe/Moscow")
     tg_chat_id = models.BigIntegerField(blank=True, null=True, verbose_name="Telegram id")
+    is_blocked = models.BooleanField(default=False, verbose_name="Заблокирован")
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = [
