@@ -13,8 +13,6 @@ from calendar_events.paginators import CalendarEventPaginator
 from calendar_events.serializers import CalendarEventSerializer
 
 
-logger = logging.getLogger("filmdiary.events")
-
 
 class CalendarEventViewSet(viewsets.ModelViewSet):
     """Вьюсет запланированных к просмотру фильмов пользователя"""
@@ -25,6 +23,7 @@ class CalendarEventViewSet(viewsets.ModelViewSet):
     ordering_fields = ["planned_date", "film"]
     ordering = ["planned_date"]
     pagination_class = CalendarEventPaginator
+    logger = logging.getLogger("filmdiary.events")
 
     def get_queryset(self):
         """Возвращает фильмы пользователя, запланированные к просмотру"""
