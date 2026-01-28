@@ -22,7 +22,7 @@ def build_film_card(
             "release_date": film.release_date.year if film.release_date else "—",
             "genres": ", ".join(g.name for g in film.genres.all()[:2]),
             "rating": round(film.vote_average, 1) if film.vote_average else None,
-            "in_library": True,
+            "in_library": bool(user_film),
             **map_status(user_film=user_film, has_review=False, rating=None,),
         }
 

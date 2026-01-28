@@ -331,14 +331,15 @@ LOGGING = {
             "maxBytes": 5 * 1024 * 1024,
             "backupCount": 3,
         },
-        # "file_tmdb": {
-        #     "class": "logging.handlers.RotatingFileHandler",
-        #     "formatter": "verbose",
-        #     "level": LOG_LEVEL,
-        #     "filename": LOG_DIR / "tmdb.log",
-        #     "maxBytes": 5 * 1024 * 1024,
-        #     "backupCount": 3,
-        # },
+        "file_films": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "formatter": "verbose",
+            "level": LOG_LEVEL,
+            "filename": LOG_DIR / "films.log",
+            "maxBytes": 5 * 1024 * 1024,
+            "backupCount": 3,
+            "encoding": "utf-8",
+        },
         "file_telegram": {
             "class": "logging.handlers.RotatingFileHandler",
             "formatter": "verbose",
@@ -361,11 +362,11 @@ LOGGING = {
             "level": LOG_LEVEL,
             "propagate": True,
         },
-        # "filmdiary.tmdb": {
-        #     "handlers": ["file_tmdb"],
-        #     "level": LOG_LEVEL,
-        #     "propagate": False,
-        # },
+        "filmdiary.films": {
+            "handlers": ["file_films"],
+            "level": LOG_LEVEL,
+            "propagate": False,
+        },
         "filmdiary.telegram": {
             "handlers": ["file_telegram"],
             "level": LOG_LEVEL,
