@@ -11,7 +11,7 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 
 from calendar_events.models import CalendarEvent
 from films.models import Film, UserFilm
-from services.permissions import can_user_view, can_user_edit, can_user_delete
+from services.permissions import can_user_view, can_user_edit, can_user_delete, is_manager
 from reviews.forms import ReviewForm
 from reviews.models import Review
 
@@ -27,19 +27,17 @@ class BaseReviewListView(LoginRequiredMixin, ListView):
 
     def get_base_queryset(self):
         """Базовый queryset с annotate для карточек"""
-        qs = (
-            Review.objects
-            .filter(user=self.request.user)
-            .select_related("film")
-            .order_by("-updated_at")
-        )
+        qs = Review.objects.select_related("film").order_by("-updated_at")
+        user = self.request.user
+        if not (user.is_superuser or is_manager(user)):
+            qs = qs.filter(user=user)
 
         user_films = UserFilm.objects.filter(
-            user=self.request.user,
+            user=user,
             film=OuterRef("film")
         )
         planned_events = CalendarEvent.objects.filter(
-            user=self.request.user,
+            user=user,
             film=OuterRef("film"),
             planned_date__gte=now().date()
         )

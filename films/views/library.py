@@ -15,6 +15,7 @@ from films.models import UserFilm
 from films.services.builders import build_recommendation_cards, build_tmdb_collection_cards
 from films.services.save_film import save_film_from_tmdb
 from reviews.models import Review
+from services.permissions import is_manager
 from services.tmdb import Tmdb
 
 
@@ -101,16 +102,20 @@ class UserListFilmView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """Возвращает список пользователя 'Мои фильмы', осуществляет поиск по q"""
-        queryset = (UserFilm.objects
-                    .filter(user=self.request.user, film__tmdb_id__isnull=False)
-                    .select_related("film")
-                    .order_by("-created_at"))
+        if self.request.user.is_superuser or is_manager(self.request.user):
+            queryset = (UserFilm.objects
+                    .filter(film__tmdb_id__isnull=False)
+                    .select_related("film"))
+        else:
+            queryset = (UserFilm.objects
+                        .filter(user=self.request.user, film__tmdb_id__isnull=False)
+                        .select_related("film"))
 
         query = self.request.GET.get("q", "").strip()
         if query:
             queryset = queryset.filter(film__title__icontains=query)
+        return queryset.order_by("-created_at")
 
-        return queryset
 
     def get_context_data(self, **kwargs):
         """Добавляет данные в контекст для поиска"""
