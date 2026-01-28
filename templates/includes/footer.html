@@ -1,4 +1,6 @@
 {% load static %}
+{% load user_groups %}
+
 <footer class="app-footer card">
   <div class="app-footer-title">
     <div class="app-footer-left">
@@ -8,6 +10,9 @@
       </svg>
     </div>
     <div class="app-footer-right">
+      {% if user.is_superuser or user|has_group:"Manager" %}
+        <a href="{% url 'users:manager_users' %}" class="auth-btn auth-btn--ghost">Менеджер-панель</a>
+      {% endif %}
       <img src="{% static 'images/symbol_smile.png' %}"
            alt="logo"
            class="footer__logo-fixed">

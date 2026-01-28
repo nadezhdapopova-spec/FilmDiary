@@ -8,7 +8,10 @@ from django.contrib.auth.views import (
 from django.urls import path, reverse_lazy
 
 from users.forms.password_reset_form import CustomPasswordResetForm, CustomSetPasswordForm
-from users.views import (
+from users.views.feedback import FeedbackView
+from users.views.manager import ManagerUsersView, ManagerUserDataView, ManagerUserFilmsView, ManagerUserReviewsView, \
+    ManagerUserCalendarView, BlockUserView, UnblockUserView, ManagerUserOverviewView
+from users.views.users_views import (
     ActivateAccountView,
     ActivationErrorView,
     ActivationSentView,
@@ -16,8 +19,8 @@ from users.views import (
     RegisterView,
     ResendActivationView,
     UserLoginView,
-    UserProfileView, FeedbackView,
-)
+    UserProfileView)
+
 
 app_name = "users"
 
@@ -67,4 +70,11 @@ urlpatterns = [
         name="password_reset_complete",
     ),
     path("feedback/", FeedbackView.as_view(), name="feedback"),
+    path("panel/users/", ManagerUsersView.as_view(), name="manager_users"),
+    path("panel/users/<int:user_id>/block/", BlockUserView.as_view(), name="manager_user_block"),
+    path("panel/users/<int:user_id>/unblock/", UnblockUserView.as_view(), name="manager_user_unblock"),
+    path("panel/users/<int:user_id>/", ManagerUserOverviewView.as_view(), name="manager_user_overview"),
+    path("panel/users/<int:user_id>/films/", ManagerUserFilmsView.as_view(), name="manager_user_films"),
+    path("panel/users/<int:user_id>/reviews/", ManagerUserReviewsView.as_view(), name="manager_user_reviews"),
+    path("panel/users/<int:user_id>/calendar/", ManagerUserCalendarView.as_view(), name="manager_user_calendar"),
 ]

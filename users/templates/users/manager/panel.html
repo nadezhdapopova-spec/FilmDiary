@@ -1,0 +1,120 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>{% block title %}Панель менеджера{% endblock %}</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="{% static 'css/pages/manager_panel.css' %}" rel="stylesheet">
+  {% csrf_token %}
+</head>
+
+<body class="mp-font-inter">
+  <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+  <!-- Сайдбар -->
+  <div class="mp-sidebar">
+    <div class="mp-sidebar-header mp-font-inter">
+      <h1 class="mp-font-inter">🌿 Manager</h1>
+      <h2 class="mp-font-inter">{{ title }}</h2>
+      <span class="mp-stats-badge">{{ total_users }}</span>
+    </div>
+
+    <!-- Навбар ВНУТРИ сайдбара -->
+    <nav class="mp-sidebar-nav mt-4">
+      <a href="{% url 'users:manager_users' %}?status=active" class="{% if status == 'active' %}mp-active{% endif %}">
+        <i class="bi bi-people-fill"></i> Активные
+      </a>
+      <a href="{% url 'users:manager_users' %}?status=blocked" class="{% if status == 'blocked' %}mp-active{% endif %}">
+        <i class="bi bi-shield-slash"></i> Заблокированные
+      </a>
+      <hr class="text-white-50 mx-3">
+      <a href="{% url 'films:home' %}">
+        <i class="bi bi-house-door"></i> На главную
+      </a>
+    </nav>
+  </div>
+
+  <div class="mp-content mp-font-inter">
+    <!-- Заголовок страницы -->
+    <div class="mp-page-header">
+      <h1 class="mp-font-inter">
+        <i class="bi bi-people"></i>
+        {{ title }}
+        {% if blocked_count %}
+          <span class="badge bg-danger rounded-pill">{{ blocked_count }} заблокировано</span>
+        {% endif %}
+      </h1>
+      <div class="mt-3">
+        <a href="{% url 'admin:users_customuser_changelist' %}" class="btn btn-primary" target="_blank" style="border-radius: 12px;">
+          <i class="bi bi-gear"></i> Открыть в Admin
+        </a>
+      </div>
+    </div>
+
+    <!-- Контент -->
+    {% block content %}
+      {% if not users %}
+        <div class="mp-empty-state mp-font-inter">
+          <i class="bi bi-people"></i>
+          <h3 class="mp-font-inter">Пользователей пока нет</h3>
+          <p class="lead mp-font-inter">Панель пуста. Ждем первых регистраций!</p>
+        </div>
+      {% else %}
+        {% for user in users %}
+        <div class="mp-user-card">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+            <div class="d-flex align-items-center flex-grow-1">
+              <div class="mp-user-avatar me-3">
+                {{ user.username.0|upper }}
+              </div>
+              <div class="mp-user-info mp-font-inter">
+                <h5>{{ user.username }}</h5>
+                <p class="mb-1 text-muted">{{ user.email }}</p>
+                <div class="mp-user-meta">
+                  <i class="bi bi-calendar-event me-1"></i>
+                  Зарегистрирован: {{ user.date_joined|date:"d.m.Y H:i" }}
+                  <br>
+                  <i class="bi bi-clock-history me-1"></i>
+                  Последний вход: {{ user.last_login|date:"d.m.Y H:i"|default:"Никогда" }}
+                </div>
+              </div>
+            </div>
+
+            {% if user.is_blocked %}
+              <span class="mp-user-status mp-status-blocked">
+                <i class="bi bi-x-circle"></i> Заблокирован
+              </span>
+            {% else %}
+              <span class="mp-user-status mp-status-active">
+                <i class="bi bi-check-circle"></i> Активен
+              </span>
+            {% endif %}
+
+            <div class="mp-btn-action-group">
+              <a href="{% url 'users:manager_user_overview' user.id %}"
+                 class="mp-btn-modern mp-btn-primary-modern">
+                <i class="bi bi-eye"></i> Подробнее
+              </a>
+              {% if user.is_blocked %}
+                <a href="#" class="mp-btn-modern mp-btn-success-modern" onclick="unblockUser({{ user.id }})">
+                  <i class="bi bi-unlock"></i> Разблокировать
+                </a>
+              {% else %}
+                <a href="#" class="mp-btn-modern mp-btn-danger-modern" onclick="blockUser({{ user.id }})">
+                  <i class="bi bi-lock"></i> Блокировать
+                </a>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      {% endif %}
+    {% endblock %}
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/block_users.js' %}"></script>
+</body>
+</html>

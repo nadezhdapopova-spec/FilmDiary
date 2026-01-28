@@ -1,0 +1,53 @@
+{% extends 'users/manager/panel.html' %}
+
+{% block content %}
+<div class="user-overview">
+  <div class="row">
+    <div class="col-md-8">
+      <h2>👤 {{ user_obj.username }}</h2>
+      <p><strong>Email:</strong> {{ user_obj.email }}</p>
+      <p><strong>Статус:</strong>
+        {% if user.is_blocked %}🔒 Заблокирован{% else %}✅ Активен{% endif %}
+      </p>
+    </div>
+    <div class="col-md-4 text-end">
+      <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-secondary">← Назад</a>
+      {% if user.is_blocked %}
+        <a href="#" class="btn btn-success" onclick="unblockUser({{ user.id }})">Разблокировать</a>
+      {% else %}
+        <a href="#" class="btn btn-danger" onclick="blockUser({{ user.id }})">Блокировать</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="row mt-4">
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5>{{ film_count }}</h5>
+          <p>Фильмов</p>
+          <a href="{% url 'users:manager_user_films' user_id %}" class="btn btn-outline-primary">Посмотреть</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5>{{ review_count }}</h5>
+          <p>Отзывов</p>
+          <a href="{% url 'users:manager_user_reviews' user_id %}" class="btn btn-outline-secondary">Посмотреть</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card text-center">
+        <div class="card-body">
+          <h5>{{ event_count }}</h5>
+          <p>Запланировано</p>
+          <a href="{% url 'users:manager_user_calendar' user_id %}" class="btn btn-outline-success">Посмотреть</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

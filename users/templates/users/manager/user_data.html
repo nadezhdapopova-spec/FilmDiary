@@ -1,0 +1,50 @@
+{% extends 'users/manager/panel.html' %}
+
+{% block content %}
+<div class="user-section">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h3>
+      {% if section == 'films' %}🎬 Фильмы ({{ total_films }})
+      {% elif section == 'reviews' %}✍️ Отзывы ({{ total_reviews }})
+      {% elif section == 'calendar' %}📅 Календарь ({{ total_events }})
+      {% endif %}
+      / {{ user.username }}
+    </h3>
+    <a href="{% url 'users:manager_user_overview' user.id %}" class="btn btn-secondary">← Обзор</a>
+  </div>
+
+  {% if section == 'films' %}
+    {% for uf in user_films %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <h6>{{ uf.film.title }}</h6>
+        <small>Добавлен: {{ uf.created_at|date:"d.m.Y" }}
+          {% if uf.is_favorite %}⭐ Любимый{% endif %}
+        </small>
+      </div>
+    </div>
+    {% endfor %}
+
+  {% elif section == 'reviews' %}
+    {% for review in reviews %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <h6>{{ review.film.title }}</h6>
+        <p>Рейтинг: {{ review.user_rating }}/10</p>
+        {% if review.review %}{{ review.review|truncatewords:20 }}{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+
+  {% elif section == 'calendar' %}
+    {% for event in events %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <h6>{{ event.film.title }}</h6>
+        <p>{{ event.planned_date }}</p>
+      </div>
+    </div>
+    {% endfor %}
+  {% endif %}
+</div>
+{% endblock %}
