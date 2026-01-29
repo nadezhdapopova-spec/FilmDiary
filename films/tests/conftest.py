@@ -84,3 +84,21 @@ def mock_build_recommendations():
 def django_db_setup():
     """Обеспечивает django_db для всех тестов"""
     pass
+
+@pytest.fixture
+def tmdb_payload():
+    return {
+        "details": {
+            "title": "Test Film",
+            "genres": [{"id": 1, "name": "Action"}],
+            "release_date": date(2024, 1, 1),
+        },
+        "credits": {
+            "cast": [
+                {"id": 10, "name": "Actor 1", "character": "Hero"},
+            ],
+            "crew": [
+                {"id": 20, "name": "Director 1", "job": "Director"},
+            ],
+        },
+    }
