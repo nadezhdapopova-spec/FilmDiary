@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
 from django.db.models import OuterRef, Exists, Subquery
@@ -9,32 +11,33 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 
 from calendar_events.models import CalendarEvent
 from films.models import Film, UserFilm
-from services.permissions import can_user_view, can_user_edit, can_user_delete
+from services.permissions import can_user_view, can_user_edit, can_user_delete, is_manager
 from reviews.forms import ReviewForm
 from reviews.models import Review
 
 
+logger = logging.getLogger("filmdiary.reviews")
+
+
 class BaseReviewListView(LoginRequiredMixin, ListView):
-    """Юазовый класс для списков просмотренных фильмов"""
+    """Базовый класс для списков просмотренных фильмов"""
     model = Review
     context_object_name = "reviews"
     paginate_by = 12
 
     def get_base_queryset(self):
         """Базовый queryset с annotate для карточек"""
-        qs = (
-            Review.objects
-            .filter(user=self.request.user)
-            .select_related("film")
-            .order_by("-updated_at")
-        )
+        qs = Review.objects.select_related("film").order_by("-updated_at")
+        user = self.request.user
+        if not (user.is_superuser or is_manager(user)):
+            qs = qs.filter(user=user)
 
         user_films = UserFilm.objects.filter(
-            user=self.request.user,
+            user=user,
             film=OuterRef("film")
         )
         planned_events = CalendarEvent.objects.filter(
-            user=self.request.user,
+            user=user,
             film=OuterRef("film"),
             planned_date__gte=now().date()
         )
@@ -178,19 +181,24 @@ class ReviewCreateView(LoginRequiredMixin, ReviewFormContextMixin, CreateView):
         form.instance.film = self.film
 
         if Review.objects.filter(user=self.request.user, film=self.film).exists():
+            logger.warning("ReviewCreate DUP: user=%s film=%s",
+                           self.request.user.id, self.film.tmdb_id)
             form.add_error(None, "Вы уже оставили отзыв на этот фильм")
             return self.form_invalid(form)
 
-        return super().form_valid(form)
+        review = super().form_valid(form)
+        logger.info("ReviewCreate OK: user=%s film=%s", self.request.user.id, self.film.tmdb_id)
+        return review
 
     def form_invalid(self, form):
+        logger.warning("ReviewCreate FAIL: user=%s film=%s errors=%s",
+                       self.request.user.id, self.film.tmdb_id, form.errors)
         print(form.errors)
         return super().form_invalid(form)
 
     def get_success_url(self):
         """При успешном сохнанении перенаправляет на страницу Мои фильмы"""
         return reverse("films:my_films")
-        # return reverse_lazy("reviews:review_detail", kwargs={"pk": self.object.pk})
 
 
 class ReviewUpdateView(LoginRequiredMixin, ReviewFormContextMixin, UpdateView):
@@ -207,6 +215,17 @@ class ReviewUpdateView(LoginRequiredMixin, ReviewFormContextMixin, UpdateView):
         can_user_edit(self.request.user, self.object)
         self.film = self.object.film
         return self.object
+
+    def form_valid(self, form):
+        review = super().form_valid(form)
+        logger.info("ReviewUpdate OK: review=%s user=%s",
+                    self.object.pk, self.request.user.id)
+        return review
+
+    def form_invalid(self, form):
+        logger.warning("ReviewUpdate FAIL: review=%s errors=%s",
+                       self.object.pk, form.errors)
+        return super().form_invalid(form)
 
     def get_form_kwargs(self):
         """Передает корректный initial из Review в форму при редактировании - для отображения даты и просмотров"""
@@ -227,7 +246,6 @@ class ReviewUpdateView(LoginRequiredMixin, ReviewFormContextMixin, UpdateView):
 
     def get_success_url(self):
         """При успешном редактировании возвращает на страницу Мои фильмы"""
-        # return reverse_lazy("reviews:review_detail", kwargs={"pk": self.object.pk})
         return reverse("films:my_films")
 
 class ReviewDeleteView(LoginRequiredMixin, DeleteView):

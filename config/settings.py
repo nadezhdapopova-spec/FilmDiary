@@ -50,6 +50,7 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "middleware.BlockUserMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -225,7 +226,7 @@ CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BEAT_SCHEDULE = {
     "send_daily_calendar_reminders": {
         "task": "calendar_events.tasks.send_daily_reminders",
-        "schedule": crontab(hour=12, minute=0),
+        "schedule": crontab(hour=8, minute=0),
         # "schedule": crontab(minute="*/1"),   # каждую минуту
     },
     "recompute-recommendations-nightly": {
@@ -301,55 +302,60 @@ LOG_LEVEL = os.getenv("DJANGO_LOG_LEVEL", "INFO")
 LOG_DIR = BASE_DIR / "logs"
 LOG_DIR.mkdir(exist_ok=True)
 
+LOG_HANDLERS = {
+    "console": {
+        "class": "logging.StreamHandler",
+        "formatter": "simple",
+        "level": LOG_LEVEL,
+    },
+    "file_app": {
+        "class": "logging.handlers.RotatingFileHandler",
+        "formatter": "verbose",
+        "level": LOG_LEVEL,
+        "filename": LOG_DIR / "app.log",
+        "maxBytes": 5 * 1024 * 1024,
+        "backupCount": 3,
+        "encoding": "utf-8",
+    },
+}
+
+MODULE_HANDLERS = {
+    "films": LOG_DIR / "films.log",
+    "reviews": LOG_DIR / "reviews.log",
+    "events": LOG_DIR / "events.log",
+    "telegram": LOG_DIR / "telegram.log",
+    "users": LOG_DIR / "users.log",
+}
+
+for name, filename in MODULE_HANDLERS.items():
+    LOG_HANDLERS[f"file_{name}"] = {
+        "class": "logging.handlers.RotatingFileHandler",
+        "formatter": "verbose",
+        "level": LOG_LEVEL,
+        "filename": filename,
+        "maxBytes": 5 * 1024 * 1024,
+        "backupCount": 3,
+        "encoding": "utf-8",
+    }
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
 
     "formatters": {
         "verbose": {
-            "format": (
-                "%(asctime)s | %(levelname)s | %(name)s | "
-                "%(pathname)s:%(lineno)d | %(message)s"
-            ),
+            "format": "%(asctime)s | %(levelname)-8s | %(name)s | %(pathname)s:%(lineno)d | %(message)s",
         },
         "simple": {
             "format": "%(levelname)s | %(name)s | %(message)s",
         },
-    },
-
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "simple",
-            "level": LOG_LEVEL,
-        },
-        "file_app": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "formatter": "verbose",
-            "level": LOG_LEVEL,
-            "filename": LOG_DIR / "app.log",
-            "maxBytes": 5 * 1024 * 1024,
-            "backupCount": 3,
-        },
-        # "file_tmdb": {
-        #     "class": "logging.handlers.RotatingFileHandler",
-        #     "formatter": "verbose",
-        #     "level": LOG_LEVEL,
-        #     "filename": LOG_DIR / "tmdb.log",
-        #     "maxBytes": 5 * 1024 * 1024,
-        #     "backupCount": 3,
-        # },
-        "file_telegram": {
-            "class": "logging.handlers.RotatingFileHandler",
-            "formatter": "verbose",
-            "level": LOG_LEVEL,
-            "filename": LOG_DIR / "telegram.log",
-            "maxBytes": 5 * 1024 * 1024,
-            "backupCount": 3,
+        "celery": {
+            "format": "%(asctime)s | %(levelname)s | [%(name)s:%(task_id)s] | %(message)s",
         },
     },
 
-    # универсальный root-логгер для всего проекта
+    "handlers": LOG_HANDLERS,
+
     "root": {
         "handlers": ["console", "file_app"],
         "level": LOG_LEVEL,
@@ -358,18 +364,25 @@ LOGGING = {
     "loggers": {
         "django": {
             "handlers": ["console"],
-            "level": LOG_LEVEL,
+            "level": "WARNING",
             "propagate": True,
         },
-        # "filmdiary.tmdb": {
-        #     "handlers": ["file_tmdb"],
-        #     "level": LOG_LEVEL,
-        #     "propagate": False,
-        # },
-        "filmdiary.telegram": {
-            "handlers": ["file_telegram"],
-            "level": LOG_LEVEL,
+        "django.request": {          # 404/500 ошибки
+            "handlers": ["file_app"],
+            "level": "ERROR",
             "propagate": False,
-        }
+        },
+        "django.db.backends": {
+            "level": "ERROR",        # SQL только ошибки
+        },
+
+        "filmdiary.films": {"handlers": ["file_films"], "level": LOG_LEVEL, "propagate": False},
+        "filmdiary.reviews": {"handlers": ["file_reviews"], "level": LOG_LEVEL, "propagate": False},
+        "filmdiary.events": {"handlers": ["file_events"], "level": LOG_LEVEL, "propagate": False},
+        "filmdiary.telegram": {"handlers": ["file_telegram"], "level": LOG_LEVEL, "propagate": False},
+        "filmdiary.users": {"handlers": ["file_users"], "level": LOG_LEVEL, "propagate": False},
+
+        "films.tasks": {"handlers": ["console", "file_app"], "level": "INFO", "propagate": False},
+        "users.tasks": {"handlers": ["console", "file_app"], "level": "INFO", "propagate": False},
     },
 }

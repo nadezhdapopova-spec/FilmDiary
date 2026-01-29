@@ -1,0 +1,184 @@
+{% extends 'users/manager/panel.html' %}
+
+{% block title %}Профиль {{ user_obj.username }} | Manager{% endblock %}
+
+{% block content %}
+<!-- Заголовок профиля -->
+<div class="mp-page-header mb-5">
+  <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+    <div class="d-flex align-items-center">
+      <div class="mp-user-avatar-large me-4">
+        {{ user_obj.username.0|upper }}
+      </div>
+      <div>
+        <h1 class="mp-font-inter mb-1">
+          {{ user_obj.username }}
+        </h1>
+        <p class="text-muted mb-2">{{ user_obj.email }}</p>
+
+        <!-- Статус -->
+        {% if user_obj.is_blocked %}
+          <span class="mp-user-status mp-status-blocked mb-3 d-inline-block">
+            <i class="bi bi-x-circle"></i> Заблокирован
+          </span>
+        {% else %}
+          <span class="mp-user-status mp-status-active mb-3 d-inline-block">
+            <i class="bi bi-check-circle"></i> Активен
+          </span>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Кнопки действий -->
+    <div class="d-flex gap-2 flex-wrap">
+      <a href="{{ request.META.HTTP_REFERER }}" class="btn btn-outline-secondary mp-btn-modern" style="border-radius: 12px;">
+        <i class="bi bi-arrow-left"></i> Назад к списку
+      </a>
+
+      {% if user_obj.is_blocked %}
+        <form id="unblock-form-{{ user_obj.id }}" method="post"
+              action="{% url 'users:manager_user_unblock' user_obj.id %}" style="display: contents;">
+          {% csrf_token %}
+          <button type="submit" class="btn mp-btn-success-modern mp-btn-modern"
+                  onclick="return confirm('Разблокировать {{ user_obj.username }}?')">
+            <i class="bi bi-unlock"></i> Разблокировать
+          </button>
+        </form>
+      {% else %}
+        <form id="block-form-{{ user_obj.id }}" method="post"
+              action="{% url 'users:manager_user_block' user_obj.id %}" style="display: contents;">
+          {% csrf_token %}
+          <button type="submit" class="btn mp-btn-danger-modern mp-btn-modern"
+                  onclick="return confirm('Заблокировать {{ user_obj.username }}?')">
+            <i class="bi bi-lock"></i> Блокировать
+          </button>
+        </form>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Статистика пользователя -->
+<div class="row g-4 mb-5">
+  <div class="col-md-4">
+    <div class="mp-user-card text-center">
+      <div class="mp-user-stat-icon mb-3">
+        <i class="bi bi-film"></i>
+      </div>
+      <h2 class="mp-font-inter mb-2">{{ film_count|default:0 }}</h2>
+      <p class="text-muted mb-4">Фильмов в коллекции</p>
+      <a href="{% url 'users:manager_user_films' user_obj.id %}"
+         class="btn mp-btn-primary-modern mp-btn-modern w-100">
+        <i class="bi bi-eye"></i> Посмотреть фильмы
+      </a>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="mp-user-card text-center">
+      <div class="mp-user-stat-icon mb-3">
+        <i class="bi bi-chat-text"></i>
+      </div>
+      <h2 class="mp-font-inter mb-2">{{ review_count|default:0 }}</h2>
+      <p class="text-muted mb-4">Написано отзывов</p>
+      <a href="{% url 'users:manager_user_reviews' user_obj.id %}"
+         class="btn mp-btn-modern mp-btn-outline-secondary w-100">
+        <i class="bi bi-eye"></i> Посмотреть отзывы
+      </a>
+    </div>
+  </div>
+
+  <div class="col-md-4">
+    <div class="mp-user-card text-center">
+      <div class="mp-user-stat-icon mb-3">
+        <i class="bi bi-calendar-check"></i>
+      </div>
+      <h2 class="mp-font-inter mb-2">{{ event_count|default:0 }}</h2>
+      <p class="text-muted mb-4">Запланировано просмотров</p>
+      <a href="{% url 'users:manager_user_calendar' user_obj.id %}"
+         class="btn mp-btn-modern mp-btn-success-modern w-100">
+        <i class="bi bi-eye"></i> Посмотреть календарь
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Детальная информация -->
+<div class="mp-user-card">
+  <h3 class="mp-font-inter mb-4">
+    <i class="bi bi-info-circle"></i> Детальная информация
+  </h3>
+
+  <div class="row">
+    <div class="col-md-6 mb-4">
+      <div class="mp-user-detail">
+        <label class="text-muted">Дата регистрации</label>
+        <p>{{ user_obj.date_joined|date:"d.m.Y H:i" }}</p>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="mp-user-detail">
+        <label class="text-muted">Последний вход</label>
+        <p>{{ user_obj.last_login|date:"d.m.Y H:i"|default:"Никогда не входил" }}</p>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="mp-user-detail">
+        <label class="text-muted">Статус аккаунта</label>
+        <p>
+          {% if user_obj.is_active %}
+            <span class="badge bg-success">Активен</span>
+          {% else %}
+            <span class="badge bg-secondary">Неактивен</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+    <div class="col-md-6 mb-4">
+      <div class="mp-user-detail">
+        <label class="text-muted">Роли</label>
+        <p>
+          {% if user_obj.is_superuser %}
+            <span class="badge bg-danger">Суперпользователь</span>
+          {% elif user_obj.is_staff %}
+            <span class="badge bg-info">Администратор</span>
+          {% elif user_obj.is_manager %}
+            <span class="badge bg-warning">Менеджер</span>
+          {% else %}
+            <span class="badge bg-secondary">Обычный пользователь</span>
+          {% endif %}
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Быстрые ссылки -->
+<div class="mp-user-card">
+  <h3 class="mp-font-inter mb-4">
+    <i class="bi bi-link-45deg"></i> Быстрые ссылки
+  </h3>
+  <div class="row">
+    <div class="col-md-3">
+      <a href="{% url 'users:manager_user_films' user_obj.id %}" class="mp-btn-modern mp-btn-primary-modern w-100 mb-3">
+        <i class="bi bi-film"></i> Фильмы
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{% url 'users:manager_user_reviews' user_obj.id %}" class="mp-btn-modern mp-btn-outline-secondary w-100 mb-3">
+        <i class="bi bi-chat-text"></i> Отзывы
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{% url 'users:manager_user_calendar' user_obj.id %}" class="mp-btn-modern mp-btn-success-modern w-100 mb-3">
+        <i class="bi bi-calendar-check"></i> Календарь
+      </a>
+    </div>
+    <div class="col-md-3">
+      <a href="{% url 'admin:users_customuser_change' user_obj.id %}" target="_blank" class="mp-btn-modern mp-btn-danger-modern w-100 mb-3">
+        <i class="bi bi-gear"></i> Admin
+      </a>
+    </div>
+  </div>
+</div>
+{% endblock %}

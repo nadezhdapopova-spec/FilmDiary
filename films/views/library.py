@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import JsonResponse
@@ -13,7 +15,11 @@ from films.models import UserFilm
 from films.services.builders import build_recommendation_cards, build_tmdb_collection_cards
 from films.services.save_film import save_film_from_tmdb
 from reviews.models import Review
+from services.permissions import is_manager
 from services.tmdb import Tmdb
+
+
+logger = logging.getLogger("filmdiary.films")
 
 
 class HomeView(TemplateView):
@@ -24,17 +30,15 @@ class HomeView(TemplateView):
 
         if self.request.user.is_authenticated:
             today = now().date()
-            planned_films = (CalendarEvent.objects.filter(user=self.request.user, planned_date__gte=today)
-            .select_related("film")[:4])
 
             recent_watched = Review.objects.filter(user=self.request.user).select_related("film").order_by(
                 "-updated_at")
             context.update({
                 "recs_for_me": build_recommendation_cards(self.request.user, limit=4),
-                "planned_films": planned_films,
                 "recent_watched": recent_watched,
             })
         context["search_type"] = "films"
+        context["home_page"] = True
         return context
 
 
@@ -98,16 +102,20 @@ class UserListFilmView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         """Возвращает список пользователя 'Мои фильмы', осуществляет поиск по q"""
-        queryset = (UserFilm.objects
-                    .filter(user=self.request.user, film__tmdb_id__isnull=False)
-                    .select_related("film")
-                    .order_by("-created_at"))
+        if self.request.user.is_superuser or is_manager(self.request.user):
+            queryset = (UserFilm.objects
+                    .filter(film__tmdb_id__isnull=False)
+                    .select_related("film"))
+        else:
+            queryset = (UserFilm.objects
+                        .filter(user=self.request.user, film__tmdb_id__isnull=False)
+                        .select_related("film"))
 
         query = self.request.GET.get("q", "").strip()
         if query:
             queryset = queryset.filter(film__title__icontains=query)
+        return queryset.order_by("-created_at")
 
-        return queryset
 
     def get_context_data(self, **kwargs):
         """Добавляет данные в контекст для поиска"""
@@ -184,22 +192,30 @@ class AddFilmView(LoginRequiredMixin, View):
         tmdb_id = request.POST.get("tmdb_id")
 
         if not tmdb_id:
+            logger.warning("AddFilm: missing tmdb_id=%s", tmdb_id)
             return JsonResponse({"status": "error", "message": "Нет ID фильма"}, status=400)
 
         try:
+            logger.debug("AddFilm: tmdb_id=%s user=%s", tmdb_id, request.user.id)
             film, created_film, user_film, created_user_film = save_film_from_tmdb(
                 tmdb_id=int(tmdb_id),
                 user=request.user
             )
-        except Exception:
+        except Exception as e:
+            logger.exception("AddFilm FAIL tmdb_id=%s: %s", tmdb_id, e)
             return JsonResponse({"status": "error", "message": "Ошибка при сохранении фильма"}, status=500)
 
         if not film or not user_film:
-            return JsonResponse({"status": "error", "message": "Фильм не найден или не удалось сохранить"}, status=500)
+            logger.warning("AddFilm: no film/user_film tmdb_id=%s", tmdb_id)
+            return JsonResponse({"status": "error", "message": "Фильм не найден или не удалось сохранить"},
+                                status=500)
 
         if created_user_film:
+            logger.info("AddFilm OK: new user_film=%s tmdb_id=%s", user_film.id, tmdb_id)
             return JsonResponse({"status": "added"})
-        return JsonResponse({"status": "exists"})
+        else:
+            logger.debug("AddFilm OK: exists tmdb_id=%s", tmdb_id)
+            return JsonResponse({"status": "exists"})
 
 
 class UpdateFilmStatusView(LoginRequiredMixin, View):
@@ -211,6 +227,7 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
 
         try:
             user_film = UserFilm.objects.select_related("film").get(user=request.user, film__tmdb_id=tmdb_id)
+            logger.debug("UpdateFilm: tmdb_id=%s action=%s", tmdb_id, action)
 
             if action == "watch":
                 return JsonResponse({
@@ -221,6 +238,7 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
                 user_film.is_favorite = True
             elif action == "delete":
                 user_film.delete()
+                logger.info("UpdateFilm DELETE: tmdb_id=%s", tmdb_id)
                 return JsonResponse({
                     "status": "success",
                     "action": action,
@@ -244,7 +262,10 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
                     "user_rating": None
                 })
             user_film.save()
+
             review = Review.objects.filter(user=request.user, film=user_film.film).only("user_rating").first()
+            logger.debug("UpdateFilm OK: tmdb_id=%s action=%s favorite=%s",
+                         tmdb_id, action, user_film.is_favorite)
             return JsonResponse({
                 "status": "success",
                 "action": action,
@@ -253,8 +274,10 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
                 "user_rating": review.user_rating if review else None
             })
         except UserFilm.DoesNotExist:
+            logger.warning("UpdateFilm: not found tmdb_id=%s user=%s", tmdb_id, request.user.id)
             return JsonResponse({"status": "error", "message": "Фильм не найден"}, status=404)
         except Exception as e:
+            logger.exception("UpdateFilm FAIL tmdb_id=%s action=%s: %s", tmdb_id, action, e)
             return JsonResponse({"status": "error", "message": str(e)}, status=500)
 
 
@@ -264,9 +287,6 @@ class DeleteFilmView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         """Удаляет фильм из коллекции пользователя"""
         tmdb_id = self.kwargs["tmdb_id"]
-        # print(tmdb_id)
-        # print("Deleting UserFilm:", UserFilm.objects.filter(user=request.user, film__tmdb_id=tmdb_id).query)
-        # print("Deleting Review:", Review.objects.filter(user=request.user, film__tmdb_id=tmdb_id).query)
 
         Review.objects.filter(user=request.user, film__tmdb_id=tmdb_id).delete()
         UserFilm.objects.filter(user=request.user, film__tmdb_id=tmdb_id).delete()

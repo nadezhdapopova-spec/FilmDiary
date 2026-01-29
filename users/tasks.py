@@ -1,3 +1,4 @@
+from celery.utils.log import get_task_logger
 from django.contrib.auth import get_user_model
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -6,6 +7,8 @@ from celery import shared_task
 
 from config import settings
 
+
+logger = get_task_logger(__name__)
 User = get_user_model()
 
 
@@ -25,9 +28,11 @@ def send_activation_email_task(self, user_id, email, activation_url):
             recipient_list=[email],
             html_message=html_message,
         )
+        logger.info("EmailTask OK: user=%s task=%s", user_id, self.request.id)
         return "OK"
 
     except Exception as exc:
+        logger.exception("EmailTask FAIL: user=%s task=%s", user_id, self.request.id)
         raise self.retry(exc=exc, countdown=10)  # повторная попытка отправки, если SMTP упал
 
 

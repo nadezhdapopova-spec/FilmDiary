@@ -49,49 +49,54 @@
     <div class="movie-card__divider"></div>
 
     <div class="movie-card__footer movie-card__footer--compact">
-      <div class="movie-card__actions-row">
-        <button
-          class="btn-icon"
-          data-role="plan"
-          data-action="plan"
-          data-id="{{ review.film.tmdb_id }}"
-          data-film-db-id="{{ review.film.id }}"
-          data-title="{{ review.film.title }}"
-          title="Запланировать новый просмотр">
-          📅
-        </button>
+      {% if home_page %}
+        <a href="{% url 'reviews:watched' %}" class="auth-btn auth-btn--primary">
+          Подробнее
+        </a>
+      {% else %}
+        <div class="movie-card__actions-row">
+          <button
+            class="btn-icon"
+            data-role="plan"
+            data-action="plan"
+            data-id="{{ review.film.tmdb_id }}"
+            data-film-db-id="{{ review.film.id }}"
+            data-title="{{ review.film.title }}"
+            title="Запланировать новый просмотр">
+            📅
+          </button>
 
-      <button
-          class="btn-icon"
-          data-action="edit-review"
-          data-review-id="{{ review.id }}"
-          data-id="{{ review.film.tmdb_id }}"
-          data-title="{{ review.film.title }}"
-          title="Смотреть отзыв">
-          ✍️
-        </button>
+          <button
+            class="btn-icon"
+            data-action="edit-review"
+            data-review-id="{{ review.id }}"
+            data-id="{{ review.film.tmdb_id }}"
+            data-title="{{ review.film.title }}"
+            title="Смотреть отзыв">
+            ✍️
+          </button>
 
-        <button
-          class="btn-icon"
-          data-role="favorite"
-          data-action="favorite"
-          data-id="{{ review.film.tmdb_id }}"
-          data-title="{{ review.film.title }}"
-          title="Добавить в Любимое">
-          🔥
-        </button>
+          <button
+            class="btn-icon"
+            data-role="favorite"
+            data-action="favorite"
+            data-id="{{ review.film.tmdb_id }}"
+            data-title="{{ review.film.title }}"
+            title="Добавить в Любимое">
+            🔥
+          </button>
 
-      <button
-          class="btn-icon"
-          data-action="delete-watched"
-          data-review-id="{{ review.id }}"
-          data-id="{{ review.film.tmdb_id }}"
-          data-title="{{ review.film.title }}"
-          title="Убрать из просмотренного">
-          <span class="btn-icon-text">➖</span>
-        </button>
-
-      </div>
+          <button
+            class="btn-icon"
+            data-action="delete-watched"
+            data-review-id="{{ review.id }}"
+            data-id="{{ review.film.tmdb_id }}"
+            data-title="{{ review.film.title }}"
+            title="Убрать из просмотренного">
+            <span class="btn-icon-text">➖</span>
+          </button>
+        </div>
+      {% endif %}
     </div>
   </article>
 </div>

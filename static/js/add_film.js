@@ -1,65 +1,57 @@
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelectorAll('.btn-add-film').forEach(button => {
-        button.addEventListener('click', async function(e) {
-            e.preventDefault();
+document.addEventListener('click', async function (e) {
+    const button = e.target.closest('.btn-add-film');
+    if (!button) return;
 
-            const tmdbId = this.dataset.tmdbId;
-            const title = this.dataset.title;
+    console.log('DELEGATED CLICK add-film', button.dataset.tmdbId);
+    e.preventDefault();
 
-            // визуальная обратная связь
-            const originalText = this.innerHTML;
-            this.innerHTML = '<span>Добавляем...</span>';
-            this.disabled = true;
+    const tmdbId = button.dataset.tmdbId;
+    const title = button.dataset.title;
 
-            try {
-                const csrfToken = getCookie('csrftoken');
+    const originalHTML = button.innerHTML;
+    button.innerHTML = '<span>Добавляем...</span>';
+    button.disabled = true;
 
-                const response = await fetch('/films/add_film/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                        'X-CSRFToken': csrfToken,
-                        'X-Requested-With': 'XMLHttpRequest',
-                    },
-                    body: `tmdb_id=${encodeURIComponent(tmdbId)}`
-                });
+    try {
+        const csrfToken = getCookie('csrftoken');
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
-
-                const data = await response.json();
-
-                if (data.status === 'added') {
-                    this.outerHTML = `
-                        <span class="status-badge">
-                            <span class="status-badge__text">В моей библиотеке</span>
-                        </span>
-                    `;
-                    showToast(`✅ Фильм "${title}" добавлен!`);
-                } else if (data.status === 'exists') {
-                    this.outerHTML = `
-                        <span class="status-badge">
-                            <span class="status-badge__text">Уже в библиотеке</span>
-                        </span>
-                    `;
-                    showToast(`ℹ️ Фильм "${title}" уже есть`);
-                } else if (data.status === 'error') {
-                    throw new Error(data.message || 'Неизвестная ошибка');
-                } else {
-                    throw new Error('Неизвестный ответ сервера');
-                }
-
-            } catch (error) {
-                console.error('Add film error:', error);
-                if (document.body.contains(this)) {
-                    this.innerHTML = originalText;
-                    this.disabled = false;
-                }
-                showToast('❌ Ошибка: ' + error.message);
-            }
+        const response = await fetch('/films/add_film/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': csrfToken,
+                'X-Requested-With': 'XMLHttpRequest',
+            },
+            body: `tmdb_id=${encodeURIComponent(tmdbId)}`
         });
-    });
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        if (data.status === 'added' || data.status === 'exists') {
+            button.outerHTML = `
+                <span class="status-badge">
+                    <span class="status-badge__text">
+                        ${data.status === 'added' ? 'В моей библиотеке' : 'Уже в библиотеке'}
+                    </span>
+                </span>
+            `;
+            showToast(`✅ Фильм "${title}" добавлен`);
+        } else {
+            throw new Error(data.message || 'Неизвестная ошибка');
+        }
+
+    } catch (error) {
+        console.error('Add film error:', error);
+        if (document.body.contains(button)) {
+            button.innerHTML = originalHTML;
+            button.disabled = false;
+        }
+        showToast('❌ Ошибка: ' + error.message);
+    }
 });
 
 // функция для CSRF токена

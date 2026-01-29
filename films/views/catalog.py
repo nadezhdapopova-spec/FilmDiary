@@ -10,6 +10,7 @@ from films.services.search import search_films
 from films.services.tmdb_movie_payload import get_tmdb_movie_payload
 from films.services.user_film_services import get_user_film
 from reviews.models import Review
+from services.permissions import can_user_view, is_manager
 
 
 class FilmDetailView(LoginRequiredMixin, TemplateView):
@@ -28,6 +29,9 @@ class FilmDetailView(LoginRequiredMixin, TemplateView):
         film_obj = (
             Film.objects.filter(tmdb_id=tmdb_id).prefetch_related("genres", "actors", "crew",).first()
         )
+        if film_obj:
+            can_user_view(self.request.user, film_obj)
+
         user_film = None
         review = None
 
@@ -76,7 +80,10 @@ def film_search_view(request):
     params = f"&q={query}&source={source}" if query else ""
     page_number = request.GET.get("page", 1)
 
-    results = search_films(source=source, query=query, page_num=page_number, user=request.user)
+    if source in ["user_films", "favorites"] and not (request.user.is_superuser or is_manager(request.user)):
+        results = search_films(source=source, query=query, page_num=page_number, user=request.user)
+    else:
+        results = search_films(source=source, query=query, page_num=page_number, user=None)
 
     is_user_films = source in ["user_films", "favorites", "watched", "reviewed"]
     paginator = Paginator(results, 12)
