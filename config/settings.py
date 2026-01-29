@@ -226,12 +226,12 @@ CELERY_TASK_TIME_LIMIT = 30 * 60
 CELERY_BEAT_SCHEDULE = {
     "send_daily_calendar_reminders": {
         "task": "calendar_events.tasks.send_daily_reminders",
-        "schedule": crontab(hour=8, minute=0),
+        "schedule": crontab(hour=13, minute=0),
         # "schedule": crontab(minute="*/1"),   # каждую минуту
     },
     "recompute-recommendations-nightly": {
         "task": "films.tasks.recompute_all_recommendations",
-        "schedule": crontab(hour=8, minute=0),
+        "schedule": crontab(hour=13, minute=0),
         # "schedule": crontab(minute="*/1"),
     }
 }

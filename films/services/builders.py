@@ -11,7 +11,7 @@ def build_film_card(
     genre_map: dict | None = None,
     user=None,
 ) -> dict:
-    """Возвращает единый формат карточки фильма для film_preview_card.html"""
+    """Возвращает единый формат карточки фильма для film_preview_card.html из БД и из TMDB"""
     if film:
         user_film = get_user_film(user, film) if user else None
 
@@ -45,6 +45,7 @@ def build_film_card(
 
 
 def build_tmdb_collection_cards(films, user=None):
+    """Возвращает единый формат карточки фильма из тематических подборок TMDB"""
     if not films:
         return []
 
@@ -88,6 +89,7 @@ def build_tmdb_collection_cards(films, user=None):
 
 
 def build_recommendation_cards(user, limit=4) -> list[dict]:
+    """Возвращает единый формат карточки фильма для ежедневных персональных рекомендаций"""
     recs = get_user_recommendations(user, limit=limit)
     cards = []
 
