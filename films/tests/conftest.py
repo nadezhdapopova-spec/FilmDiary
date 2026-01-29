@@ -1,4 +1,5 @@
 from datetime import date
+from unittest.mock import patch, Mock
 
 import pytest
 
@@ -34,3 +35,52 @@ def film(db, genre):
 @pytest.fixture
 def user_film(db, user, film):
     return UserFilm.objects.create(user=user, film=film, is_favorite=True)
+
+
+@pytest.fixture
+def celery_eager(monkeypatch):
+    """Включение eager режима для Celery"""
+    monkeypatch.setattr("celery.current_app.conf.task_always_eager", True)
+    monkeypatch.setattr("celery.current_app.conf.task_eager_propagates", True)
+    yield
+    monkeypatch.setattr("celery.current_app.conf.task_always_eager", False)
+    monkeypatch.setattr("celery.current_app.conf.task_eager_propagates", False)
+
+
+@pytest.fixture
+def mock_logger():
+    """Мок логгера"""
+    with patch("films.tasks.logger") as mock_log:
+        yield mock_log
+
+
+@pytest.fixture
+def mock_cache():
+    """Мок для Redis кеша"""
+    mock_cache = Mock()
+    mock_cache.set.return_value = True
+    with patch("films.tasks.cache", mock_cache):
+        yield mock_cache
+
+
+@pytest.fixture
+def mock_tmdb():
+    """Мок TMDB API"""
+    mock_tmdb = Mock()
+    mock_tmdb.build_recommendations.return_value = ["rec1", "rec2"]
+    with patch("films.tasks.Tmdb", return_value=mock_tmdb):
+        yield mock_tmdb
+
+
+@pytest.fixture
+def mock_build_recommendations():
+    """Мок для build_recommendations"""
+    mock_rec = Mock(return_value=[{"movie_id": 1, "score": 0.9, "reasons": ["test"]}])
+    with patch("services.recommendations.build_recommendations", mock_rec):
+        yield mock_rec
+
+
+@pytest.fixture
+def django_db_setup():
+    """Обеспечивает django_db для всех тестов"""
+    pass
