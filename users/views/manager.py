@@ -88,8 +88,6 @@ class ManagerUsersView(ManagerPanelView):
             "total_users": qs.count(),
         })
 
-        # context["users_count"] = CustomUser.objects.all().count()
-        # context["blocked_count"] = CustomUser.objects.filter(is_blocked=True).count()
         return context
 
 
@@ -102,6 +100,7 @@ class ManagerUserDataView(ManagerPanelView):
 
 
 class ManagerUserOverviewView(ManagerUserDataView):
+    """Класс для просмотра данных пользователя менеджером"""
     template_name = "users/manager/user_overview.html"
 
     def get_context_data(self, **kwargs):
@@ -119,37 +118,40 @@ class ManagerUserOverviewView(ManagerUserDataView):
         return context
 
 
-class ManagerUserFilmsView(ManagerUserDataView):
+class ManagerUserFilmsView(ManagerPanelView):
     """Список фильмов пользователя"""
+    template_name = "users/manager/user_data.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = self.get_user()
+        user = get_object_or_404(CustomUser, id=self.kwargs["user_id"])
 
         user_films = (UserFilm.objects
                       .filter(user=user)
                       .select_related("film")
                       .prefetch_related("film__genres", "film__actors")
-                      .annotate(review_count=Count("film__review"))
-                      .order_by("-user_film__created_at")
+                      .order_by("-created_at")
                       )
 
         context.update({
             "user": user,
-            "user_films": user_films,
-            "total_films": user_films.count(),
+            "data_list": user_films,
+            "total_count": user_films.count(),
             "section": "films",
-            "permission": "view_user_films"
+            "section_title": "Фильмы",
+            "empty_icon": "bi-film",
+            "empty_title": "Фильмов нет"
         })
         return context
 
 
-class ManagerUserReviewsView(ManagerUserDataView):
+class ManagerUserReviewsView(ManagerPanelView):
     """Список отзывов пользователя"""
+    template_name = "users/manager/user_data.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = self.get_user()
+        user = get_object_or_404(CustomUser, id=self.kwargs["user_id"])
 
         reviews = (Review.objects
                    .filter(user=user)
@@ -160,22 +162,24 @@ class ManagerUserReviewsView(ManagerUserDataView):
 
         context.update({
             "user": user,
-            "reviews": reviews,
-            "total_reviews": reviews.count(),
+            "data_list": reviews,
+            "total_count": reviews.count(),
             "section": "reviews",
-            "permission": "view_user_reviews"
+            "section_title": "Отзывы",
+            "empty_icon": "bi-chat-text",
+            "empty_title": "Отзывов нет"
         })
         return context
 
 
-class ManagerUserCalendarView(ManagerUserDataView):
+class ManagerUserCalendarView(ManagerPanelView):
     """Календарь пользователя"""
+    template_name = "users/manager/user_data.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        user = self.get_user()
+        user = get_object_or_404(CustomUser, id=self.kwargs["user_id"])
 
-        # Все запланированные события
         events = (CalendarEvent.objects
                   .filter(user=user)
                   .select_related("film")
@@ -184,9 +188,11 @@ class ManagerUserCalendarView(ManagerUserDataView):
 
         context.update({
             "user": user,
-            "events": events,
-            "total_events": events.count(),
+            "data_list": events,
+            "total_count": events.count(),
             "section": "calendar",
-            "permission": "view_user_calendar"
+            "section_title": "Запланировано",
+            "empty_icon": "bi-calendar-x",
+            "empty_title": "Планов нет"
         })
         return context

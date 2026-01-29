@@ -67,7 +67,9 @@
           {% for review in recent_watched|slice:":4" %}
             {% include 'reviews/includes/review_card.html' with review=review %}
           {% empty %}
-            <p>Отмечай фильмы как просмотренные 🍿, и они появятся здесь</p>
+            <p class="empty-state-text">
+              Отмечай фильмы как просмотренные 🍿, и они появятся здесь
+            </p>
           {% endfor %}
         </div>
       </div>

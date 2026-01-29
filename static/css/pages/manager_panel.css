@@ -270,3 +270,157 @@
   color: #d1d5db;
   margin-bottom: 1.5rem;
 }
+
+/* Дополнения для user_overview */
+.mp-user-avatar-large {
+  width: 80px;
+  height: 80px;
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.mp-user-stat-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--mp-primary-green), var(--mp-green-hover));
+  border-radius: 16px;
+  color: white;
+  font-size: 1.5rem;
+}
+
+.mp-user-detail {
+  padding: 1.5rem;
+  background: rgba(248, 250, 252, 0.5);
+  border-radius: 12px;
+  border-left: 4px solid var(--mp-primary-green);
+}
+
+.mp-user-detail label {
+  font-weight: 500;
+  font-size: 0.9rem;
+  display: block;
+  margin-bottom: 0.25rem;
+  color: #64748b;
+}
+
+.mp-user-detail p {
+  margin: 0;
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+
+.mp-hover-bg {
+  transition: background-color 0.2s ease;
+}
+.mp-hover-bg:hover {
+  background-color: rgba(30, 123, 52, 0.05);
+}
+
+
+.film-poster-placeholder {
+  width: 120px;
+  height: 180px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.poster-sm {
+  width: 90px;
+  height: 135px;
+}
+
+.poster-bg {
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.poster-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.film-poster-placeholder:hover .poster-overlay {
+  opacity: 1;
+}
+
+.poster-overlay i {
+  color: white;
+  font-size: 2rem;
+}
+
+.calendar-badge {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: var(--mp-primary-green);
+  color: white;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+}
+
+.star-rating {
+  font-size: 0.9rem;
+}
+
+.empty-state-modern {
+  background: linear-gradient(135deg, rgba(248,250,252,0.8) 0%, rgba(241,245,249,0.8) 100%);
+  border-radius: 20px;
+  border: 2px dashed #e2e8f0;
+}
+
+.empty-icon-large {
+  background: linear-gradient(135deg, var(--mp-primary-green), var(--mp-green-hover));
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.empty-stats .display-4 {
+  font-weight: 700;
+  font-size: 2.5rem;
+}
+
+.mp-hover-bg {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 12px;
+  margin-bottom: 4px;
+}
+
+.mp-hover-bg:hover {
+  background: rgba(30, 123, 52, 0.08);
+  transform: translateX(8px);
+  box-shadow: 0 8px 24px rgba(30, 123, 52, 0.15);
+}
+
+.film-item, .review-item, .calendar-item {
+  border-radius: 12px;
+  margin-bottom: 12px;
+  transition: all 0.3s ease;
+}
