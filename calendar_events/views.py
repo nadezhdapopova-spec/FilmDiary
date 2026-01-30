@@ -3,7 +3,7 @@ from datetime import timedelta
 
 from django.utils import timezone
 from django.utils.timezone import now
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response

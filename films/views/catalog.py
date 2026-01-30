@@ -29,8 +29,6 @@ class FilmDetailView(LoginRequiredMixin, TemplateView):
         film_obj = (
             Film.objects.filter(tmdb_id=tmdb_id).prefetch_related("genres", "actors", "crew",).first()
         )
-        if film_obj:
-            can_user_view(self.request.user, film_obj)
 
         user_film = None
         review = None

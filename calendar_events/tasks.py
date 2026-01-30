@@ -53,7 +53,7 @@ def send_daily_reminders():
 
         if (
                 event.planned_date == user_now.date() and
-                time(12, 0) <= user_now.time() < time(12, 30)
+                time(17, 0) <= user_now.time() < time(17, 30)
         ):
             events_by_user[event.user].append(event)
 

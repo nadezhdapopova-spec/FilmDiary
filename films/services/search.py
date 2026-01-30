@@ -75,7 +75,6 @@ def search_tmdb_film(query: str, user, page_num: int=1) -> list[dict]:
 
 def search_user_film(query: str, user, page_num: int = 1) -> list[UserFilm]:
     """Поиск по фильмам пользователя из БД"""
-
     films_qs = (UserFilm.objects.filter(
         user=user,
         film__title__icontains=query

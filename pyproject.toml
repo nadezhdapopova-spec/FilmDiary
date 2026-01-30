@@ -27,6 +27,7 @@ tzdata = "^2025.2"
 django-crispy-forms = "^2.5"
 crispy-bootstrap5 = "^2025.6"
 psycopg = {extras = ["binary"], version = "^3.3.2"}
+pytest-django = "^4.11.1"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -35,6 +36,9 @@ scikit-learn = "^1.7.2"
 poetry-core = "^2.2.1"
 setuptools = "^80.9.0"
 coverage = "^7.13.0"
+pytest = "^9.0.2"
+pytest-cov = "^7.0.0"
+pytest-mock = "^3.15.1"
 
 
 [tool.poetry.group.lint.dependencies]
