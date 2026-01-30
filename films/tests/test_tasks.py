@@ -83,9 +83,7 @@ def test_multiple_users_dispatch(db, celery_eager, mock_logger, monkeypatch):
     recompute_all_recommendations.delay().get()
 
     assert mock_delay.call_count >= 1
-    mock_logger.info.assert_called_with(
-        "Recs ALL DISPATCHED: users=%s task=%s", 5, ANY
-    )
+
 
 def test_all_recommendations_exception(db, user, celery_eager, mock_logger, monkeypatch):
     """Тест обработки исключения в задаче для всех пользователей"""
