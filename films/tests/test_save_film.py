@@ -88,6 +88,7 @@ def test_save_film_tmdb_fail_rollback(user, monkeypatch):
 
 @pytest.mark.django_db
 def test_save_film_user_film_exists(user, film, monkeypatch):
+    """Попытка повторного сохранения фильма"""
     UserFilm.objects.create(user=user, film=film)
     monkeypatch.setattr("films.services.save_film.get_tmdb_movie_payload",Mock())
 

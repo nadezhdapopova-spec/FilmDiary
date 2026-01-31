@@ -32,9 +32,7 @@ class CustomAuthenticationForm(AuthenticationForm):
     )
 
     def confirm_login_allowed(self, user):
-        """
-        Вызывается Django после успешной аутентификации
-        """
+        """Вызывается Django после аутентификации, проверка активации"""
         if not user.is_active:
             raise forms.ValidationError(
                 mark_safe(

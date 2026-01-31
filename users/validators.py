@@ -21,6 +21,7 @@ def validate_avatar(file):
 
 
 def validate_telegram_id(tg_id: int | None):
+    """Метод валидации Телеграм id"""
     if tg_id is None:
         return None
 

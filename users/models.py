@@ -4,7 +4,6 @@ from django.db import models
 
 class CustomUser(AbstractUser):
     """Класс модели пользователя"""
-
     TIMEZONES = [
         ("Europe/Moscow", "Москва"),
         ("Europe/Kaliningrad", "Калининград"),
@@ -40,7 +39,6 @@ class CustomUser(AbstractUser):
     ]
 
     def __str__(self):
-        """Строковое отображение пользователя"""
         return self.username
 
     class Meta:
@@ -52,8 +50,7 @@ class CustomUser(AbstractUser):
 
 
 class MessageFeedback(models.Model):
-    """Класс обратной связи пользователей"""
-
+    """Класс модели обратной связи пользователей"""
     name = models.CharField(max_length=150, verbose_name="Имя пользователя")
     email = models.EmailField(verbose_name="E-mail пользователя")
     message = models.TextField(max_length=2000, verbose_name="Сообщение пользователя")

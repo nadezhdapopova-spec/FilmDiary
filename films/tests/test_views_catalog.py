@@ -25,6 +25,7 @@ class TestFilmViewsCatalog:
         assert response.status_code == 302
 
     def test_film_detail_from_db(self, client, user, film):
+        """GET /films/123/ из БД """
         client.force_login(user)
         url = reverse("films:film_detail", kwargs={"tmdb_id": film.tmdb_id})
         response = client.get(url)
@@ -34,6 +35,7 @@ class TestFilmViewsCatalog:
         assert response.context["film"]["in_library"] is False
 
     def test_film_detail_with_review(self, client, user, film, monkeypatch):
+        """GET /films/123/ с отзывом """
         client.force_login(user)
         UserFilm.objects.create(user=user, film=film)
         monkeypatch.setattr("reviews.models.Review.calculate_rating", lambda self: 8.0)
@@ -63,6 +65,7 @@ class TestFilmViewsCatalog:
         assert "page_obj" in response.context
 
     def test_film_search_tmdb(self, client, user, monkeypatch):
+        """GET /search/ - поисковый запрос фильма из TMDB"""
         client.force_login(user)
         monkeypatch.setattr("films.views.catalog.search_films", lambda **kwargs: ["film1", "film2"])
         response = client.get(reverse("films:film_search"), {"q": "test"})

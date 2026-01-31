@@ -19,6 +19,7 @@ class ResendActivationForm(forms.Form):
     )
 
     def clean_email(self):
+        """Валидация email"""
         email = self.cleaned_data.get("email")
         try:
             user = User.objects.get(email=email)

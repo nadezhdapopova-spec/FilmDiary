@@ -17,7 +17,6 @@ from calendar_events.serializers import CalendarEventSerializer
 
 class CalendarEventViewSet(viewsets.ModelViewSet):
     """Вьюсет запланированных к просмотру фильмов пользователя"""
-
     serializer_class = CalendarEventSerializer
     permission_classes = [ManagerOrOwnerPermission]
     filter_backends = [OrderingFilter]

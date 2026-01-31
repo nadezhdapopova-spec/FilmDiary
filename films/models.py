@@ -96,6 +96,7 @@ class FilmCrew(models.Model):
 
 
 class UserFilm(models.Model):
+    """Класс фильма с атрибутами конкретного пользователя"""
     user = models.ForeignKey(
         to="users.CustomUser",
         on_delete=models.CASCADE,

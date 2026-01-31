@@ -28,11 +28,11 @@ django-crispy-forms = "^2.5"
 crispy-bootstrap5 = "^2025.6"
 psycopg = {extras = ["binary"], version = "^3.3.2"}
 pytest-django = "^4.11.1"
+scikit-learn = "^1.8.0"
 
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^9.7.0"
-scikit-learn = "^1.7.2"
 poetry-core = "^2.2.1"
 setuptools = "^80.9.0"
 coverage = "^7.13.0"

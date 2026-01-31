@@ -8,7 +8,6 @@ from users.models import CustomUser
 @admin.register(CustomUser)
 class CustomUserAdmin(UserAdmin):
     """Класс для настройки панели админа (суперпользователя)"""
-
     model = CustomUser
     list_display = (
         "email",

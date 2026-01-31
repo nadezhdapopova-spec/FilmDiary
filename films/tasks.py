@@ -13,6 +13,7 @@ User = get_user_model()
 
 @shared_task(bind=True, autoretry_for=(Exception,), retry_kwargs={"max_retries": 3})
 def recompute_user_recommendations(self, user_id):
+    """Периодическя задача: ежедневное обновление рекомендация из TMDB для пользователя"""
     try:
         logger.info("Recs START: user=%s task=%s", user_id, self.request.id)
         user = User.objects.filter(id=user_id).first()
@@ -33,6 +34,7 @@ def recompute_user_recommendations(self, user_id):
 
 @shared_task(bind=True)
 def recompute_all_recommendations(self):
+    """Периодическя задача: ежедневное обновление рекомендация из TMDB для всех пользователей"""
     try:
         logger.info("Recs ALL START: task=%s", self.request.id)
         user_ids = list(User.objects.values_list("id", flat=True))

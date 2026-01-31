@@ -60,6 +60,7 @@ class UnblockUserView(ManagerPanelView, View):
 
 
 class ManagerUsersView(ManagerPanelView):
+    """Менеджер панель для работы с профилями пользователей"""
     template_name = "users/manager/panel.html"
 
     def get_context_data(self, **kwargs):

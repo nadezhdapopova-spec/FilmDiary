@@ -141,6 +141,7 @@ class ReviewFormContextMixin:
     stars = range(1, 11)
 
     def get_context_data(self, **kwargs):
+        """Возвращает контекст для отзыва"""
         context = super().get_context_data(**kwargs)
         context["rating_fields"] = self.rating_fields
         context["stars"] = self.stars
@@ -191,6 +192,7 @@ class ReviewCreateView(LoginRequiredMixin, ReviewFormContextMixin, CreateView):
         return review
 
     def form_invalid(self, form):
+        """Валидация формы создания отзыва: неуспешная валидация"""
         logger.warning("ReviewCreate FAIL: user=%s film=%s errors=%s",
                        self.request.user.id, self.film.tmdb_id, form.errors)
         print(form.errors)
@@ -217,12 +219,14 @@ class ReviewUpdateView(LoginRequiredMixin, ReviewFormContextMixin, UpdateView):
         return self.object
 
     def form_valid(self, form):
+        """Валидация формы редактирования отзыва: успешная валидация"""
         review = super().form_valid(form)
         logger.info("ReviewUpdate OK: review=%s user=%s",
                     self.object.pk, self.request.user.id)
         return review
 
     def form_invalid(self, form):
+        """Валидация формы редактирования отзыва: неуспешная валидация"""
         logger.warning("ReviewUpdate FAIL: review=%s errors=%s",
                        self.object.pk, form.errors)
         return super().form_invalid(form)

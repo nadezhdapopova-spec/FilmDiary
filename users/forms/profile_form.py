@@ -47,18 +47,21 @@ class UserProfileForm(forms.ModelForm):
         )
 
     def clean_avatar(self):
+        """Валидация аватара"""
         avatar = self.cleaned_data.get("avatar")
         if avatar:
             validate_avatar(avatar)
         return avatar
 
     def clean_tg_chat_id(self):
+        """Валидация Телеграм id"""
         tg_chat_id = self.cleaned_data.get("tg_chat_id")
         if tg_chat_id:
             validate_telegram_id(tg_chat_id)
         return tg_chat_id
 
     def save(self, commit=True):
+        """Сохранение данных"""
         user = super().save(commit=False)
         if "email" in self.changed_data:
             user.email_new = self.cleaned_data["email"]
