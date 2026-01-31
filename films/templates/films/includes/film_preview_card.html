@@ -53,6 +53,8 @@
           <span class="status-badge__text">Просмотрено</span>
           {% if film.is_favorite %}
             <span class="status-badge__icon">🔥</span>
+          {% else %}
+            <span class="status-badge__icon">🍿</span>
           {% endif %}
         </button>
 
@@ -63,6 +65,8 @@
           <span class="btn-add-film__text">В моих фильмах</span>
           {% if film.is_favorite %}
             <span class="btn-add-film__icon">🔥</span>
+          {% else %}
+            <span class="status-badge__icon">✔️</span>
           {% endif %}
         </button>
 

@@ -93,7 +93,7 @@ def build_recommendation_cards(user, limit=4) -> list[dict]:
     recs = get_user_recommendations(user, limit=limit)
     cards = []
 
-    films_map = {
+    films_map = {                                     # {603: <Film: The Matrix>, 550: <Film: Fight Club>,..}
         f.tmdb_id: f
         for f in Film.objects.filter(
             tmdb_id__in=[r["tmdb_id"] for r in recs]
@@ -110,12 +110,16 @@ def build_recommendation_cards(user, limit=4) -> list[dict]:
 
         payload = get_tmdb_movie_payload(tmdb_id)
         if payload:
+            details = payload["details"]
             cards.append(
                 build_film_card(
-                    tmdb_item=payload["details"],
+                    tmdb_item={
+                        **details,
+                        "genre_ids": [g["id"] for g in details.get("genres", [])]
+                    },
                     genre_map={
                         g["id"]: g["name"]
-                        for g in payload["details"].get("genres", [])
+                        for g in details.get("genres", [])
                     },
                     user=user,
                 )
