@@ -1,5 +1,6 @@
-import pytest
 from django.core.exceptions import ValidationError
+
+import pytest
 
 from users.validators import validate_telegram_id
 
@@ -8,6 +9,7 @@ def test_validate_telegram_id_invalid():
     """Невалидный Telegram ID: содержит буквы"""
     with pytest.raises(ValidationError):
         validate_telegram_id("abc123")
+
 
 @pytest.mark.django_db
 def test_validate_telegram_id_valid():

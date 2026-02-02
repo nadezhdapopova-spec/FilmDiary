@@ -5,12 +5,23 @@ from calendar_events.models import CalendarEvent
 
 class CalendarEventSerializer(serializers.ModelSerializer):
     """Сериализатор привычек"""
+
     film_title = serializers.CharField(source="film.title", read_only=True)
     film_tmdb_id = serializers.IntegerField(source="film.tmdb_id", read_only=True)
 
     class Meta:
         model = CalendarEvent
-        fields = ["id", "user", "film", "film_title", "planned_date", "note", "reminder_sent", "created_at", "film_tmdb_id"]
+        fields = [
+            "id",
+            "user",
+            "film",
+            "film_title",
+            "planned_date",
+            "note",
+            "reminder_sent",
+            "created_at",
+            "film_tmdb_id",
+        ]
         read_only_fields = ("id", "user", "film_title", "film_tmdb_id", "created_at")
 
     def validate(self, attrs):
@@ -26,12 +37,6 @@ class CalendarEventSerializer(serializers.ModelSerializer):
         ).exists()
 
         if exists:
-            raise serializers.ValidationError(
-                {
-                    "non_field_errors": [
-                        "Этот фильм уже запланирован на выбранную дату"
-                    ]
-                }
-            )
+            raise serializers.ValidationError({"non_field_errors": ["Этот фильм уже запланирован на выбранную дату"]})
 
         return attrs

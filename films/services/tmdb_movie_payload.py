@@ -4,7 +4,6 @@ from django.core.cache import cache
 
 from services.tmdb import Tmdb
 
-
 tmdb = Tmdb()
 
 

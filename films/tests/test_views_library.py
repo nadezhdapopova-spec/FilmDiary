@@ -1,5 +1,6 @@
-import pytest
 from django.urls import reverse
+
+import pytest
 
 from films.models import UserFilm
 
@@ -34,11 +35,13 @@ class TestFilmViewsCatalog:
     def test_recommends_popular(self, client, user, monkeypatch):
         """Вывод фильмов TMDB из подборки 'Популярные фильмы' для авторизованного пользователя"""
         client.force_login(user)
+
         class FakeTmdb:
-            def get_popular(self, pages): return [{"id": 1}]
+            def get_popular(self, pages):
+                return [{"id": 1}]
 
         monkeypatch.setattr("films.views.library.Tmdb", lambda: FakeTmdb())
-        monkeypatch.setattr("films.views.library.build_tmdb_collection_cards",lambda films: films)
+        monkeypatch.setattr("films.views.library.build_tmdb_collection_cards", lambda films: films)
         response = client.get(reverse("films:recommends"), {"type": "popular"})
 
         assert response.context["recommend_title"] == "Популярные фильмы"
@@ -71,8 +74,7 @@ class TestFilmViewsCatalog:
         """Добавление авторизованным пользователем фильма в свою коллекцию: успешно"""
         client.force_login(user)
         monkeypatch.setattr(
-            "films.views.library.save_film_from_tmdb",
-            lambda **kw: (film, False, UserFilm(user=user, film=film), True)
+            "films.views.library.save_film_from_tmdb", lambda **kw: (film, False, UserFilm(user=user, film=film), True)
         )
 
         response = client.post(reverse("films:add_film"), {"tmdb_id": film.tmdb_id})

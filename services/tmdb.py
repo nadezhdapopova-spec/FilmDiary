@@ -4,13 +4,13 @@ import os
 import time
 from json import JSONDecodeError
 
-import requests
 from django.core.cache import cache
+
+import requests
 from dotenv import load_dotenv
 
 from services.cache_ttl import TMDB_TTL
 from services.tmdb_film import TmdbFilm
-
 
 load_dotenv()
 
@@ -27,7 +27,6 @@ class Tmdb:
         self._base_url: str = BASE
         self._base_params: dict = {"api_key": API_KEY, "language": LANG}
 
-
     def _build_tmdb_film(self, raw: dict) -> TmdbFilm | None:
         """Превращает сырые данные с фильмом-рекомендацией TMDB в структурированный TmdbFilm"""
         tmdb_id = raw.get("id")
@@ -39,11 +38,7 @@ class Tmdb:
 
         genres = [g["name"].lower() for g in details.get("genres", [])]
 
-        actors = [
-            c["name"].lower()
-            for c in credits.get("cast", [])[:5]
-            if c.get("name")
-        ]
+        actors = [c["name"].lower() for c in credits.get("cast", [])[:5] if c.get("name")]
 
         director = None
         for crew in credits.get("crew", []):
@@ -101,11 +96,13 @@ class Tmdb:
         md5 - берёт любой объём данных и возвращает фиксированную строку длиной 32 символа в виде бинарного объекта;
         hexdigest - преобразует бинарный объект в читаемую строку
         """
-        raw = json.dumps(params, sort_keys=True, ensure_ascii=False).encode('utf-8') # одинаковый порядок элементов словаря и правильная кодировка символов
+        raw = json.dumps(params, sort_keys=True, ensure_ascii=False).encode(
+            "utf-8"
+        )  # одинаковый порядок элементов словаря и правильная кодировка символов
         digest = hashlib.md5(raw).hexdigest()
         return f"tmdb_{prefix}:{path}:{digest}"[:200]  # укорачиваем
 
-    def _get(self, path: str, params: dict | None = None, ttl_key: str="recommended", retries=3, timeout=5) -> dict:
+    def _get(self, path: str, params: dict | None = None, ttl_key: str = "recommended", retries=3, timeout=5) -> dict:
         """
         Внутренний метод для GET запросов:
         timeout: 5 сек (защита от зависания)
@@ -116,7 +113,7 @@ class Tmdb:
         params = {**self._base_params, **(params or {})}
 
         cache_key = self._make_cache_key("tmdb", path, params)  # создаем уникальный кэш-ключ
-        cached = cache.get(cache_key)   #  берем из кэша, если есть
+        cached = cache.get(cache_key)  # берем из кэша, если есть
         if cached is not None:
             return cached
 
@@ -146,7 +143,7 @@ class Tmdb:
                 return {}
         return {}
 
-    def _get_multipage(self, path: str, pages: int=1, params: dict=None, ttl_key: str="recommended") -> list:
+    def _get_multipage(self, path: str, pages: int = 1, params: dict = None, ttl_key: str = "recommended") -> list:
         """Возвращает несколько страниц результатов"""
         all_results = []
         params = params or {}
@@ -176,7 +173,7 @@ class Tmdb:
         return self._get(
             f"/movie/{movie_id}",
             {"append_to_response": "images", "include_image_language": "en-US,null"},
-            "movie_detail"
+            "movie_detail",
         )
 
     def get_config(self):
@@ -197,11 +194,11 @@ class Tmdb:
 
     def get_now_playing(self, pages=1):
         """Возвращает фильмы, которые сейчас в кино"""
-        return self._get_multipage("/movie/now_playing", pages, {},"trending")
+        return self._get_multipage("/movie/now_playing", pages, {}, "trending")
 
     def get_upcoming(self, pages=1):
         """Возвращает фильмы, которые скоро выйдут в прокат"""
-        return self._get_multipage("/movie/upcoming", pages, {},"trending")
+        return self._get_multipage("/movie/upcoming", pages, {}, "trending")
         # return [r.get("title") for r in res.get("results")]
 
     def get_popular(self, pages=1):
@@ -218,7 +215,7 @@ class Tmdb:
 
     def get_similar_movies(self, movie_id, pages=1):
         """Возвращает похожие фильмы (по содержанию)"""
-        return self._get_multipage(f"/movie/{movie_id}/similar", pages, {},"similar")
+        return self._get_multipage(f"/movie/{movie_id}/similar", pages, {}, "similar")
 
     def get_recommended_movies(self, movie_id, pages=1):
         """Возвращает рекомендации TMDB на основе их алгоритма (collaborative + content-based)"""
@@ -226,22 +223,16 @@ class Tmdb:
 
     def get_genres(self):
         """Возвращает список жанров"""
-        return self._get("/genre/movie/list", {},"genres")
+        return self._get("/genre/movie/list", {}, "genres")
 
     def get_movies_by_genre(self, genre_id, page=1):
         """Возвращает фильмы по жанру"""
         return self._get("/discover/movie", {"with_genres": genre_id, "page": page}, "genres")
 
-    def get_poster_url(self, path: str, size: str = "w342") -> str | None:   # w185, w342, w500
+    def get_poster_url(self, path: str, size: str = "w342") -> str | None:  # w185, w342, w500
         """Строит полный URL постера из относительного path"""
         if not path:
             return None
 
         BASE_URL = "https://image.tmdb.org/t/p/"
         return f"{BASE_URL}{size}{path}"
-
-
-# configs = {'change_keys': ['adult', 'air_date', 'also_known_as', 'alternative_titles', 'biography', 'birthday', 'budget', 'cast', 'certifications', 'character_names', 'created_by', 'crew', 'deathday', 'episode', 'episode_number', 'episode_run_time', 'freebase_id', 'freebase_mid', 'general', 'genres', 'guest_stars', 'homepage', 'images', 'imdb_id', 'languages', 'name', 'network', 'origin_country', 'original_name', 'original_title', 'overview', 'parts', 'place_of_birth', 'plot_keywords', 'production_code', 'production_companies', 'production_countries', 'releases', 'revenue', 'runtime', 'season', 'season_number', 'season_regular', 'spoken_languages', 'status', 'tagline', 'title', 'translations', 'tvdb_id', 'tvrage_id', 'type', 'video', 'videos'], 'images': {'base_url': 'http://image.tmdb.org/t/p/', 'secure_base_url': 'https://image.tmdb.org/t/p/', 'backdrop_sizes': ['w300', 'w780', 'w1280', 'original'], 'logo_sizes': ['w45', 'w92', 'w154', 'w185', 'w300', 'w500', 'original'], 'poster_sizes': ['w92', 'w154', 'w185', 'w342', 'w500', 'w780', 'original'], 'profile_sizes': ['w45', 'w185', 'h632', 'original'], 'still_sizes': ['w92', 'w185', 'w300', 'original']}}
-# genres = {'genres': [{'id': 28, 'name': 'боевик'}, {'id': 12, 'name': 'приключения'}, {'id': 16, 'name': 'мультфильм'}, {'id': 35, 'name': 'комедия'}, {'id': 80, 'name': 'криминал'}, {'id': 99, 'name': 'документальный'}, {'id': 18, 'name': 'драма'}, {'id': 10751, 'name': 'семейный'}, {'id': 14, 'name': 'фэнтези'}, {'id': 36, 'name': 'история'}, {'id': 27, 'name': 'ужасы'}, {'id': 10402, 'name': 'музыка'}, {'id': 9648, 'name': 'детектив'}, {'id': 10749, 'name': 'мелодрама'}, {'id': 878, 'name': 'фантастика'}, {'id': 10770, 'name': 'телевизионный фильм'}, {'id': 53, 'name': 'триллер'}, {'id': 10752, 'name': 'военный'}, {'id': 37, 'name': 'вестерн'}]}
-# credits_cast = {'Acting'}
-# credits_job_crew = {'Director', 'Producer', 'Writer', 'Original Music Composer'}

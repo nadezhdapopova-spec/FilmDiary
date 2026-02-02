@@ -10,11 +10,11 @@ from films.services.search import search_films
 from films.services.tmdb_movie_payload import get_tmdb_movie_payload
 from films.services.user_film_services import get_user_film
 from reviews.models import Review
-from services.permissions import can_user_view, is_manager
 
 
 class FilmDetailView(LoginRequiredMixin, TemplateView):
     """Представление для отображения подробной информации о фильме"""
+
     template_name = "films/film_detail.html"
     context_object_name = "film"
 
@@ -27,7 +27,13 @@ class FilmDetailView(LoginRequiredMixin, TemplateView):
         tmdb_id = self.kwargs["tmdb_id"]
 
         film_obj = (
-            Film.objects.filter(tmdb_id=tmdb_id).prefetch_related("genres", "actors", "crew",).first()
+            Film.objects.filter(tmdb_id=tmdb_id)
+            .prefetch_related(
+                "genres",
+                "actors",
+                "crew",
+            )
+            .first()
         )
 
         user_film = None
@@ -37,10 +43,7 @@ class FilmDetailView(LoginRequiredMixin, TemplateView):
             user_film = get_user_film(self.request.user, film_obj)  # model
 
             if user_film:
-                review = Review.objects.filter(
-                    user=self.request.user,
-                    film=film_obj
-                ).first()
+                review = Review.objects.filter(user=self.request.user, film=film_obj).first()
 
             film_data = build_film_context(film=film_obj)  # dict для шаблона
 
@@ -49,20 +52,19 @@ class FilmDetailView(LoginRequiredMixin, TemplateView):
             if not payload:
                 raise Http404("Фильм не найден")
 
-            film_data = build_film_context(
-                tmdb_data=payload["details"],
-                credits=payload["credits"]
-            )
+            film_data = build_film_context(tmdb_data=payload["details"], credits=payload["credits"])
 
         if not film_data:
             raise Http404("Фильм не найден")
 
-        film_data.update({
-            "in_library": bool(user_film),
-            "has_review": bool(review),
-            "user_rating": review.user_rating if review else None,
-            "is_favorite": user_film.is_favorite if user_film else False,
-            })
+        film_data.update(
+            {
+                "in_library": bool(user_film),
+                "has_review": bool(review),
+                "user_rating": review.user_rating if review else None,
+                "is_favorite": user_film.is_favorite if user_film else False,
+            }
+        )
 
         context["film"] = film_data
         context["user_film"] = user_film
@@ -76,12 +78,10 @@ def film_search_view(request):
     query = request.GET.get("q", "").strip()
     source = request.GET.get("source", "tmdb")  # 'tmdb' или 'user_films' или 'favorites'
     params = f"&q={query}&source={source}" if query else ""
-    page_number = request.GET.get("page", 1)
+    page_number = int(request.GET.get("page", 1))
 
-    if source in ["user_films", "favorites"] and not (request.user.is_superuser or is_manager(request.user)):
-        results = search_films(source=source, query=query, page_num=page_number, user=request.user)
-    else:
-        results = search_films(source=source, query=query, page_num=page_number, user=None)
+    user = request.user if request.user.is_authenticated else None
+    results = search_films(source=source, query=query, page_num=page_number, user=user)
 
     is_user_films = source in ["user_films", "favorites", "watched", "reviewed"]
     paginator = Paginator(results, 12)

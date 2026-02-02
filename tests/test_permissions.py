@@ -1,13 +1,14 @@
-import pytest
+from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 from django.http import Http404
-from django.contrib.auth.models import Group
+
+import pytest
 
 from services.permissions import (
-    is_manager,
-    can_user_edit,
     can_user_delete,
+    can_user_edit,
     can_user_view,
+    is_manager,
 )
 
 
@@ -24,6 +25,7 @@ def test_is_manager_true(user):
 def test_is_manager_false(user):
     """Возвращает False, если пользователь не состоит в группе Manager"""
     assert is_manager(user) is False
+
 
 @pytest.mark.django_db
 def test_can_user_edit_owner(user, review):
@@ -43,6 +45,7 @@ def test_can_user_edit_forbidden(other_user, review):
     with pytest.raises(PermissionDenied):
         can_user_edit(other_user, review)
 
+
 @pytest.mark.django_db
 def test_can_user_delete_owner(user, review):
     """Владелец объекта может удалить его"""
@@ -54,6 +57,7 @@ def test_can_user_delete_forbidden(other_user, review):
     """Посторонний пользователь не может удалить объект"""
     with pytest.raises(PermissionDenied):
         can_user_delete(other_user, review)
+
 
 @pytest.mark.django_db
 def test_can_user_view_owner(user, review):

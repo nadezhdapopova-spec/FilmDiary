@@ -1,20 +1,18 @@
 import pytest
 
-from films.services.builders import build_film_card, build_tmdb_collection_cards, build_recommendation_cards
+from films.services.builders import build_film_card, build_recommendation_cards, build_tmdb_collection_cards
 
 
 @pytest.mark.django_db
 def test_build_film_card_from_db(film, user, user_film, monkeypatch):
     """Проверяет формирование единого формата карточки фильма, если фильм в БД"""
-    monkeypatch.setattr(
-        "films.services.user_film_services.get_user_film",
-        lambda user, film: user_film
-    )
+    monkeypatch.setattr("films.services.user_film_services.get_user_film", lambda user, film: user_film)
     card = build_film_card(film=film, user=user)
 
     assert card["tmdb_id"] == film.tmdb_id
     assert card["in_library"] is True
     assert card["title"] == film.title
+
 
 def test_build_film_card_from_tmdb():
     """Проверяет формирование единого формата карточки фильма, загруженного из TMDB"""
@@ -30,6 +28,7 @@ def test_build_film_card_from_tmdb():
     assert card["title"] == "TMDB film"
     assert card["genres"] == "Action"
     assert card["in_library"] is False
+
 
 def test_build_film_card_invalid():
     """Проверяет вызов исключения ValueError в случае отсутствия данных"""
@@ -58,8 +57,7 @@ def test_build_tmdb_collection_cards_not_existing_film(user):
 def test_build_recommendation_cards_from_db(user, film, monkeypatch):
     """Проверяет формирование карточки фильма для ежедневных персональных рекомендаций"""
     monkeypatch.setattr(
-        "films.services.builders.get_user_recommendations",
-        lambda user, limit=None: [{"tmdb_id": film.tmdb_id}]
+        "films.services.builders.get_user_recommendations", lambda user, limit=None: [{"tmdb_id": film.tmdb_id}]
     )
     cards = build_recommendation_cards(user)
 

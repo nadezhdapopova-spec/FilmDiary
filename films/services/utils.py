@@ -21,6 +21,4 @@ def join_genres(genre_ids, genre_map, limit=2) -> str:
     """Возвращает строку с жанрами через запятую"""
     if not genre_ids or not genre_map:
         return ""
-    return ", ".join(
-        genre_map[g] for g in genre_ids[:limit] if g in genre_map
-    )
+    return ", ".join(genre_map[g] for g in genre_ids[:limit] if g in genre_map)

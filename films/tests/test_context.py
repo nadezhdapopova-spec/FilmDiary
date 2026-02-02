@@ -11,6 +11,7 @@ def test_build_film_context_db(film):
     assert context["source"] == "db"
     assert context["title"] == film.title
 
+
 def test_build_film_context_tmdb():
     """Проверяет формирование контекста для шаблона film_detail.html из TMDB"""
     tmdb_data = {

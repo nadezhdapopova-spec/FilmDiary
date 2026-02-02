@@ -2,9 +2,15 @@ from unittest.mock import Mock
 
 import pytest
 
-from films.models import UserFilm, Film
-from films.services.search import search_tmdb_film, search_films, search_user_film, search_favorite_films, \
-    search_watched_films, search_reviewed_films
+from films.models import Film, UserFilm
+from films.services.search import (
+    search_favorite_films,
+    search_films,
+    search_reviewed_films,
+    search_tmdb_film,
+    search_user_film,
+    search_watched_films,
+)
 
 
 @pytest.mark.django_db
@@ -12,18 +18,21 @@ def test_search_tmdb_film_empty_query(user):
     """Проверяет результат поискового запроса в TMDB: пустой при пустом запросе"""
     assert search_tmdb_film("", user) == []
 
+
 def test_search_tmdb_film_results(monkeypatch, user):
     """Проверяет результат поискового запроса в TMDB"""
     monkeypatch.setattr(
         "films.services.search.tmdb.search_movie",
         lambda query, page: {
-            "results": [{
-                "id": 1,
-                "title": "TMDB",
-                "genre_ids": [],
-                "vote_average": 5.0,
-            }]
-        }
+            "results": [
+                {
+                    "id": 1,
+                    "title": "TMDB",
+                    "genre_ids": [],
+                    "vote_average": 5.0,
+                }
+            ]
+        },
     )
 
     films = search_tmdb_film("test", user)
@@ -35,11 +44,9 @@ def test_search_tmdb_film_results(monkeypatch, user):
 @pytest.mark.django_db
 def test_search_films_router_tmdb(monkeypatch, user):
     """Если у пользователя сохранен фильм в БД, ищет в БД"""
-    monkeypatch.setattr(
-        "films.services.search.search_tmdb_film",
-        lambda q, u, p: ["ok"]
-    )
+    monkeypatch.setattr("films.services.search.search_tmdb_film", lambda q, u, p: ["ok"])
     assert search_films("q", user) == ["ok"]
+
 
 @pytest.mark.django_db
 def test_search_films_empty(user):
@@ -51,6 +58,7 @@ def test_search_films_empty(user):
 def test_search_user_film_found(user, film, user_film):
     """Поиск существующего фильма пользователя"""
     from films.models import Film
+
     film2 = Film.objects.create(tmdb_id=101, title="Test film 2")
     UserFilm.objects.create(user=user, film=film2)
 
@@ -119,7 +127,7 @@ def test_search_watched_films(monkeypatch, user, film):
 def test_search_reviewed_films(monkeypatch, user, film):
     """Тест фильтрации по непустым отзывам"""
     mock_qs = Mock()
-    mock_qs.filter.return_value.exclude.return_value.exclude.return_value.select_related.return_value.prefetch_related.return_value.order_by.return_value = []
+    mock_qs.filter.return_value.exclude.return_value.exclude.return_value.select_related.return_value.prefetch_related.return_value.order_by.return_value = ([])  # noqa E501
     monkeypatch.setattr("reviews.models.Review.objects", mock_qs)
 
     result = search_reviewed_films("Test", user)
@@ -131,6 +139,7 @@ def test_search_films_empty_query():
     result = search_films("", Mock())
     assert result == []
 
+
 @pytest.mark.django_db
 def test_search_films_user_films(monkeypatch, user):
     """Тест source='user_films'"""
@@ -140,9 +149,10 @@ def test_search_films_user_films(monkeypatch, user):
     result = search_films("test", user, source="user_films")
     assert result == mock_result
 
+
 def test_search_films_tmdb_default(monkeypatch, user):
     """Тест TMDB по умолчанию"""
-    mock_tmdb = Mock()
+    _ = Mock()
     monkeypatch.setattr("films.services.search.search_tmdb_film", lambda q, u, p: ["tmdb result"])
 
     result = search_films("test", user)

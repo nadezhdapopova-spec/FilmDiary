@@ -15,6 +15,5 @@ class FilmAdmin(admin.ModelAdmin):
 class UserFilmAdmin(admin.ModelAdmin):
     """Добавляет фильмы пользователей в админ-панель"""
 
-
     list_display = ("id", "user", "film", "is_favorite", "created_at")
     search_fields = ("id",)

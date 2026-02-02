@@ -37,7 +37,7 @@ def test_calendar_create_sets_user(api_client, user, film):
         {
             "film": film.id,
             "planned_date": date.today() + timedelta(days=2),
-        }
+        },
     )
 
     assert response.status_code == 201
@@ -49,16 +49,8 @@ def test_calendar_create_sets_user(api_client, user, film):
 def test_calendar_upcoming(api_client, user, film):
     """upcoming возвращает события на ближайшие 48 часов"""
     api_client.force_authenticate(user)
-    CalendarEvent.objects.create(
-        user=user,
-        film=film,
-        planned_date=date.today() + timedelta(days=1)
-    )
-    CalendarEvent.objects.create(
-        user=user,
-        film=film,
-        planned_date=date.today() + timedelta(days=5)
-    )
+    CalendarEvent.objects.create(user=user, film=film, planned_date=date.today() + timedelta(days=1))
+    CalendarEvent.objects.create(user=user, film=film, planned_date=date.today() + timedelta(days=5))
     response = api_client.get("/api/calendar_events/upcoming/")
 
     assert response.status_code == 200

@@ -1,11 +1,9 @@
-from unittest.mock import Mock, patch, ANY
+from unittest.mock import ANY, Mock, patch
 
 import pytest
-from django.test import override_settings
-
-from films.tasks import recompute_user_recommendations, recompute_all_recommendations
 from celery.exceptions import Retry
 
+from films.tasks import recompute_all_recommendations, recompute_user_recommendations
 from users.models import CustomUser
 
 
@@ -23,6 +21,7 @@ def test_successful_recomputation(db, user):
             assert mock_build.called
             assert mock_cache.set.called
 
+
 @pytest.mark.django_db
 def test_user_not_found(db, celery_eager, mock_logger, mock_cache):
     """Тест: пользователь не найден"""
@@ -31,9 +30,8 @@ def test_user_not_found(db, celery_eager, mock_logger, mock_cache):
 
     assert result is None
     mock_cache.set.assert_not_called()
-    mock_logger.info.assert_called_with(
-        "Recs START: user=%s task=%s", non_existent_id, ANY
-    )
+    mock_logger.info.assert_called_with("Recs START: user=%s task=%s", non_existent_id, ANY)
+
 
 @pytest.mark.django_db
 def test_api_exception_retry(db, user, celery_eager, mock_logger, mock_cache, mock_tmdb):
@@ -87,10 +85,7 @@ def test_multiple_users_dispatch(db, celery_eager, mock_logger, monkeypatch):
 
 def test_all_recommendations_exception(db, user, celery_eager, mock_logger, monkeypatch):
     """Тест обработки исключения в задаче для всех пользователей"""
-    monkeypatch.setattr(
-        CustomUser.objects, "values_list",
-        Mock(side_effect=Exception("DB error"))
-    )
+    monkeypatch.setattr(CustomUser.objects, "values_list", Mock(side_effect=Exception("DB error")))
 
     with pytest.raises(Exception, match="DB error"):
         recompute_all_recommendations.delay().get()
@@ -101,8 +96,7 @@ def test_all_recommendations_exception(db, user, celery_eager, mock_logger, monk
 @pytest.mark.django_db
 def test_full_integration(db, user, film, user_film):
     """Интеграционный тест"""
-    with patch("films.tasks.build_recommendations") as mock_build, \
-            patch("films.tasks.cache") as mock_cache:
+    with patch("films.tasks.build_recommendations") as mock_build, patch("films.tasks.cache") as mock_cache:
         mock_build.return_value = [{"movie_id": film.tmdb_id, "score": 0.9}]
         mock_cache.set.return_value = True
 

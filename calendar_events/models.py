@@ -1,39 +1,22 @@
 from datetime import date
 
-from django.db import models
-
 from django.core.exceptions import ValidationError
+from django.db import models
 
 
 class CalendarEvent(models.Model):
     """Модель запланированного просмотра фильма"""
+
     user = models.ForeignKey(
-        to="users.CustomUser",
-        on_delete=models.CASCADE,
-        related_name="calendar_events",
-        verbose_name="Пользователь"
+        to="users.CustomUser", on_delete=models.CASCADE, related_name="calendar_events", verbose_name="Пользователь"
     )
     film = models.ForeignKey(
-        to="films.Film",
-        on_delete=models.CASCADE,
-        related_name="calendar_events",
-        verbose_name="Фильм"
+        to="films.Film", on_delete=models.CASCADE, related_name="calendar_events", verbose_name="Фильм"
     )
-    planned_date = models.DateField(
-        verbose_name="Дата просмотра"
-    )
-    note = models.TextField(
-        blank=True,
-        verbose_name="Комментарий"
-    )
-    reminder_sent = models.BooleanField(
-        default=False,
-        verbose_name="Отправлено"
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name="Дата создания"
-    )
+    planned_date = models.DateField(verbose_name="Дата просмотра")
+    note = models.TextField(blank=True, verbose_name="Комментарий")
+    reminder_sent = models.BooleanField(default=False, verbose_name="Отправлено")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
 
     def clean(self):
         """Валидация поля Дата просмотра"""
@@ -49,11 +32,15 @@ class CalendarEvent(models.Model):
         return f"{self.film.title}: {self.planned_date}"
 
     class Meta:
-        permissions = [("view_user_calendar", "Может видеть запланированные просмотры пользователей"), ]
+        permissions = [
+            ("view_user_calendar", "Может видеть запланированные просмотры пользователей"),
+        ]
         unique_together = ("user", "film", "planned_date")
         verbose_name = "просмотр"
         verbose_name_plural = "просмотры"
-        ordering = ["-planned_date",]
+        ordering = [
+            "-planned_date",
+        ]
         indexes = [
             models.Index(fields=["user", "film"]),
             models.Index(fields=["reminder_sent", "planned_date"]),

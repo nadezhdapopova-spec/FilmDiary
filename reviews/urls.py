@@ -1,7 +1,13 @@
 from django.urls import path
 
-from reviews.views import WatchedListView, ReviewDetailView, ReviewUpdateView, ReviewDeleteView, ReviewsListView, \
-    ReviewCreateView
+from reviews.views import (
+    ReviewCreateView,
+    ReviewDeleteView,
+    ReviewDetailView,
+    ReviewsListView,
+    ReviewUpdateView,
+    WatchedListView,
+)
 
 app_name = "reviews"
 

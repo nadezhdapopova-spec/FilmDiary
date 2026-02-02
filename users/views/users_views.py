@@ -19,7 +19,6 @@ from users.forms.register_form import RegisterForm
 from users.forms.resend_activation_form import ResendActivationForm
 from users.tasks import send_activation_email_task, send_confirm_email_task
 
-
 logger = logging.getLogger("filmdiary.users")
 User = get_user_model()
 
@@ -72,8 +71,7 @@ class ActivateAccountView(View):
         user = get_object_or_404(User, pk=user_id)
 
         if user.is_blocked:
-            messages.error(request,
-                           "Аккаунт заблокирован администратором. Напишите нам, мы сообщим, что делать")
+            messages.error(request, "Аккаунт заблокирован администратором. Напишите нам, мы сообщим, что делать")
             return redirect("users:activation_error")
 
         if user.is_active:
@@ -96,6 +94,7 @@ class ActivateAccountView(View):
 
 class ActivationErrorView(TemplateView):
     """Универсальная страница отображения errors"""
+
     template_name = "users/activation_error.html"
 
 

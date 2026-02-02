@@ -6,6 +6,7 @@ def test_user_str(user):
     """Проверка поля username"""
     assert str(user) == user.username
 
+
 @pytest.mark.django_db
 def test_user_default_fields(user):
     """Проверка поле с дефолтными значениями"""

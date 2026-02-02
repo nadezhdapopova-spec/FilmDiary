@@ -2,25 +2,24 @@ import logging
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db import models
-from django.db.models import OuterRef, Exists, Subquery
+from django.db.models import Exists, OuterRef, Subquery
 from django.shortcuts import get_object_or_404, redirect
-from django.urls import reverse_lazy, reverse
+from django.urls import reverse, reverse_lazy
 from django.utils.timezone import now
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
-
+from django.views.generic import CreateView, DeleteView, DetailView, ListView, UpdateView
 
 from calendar_events.models import CalendarEvent
 from films.models import Film, UserFilm
-from services.permissions import can_user_view, can_user_edit, can_user_delete, is_manager
 from reviews.forms import ReviewForm
 from reviews.models import Review
-
+from services.permissions import can_user_delete, can_user_edit, can_user_view, is_manager
 
 logger = logging.getLogger("filmdiary.reviews")
 
 
 class BaseReviewListView(LoginRequiredMixin, ListView):
     """Базовый класс для списков просмотренных фильмов"""
+
     model = Review
     context_object_name = "reviews"
     paginate_by = 12
@@ -38,20 +37,13 @@ class BaseReviewListView(LoginRequiredMixin, ListView):
         else:
             qs = qs.order_by("-created_at")
 
-        user_films = UserFilm.objects.filter(
-            user=user,
-            film=OuterRef("film")
-        )
-        planned_events = CalendarEvent.objects.filter(
-            user=user,
-            film=OuterRef("film"),
-            planned_date__gte=now().date()
-        )
+        user_films = UserFilm.objects.filter(user=user, film=OuterRef("film"))
+        planned_events = CalendarEvent.objects.filter(user=user, film=OuterRef("film"), planned_date__gte=now().date())
 
         return qs.annotate(
             user_film_id=Subquery(user_films.values("id")[:1]),
             is_favorite=Exists(user_films.filter(is_favorite=True)),
-            is_planned=Exists(planned_events)
+            is_planned=Exists(planned_events),
         )
 
 
@@ -60,21 +52,21 @@ class WatchedListView(BaseReviewListView):
 
     template_name = "reviews/reviews.html"
 
-
     def get_context_data(self, **kwargs):
         """Добавляет поиск по просмотренному=оцененному в контекст"""
         context = super().get_context_data(**kwargs)
         query = self.request.GET.get("q", "").strip()
 
-        context.update({
-            "search_type": "watched",
-            "query": query,
-            "params": f"&q={query}&source=watched" if query else "&source=watched",
-            "current_sort": self.request.GET.get("sort", "date"),
-            "template": "reviews",
-        })
+        context.update(
+            {
+                "search_type": "watched",
+                "query": query,
+                "params": f"&q={query}&source=watched" if query else "&source=watched",
+                "current_sort": self.request.GET.get("sort", "date"),
+                "template": "reviews",
+            }
+        )
         return context
-
 
     def get_queryset(self):
         """Возвращает список просмотренных=оцененных фильмов пользователя"""
@@ -93,16 +85,13 @@ class ReviewsListView(WatchedListView):
 
     def get_queryset(self):
         """Возвращает список отзывов пользователя, осуществляет поиск по q"""
-        queryset = (self.get_base_queryset().filter(review__isnull=False)
-                    .exclude(review__exact="")
-                    .select_related("user"))
+        queryset = (
+            self.get_base_queryset().filter(review__isnull=False).exclude(review__exact="").select_related("user")
+        )
 
         query = self.request.GET.get("q", "").strip()
         if query:
-            queryset = queryset.filter(
-                       models.Q(film__title__icontains=query) |
-                       models.Q(user__email__icontains=query)
-                       )
+            queryset = queryset.filter(models.Q(film__title__icontains=query) | models.Q(user__email__icontains=query))
         return queryset
 
     def get_context_data(self, **kwargs):
@@ -110,13 +99,15 @@ class ReviewsListView(WatchedListView):
         context = super().get_context_data(**kwargs)
         query = self.request.GET.get("q", "").strip()
 
-        context.update({
-            "search_type": "reviewed",
-            "query": query,
-            "params": f"&q={query}&source=reviewed" if query else "&source=reviewed",
-            "current_sort": self.request.GET.get("sort", "date"),
-            "template": "reviews",
-        })
+        context.update(
+            {
+                "search_type": "reviewed",
+                "query": query,
+                "params": f"&q={query}&source=reviewed" if query else "&source=reviewed",
+                "current_sort": self.request.GET.get("sort", "date"),
+                "template": "reviews",
+            }
+        )
         return context
 
 
@@ -139,13 +130,7 @@ class ReviewDetailView(LoginRequiredMixin, DetailView):
 
 
 class ReviewFormContextMixin:
-    rating_fields = [
-        "plot_rating",
-        "acting_rating",
-        "directing_rating",
-        "visuals_rating",
-        "soundtrack_rating"
-    ]
+    rating_fields = ["plot_rating", "acting_rating", "directing_rating", "visuals_rating", "soundtrack_rating"]
     stars = range(1, 11)
 
     def get_context_data(self, **kwargs):
@@ -190,8 +175,7 @@ class ReviewCreateView(LoginRequiredMixin, ReviewFormContextMixin, CreateView):
         form.instance.film = self.film
 
         if Review.objects.filter(user=self.request.user, film=self.film).exists():
-            logger.warning("ReviewCreate DUP: user=%s film=%s",
-                           self.request.user.id, self.film.tmdb_id)
+            logger.warning("ReviewCreate DUP: user=%s film=%s", self.request.user.id, self.film.tmdb_id)
             form.add_error(None, "Вы уже оставили отзыв на этот фильм")
             return self.form_invalid(form)
 
@@ -201,8 +185,9 @@ class ReviewCreateView(LoginRequiredMixin, ReviewFormContextMixin, CreateView):
 
     def form_invalid(self, form):
         """Валидация формы создания отзыва: неуспешная валидация"""
-        logger.warning("ReviewCreate FAIL: user=%s film=%s errors=%s",
-                       self.request.user.id, self.film.tmdb_id, form.errors)
+        logger.warning(
+            "ReviewCreate FAIL: user=%s film=%s errors=%s", self.request.user.id, self.film.tmdb_id, form.errors
+        )
         print(form.errors)
         return super().form_invalid(form)
 
@@ -229,14 +214,12 @@ class ReviewUpdateView(LoginRequiredMixin, ReviewFormContextMixin, UpdateView):
     def form_valid(self, form):
         """Валидация формы редактирования отзыва: успешная валидация"""
         review = super().form_valid(form)
-        logger.info("ReviewUpdate OK: review=%s user=%s",
-                    self.object.pk, self.request.user.id)
+        logger.info("ReviewUpdate OK: review=%s user=%s", self.object.pk, self.request.user.id)
         return review
 
     def form_invalid(self, form):
         """Валидация формы редактирования отзыва: неуспешная валидация"""
-        logger.warning("ReviewUpdate FAIL: review=%s errors=%s",
-                       self.object.pk, form.errors)
+        logger.warning("ReviewUpdate FAIL: review=%s errors=%s", self.object.pk, form.errors)
         return super().form_invalid(form)
 
     def get_form_kwargs(self):
@@ -259,6 +242,7 @@ class ReviewUpdateView(LoginRequiredMixin, ReviewFormContextMixin, UpdateView):
     def get_success_url(self):
         """При успешном редактировании возвращает на страницу Мои фильмы"""
         return reverse("films:my_films")
+
 
 class ReviewDeleteView(LoginRequiredMixin, DeleteView):
     """Представление для удаления фильма из промотренных=оцененных"""

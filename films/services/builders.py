@@ -1,6 +1,6 @@
 from films.models import Film, Genre
 from films.services.tmdb_movie_payload import get_tmdb_movie_payload
-from films.services.user_film_services import get_user_film, map_status, get_user_recommendations
+from films.services.user_film_services import get_user_film, get_user_recommendations, map_status
 from films.services.utils import build_poster_url, extract_year, join_genres
 
 
@@ -16,14 +16,18 @@ def build_film_card(
         user_film = get_user_film(user, film) if user else None
 
         return {
-            "tmdb_id": film.tmdb_id,
+            "tmdb_id": int(film.tmdb_id) if film.tmdb_id else None,
             "title": film.title,
             "poster_url": build_poster_url(film.poster_path),
             "release_date": film.release_date.year if film.release_date else "—",
             "genres": ", ".join(g.name for g in film.genres.all()[:2]),
             "rating": round(film.vote_average, 1) if film.vote_average else None,
             "in_library": bool(user_film),
-            **map_status(user_film=user_film, has_review=False, rating=None,),
+            **map_status(
+                user_film=user_film,
+                has_review=False,
+                rating=None,
+            ),
         }
 
     if tmdb_item:
@@ -49,17 +53,13 @@ def build_tmdb_collection_cards(films, user=None):
     if not films:
         return []
 
-    all_genre_ids = {
-        g for f in films for g in f.get("genre_ids", [])
-    }
+    all_genre_ids = {g for f in films for g in f.get("genre_ids", [])}
     genres = Genre.objects.filter(tmdb_id__in=all_genre_ids)
     genre_map = {g.tmdb_id: g.name for g in genres}
 
     existing_films = {
         f.tmdb_id: f
-        for f in Film.objects.filter(
-            tmdb_id__in=[f["id"] for f in films if f.get("id")]
-        ).prefetch_related("genres")
+        for f in Film.objects.filter(tmdb_id__in=[f["id"] for f in films if f.get("id")]).prefetch_related("genres")
     }
 
     cards = []
@@ -93,11 +93,8 @@ def build_recommendation_cards(user, limit=4) -> list[dict]:
     recs = get_user_recommendations(user, limit=limit)
     cards = []
 
-    films_map = {                                     # {603: <Film: The Matrix>, 550: <Film: Fight Club>,..}
-        f.tmdb_id: f
-        for f in Film.objects.filter(
-            tmdb_id__in=[r["tmdb_id"] for r in recs]
-        ).prefetch_related("genres")
+    films_map = {  # {603: <Film: The Matrix>, 550: <Film: Fight Club>,..}
+        f.tmdb_id: f for f in Film.objects.filter(tmdb_id__in=[r["tmdb_id"] for r in recs]).prefetch_related("genres")
     }
 
     for rec in recs:
@@ -113,14 +110,8 @@ def build_recommendation_cards(user, limit=4) -> list[dict]:
             details = payload["details"]
             cards.append(
                 build_film_card(
-                    tmdb_item={
-                        **details,
-                        "genre_ids": [g["id"] for g in details.get("genres", [])]
-                    },
-                    genre_map={
-                        g["id"]: g["name"]
-                        for g in details.get("genres", [])
-                    },
+                    tmdb_item={**details, "genre_ids": [g["id"] for g in details.get("genres", [])]},
+                    genre_map={g["id"]: g["name"] for g in details.get("genres", [])},
                     user=user,
                 )
             )

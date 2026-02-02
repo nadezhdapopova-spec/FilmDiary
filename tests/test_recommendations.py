@@ -2,17 +2,19 @@ from datetime import date, timedelta
 from unittest.mock import Mock
 
 from services.recommendations import (
-    fast_feature_weight,
-    normalize_rating,
-    recency_boost,
-    final_rating_factor,
-    final_recency_factor,
     FeatureCache,
     FilmIndex,
-    weighted_jaccard_by_features,
-    genre_similarity,
+    TextSimilarity,
+    api_genre_candidates,
     compute_genre_boost_for_candidate,
-    top_k_candidates_by_feature_weight, api_genre_candidates, TextSimilarity,
+    fast_feature_weight,
+    final_rating_factor,
+    final_recency_factor,
+    genre_similarity,
+    normalize_rating,
+    recency_boost,
+    top_k_candidates_by_feature_weight,
+    weighted_jaccard_by_features,
 )
 
 
@@ -30,6 +32,7 @@ def test_fast_feature_weight_empty():
     """Пустой признак даёт нейтральный вес"""
     assert fast_feature_weight("") == 1.0
 
+
 def test_normalize_rating_middle():
     """Нормализация рейтинга внутри диапазона"""
     assert round(normalize_rating(5), 2) == 0.44
@@ -43,6 +46,7 @@ def test_normalize_rating_clamped_low():
 def test_normalize_rating_clamped_high():
     """Рейтинг выше максимума зажимается"""
     assert normalize_rating(100) == 1.0
+
 
 def test_recency_boost_today():
     """Сегодняшняя дата даёт максимальный вес"""
@@ -80,12 +84,7 @@ class DummyFilm:
 
 def test_feature_cache_prepare_and_get():
     """FeatureCache сохраняет признаки фильма"""
-    film = DummyFilm(
-        tmdb_id=1,
-        genres=["Action", "Drama"],
-        actors=["Actor One"],
-        director="Director"
-    )
+    film = DummyFilm(tmdb_id=1, genres=["Action", "Drama"], actors=["Actor One"], director="Director")
 
     cache = FeatureCache()
     cache.prepare_film(film)
@@ -107,6 +106,7 @@ def test_feature_cache_idempotent():
 
     assert len(cache.get_features(1)) == 1
 
+
 def test_film_index_candidates():
     """Индекс возвращает фильмы с хотя бы одним общим признаком"""
     idx = FilmIndex()
@@ -116,6 +116,7 @@ def test_film_index_candidates():
     cand = idx.candidates_for(["genre:sci-fi"])
 
     assert cand == {1}
+
 
 def test_top_k_candidates_returns_best():
     """Возвращаются фильмы с наибольшим суммарным весом"""
@@ -127,6 +128,7 @@ def test_top_k_candidates_returns_best():
 
     assert len(res) == 1
 
+
 def test_weighted_jaccard_identical():
     """Одинаковые признаки дают сходство 1"""
     feats = ["genre:action", "actor:a"]
@@ -135,10 +137,7 @@ def test_weighted_jaccard_identical():
 
 def test_weighted_jaccard_disjoint():
     """Нет общих признаков: 0"""
-    assert weighted_jaccard_by_features(
-        ["genre:action"],
-        ["genre:drama"]
-    ) == 0.0
+    assert weighted_jaccard_by_features(["genre:action"], ["genre:drama"]) == 0.0
 
 
 def test_genre_similarity_partial():
@@ -151,12 +150,12 @@ def test_genre_similarity_partial():
 
 def test_genre_boost_max_strategy(monkeypatch):
     """Стратегия max берёт максимальную релевантность жанра"""
-    monkeypatch.setattr("services.recommendations.GENRE_BOOST_STRATEGY","max")
+    monkeypatch.setattr("services.recommendations.GENRE_BOOST_STRATEGY", "max")
     profile = {
         "genre:action": 0.8,
         "genre:drama": 0.4,
     }
-    boost = compute_genre_boost_for_candidate(profile,{"genre:action", "genre:drama"})
+    boost = compute_genre_boost_for_candidate(profile, {"genre:action", "genre:drama"})
 
     assert boost == 0.8
 
@@ -165,21 +164,27 @@ class DummyMovie:
     def __init__(self, tmdb_id):
         self.tmdb_id = tmdb_id
 
+
 def test_api_genre_candidates_empty_profile():
     """Если пустой профиль у пользователя"""
     api = Mock()
     result = api_genre_candidates({}, api)
     assert result == set()
 
+
 def test_api_genre_candidates_api_none():
     """Если api = None"""
     result = api_genre_candidates({"genre:action": 1.0}, None)
     assert result == set()
 
+
 def test_api_genre_candidates_returns_ids(monkeypatch):
     """Успешный поиск кандидатов"""
     api = Mock()
-    monkeypatch.setattr("services.recommendations.get_tmdb_genre_map", lambda api: {"action": 28, "drama": 18},)
+    monkeypatch.setattr(
+        "services.recommendations.get_tmdb_genre_map",
+        lambda api: {"action": 28, "drama": 18},
+    )
     api.get_movies_by_genre.side_effect = [
         [DummyMovie(1), DummyMovie(2)],
         [DummyMovie(3)],
@@ -192,10 +197,14 @@ def test_api_genre_candidates_returns_ids(monkeypatch):
 
     assert result == {1, 2, 3}
 
+
 def test_api_genre_candidates_respects_limit(monkeypatch):
     """Проверка установленных лимитов на количество кандидатов"""
     api = Mock()
-    monkeypatch.setattr("services.recommendations.get_tmdb_genre_map", lambda api: {"action": 28},)
+    monkeypatch.setattr(
+        "services.recommendations.get_tmdb_genre_map",
+        lambda api: {"action": 28},
+    )
     api.get_movies_by_genre.return_value = [
         DummyMovie(1),
         DummyMovie(2),
@@ -206,10 +215,14 @@ def test_api_genre_candidates_respects_limit(monkeypatch):
 
     assert len(result) == 2
 
+
 def test_api_genre_candidates_api_exception(monkeypatch):
     """Ошибка при работе с API: API бросает исключение"""
     api = Mock()
-    monkeypatch.setattr("services.recommendations.get_tmdb_genre_map", lambda api: {"action": 28},)
+    monkeypatch.setattr(
+        "services.recommendations.get_tmdb_genre_map",
+        lambda api: {"action": 28},
+    )
     api.get_movies_by_genre.side_effect = Exception("API error")
     result = api_genre_candidates({"genre:action": 1.0}, api)
 
@@ -222,6 +235,7 @@ class DummyFilmSimilarity:
         self.overview = overview
         self.tagline = tagline
 
+
 def test_text_similarity_identical_texts():
     """Одинаковые тексты: similarity ≈ 1"""
     films = [
@@ -232,6 +246,7 @@ def test_text_similarity_identical_texts():
     score = sim.similarity(1, 2)
 
     assert score > 0.9
+
 
 def test_text_similarity_different_texts():
     """Разные тексты: similarity низкий"""
@@ -244,6 +259,7 @@ def test_text_similarity_different_texts():
 
     assert score < 0.3
 
+
 def test_text_similarity_empty_texts():
     """Пустые тексты: similarity 0.0"""
     films = [
@@ -254,6 +270,7 @@ def test_text_similarity_empty_texts():
     sim = TextSimilarity(films)
 
     assert sim.similarity(1, 2) == 0.0
+
 
 def test_text_similarity_unknown_id():
     """Неизвестный ID: similarity 0.0"""

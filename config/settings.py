@@ -86,9 +86,9 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": "127.0.0.1",
         "PORT": os.getenv("DB_PORT"),
-        "CONN_MAX_AGE": 0,       # закрываем после КАЖДОГО запроса, каждое соединение свежее
+        "CONN_MAX_AGE": 0,  # закрываем после КАЖДОГО запроса, каждое соединение свежее
         "OPTIONS": {
-            'connect_timeout': 5,  # таймаут подключения, Django ждет подключения к PostgreSQL 5 секунд, а не 30
+            "connect_timeout": 5,  # таймаут подключения, Django ждет подключения к PostgreSQL 5 секунд, а не 30
             "keepalives": 1,
             "keepalives_idle": 30,
             "keepalives_interval": 5,
@@ -235,7 +235,7 @@ CELERY_BEAT_SCHEDULE = {
         "task": "films.tasks.recompute_all_recommendations",
         "schedule": crontab(hour=3, minute=22),
         # "schedule": crontab(minute="*/1"),
-    }
+    },
 }
 
 
@@ -343,7 +343,6 @@ for name, filename in MODULE_HANDLERS.items():
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-
     "formatters": {
         "verbose": {
             "format": "%(asctime)s | %(levelname)-8s | %(name)s | %(pathname)s:%(lineno)d | %(message)s",
@@ -355,35 +354,30 @@ LOGGING = {
             "format": "%(asctime)s | %(levelname)s | [%(name)s:%(task_id)s] | %(message)s",
         },
     },
-
     "handlers": LOG_HANDLERS,
-
     "root": {
         "handlers": ["console", "file_app"],
         "level": LOG_LEVEL,
     },
-
     "loggers": {
         "django": {
             "handlers": ["console"],
             "level": "WARNING",
             "propagate": True,
         },
-        "django.request": {          # 404/500 ошибки
+        "django.request": {  # 404/500 ошибки
             "handlers": ["file_app"],
             "level": "ERROR",
             "propagate": False,
         },
         "django.db.backends": {
-            "level": "ERROR",        # SQL только ошибки
+            "level": "ERROR",  # SQL только ошибки
         },
-
         "filmdiary.films": {"handlers": ["file_films"], "level": LOG_LEVEL, "propagate": False},
         "filmdiary.reviews": {"handlers": ["file_reviews"], "level": LOG_LEVEL, "propagate": False},
         "filmdiary.events": {"handlers": ["file_events"], "level": LOG_LEVEL, "propagate": False},
         "filmdiary.telegram": {"handlers": ["file_telegram"], "level": LOG_LEVEL, "propagate": False},
         "filmdiary.users": {"handlers": ["file_users"], "level": LOG_LEVEL, "propagate": False},
-
         "films.tasks": {"handlers": ["console", "file_app"], "level": "INFO", "propagate": False},
         "users.tasks": {"handlers": ["console", "file_app"], "level": "INFO", "propagate": False},
     },

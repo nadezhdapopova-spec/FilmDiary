@@ -50,7 +50,7 @@
         <button class="btn-add-film glass-btn"
             type="button"
             onclick="window.location.href='{% url 'reviews:watched' %}'">
-          <span class="status-badge__text">Просмотрено</span>
+          <span class="btn-add-film__text">Просмотрено</span>
           {% if film.is_favorite %}
             <span class="status-badge__icon">🔥</span>
           {% else %}

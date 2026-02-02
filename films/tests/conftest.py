@@ -1,9 +1,9 @@
 from datetime import date
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
-from films.models import Genre, Film, UserFilm
+from films.models import Film, Genre, UserFilm
 from users.models import CustomUser
 
 
@@ -11,15 +11,19 @@ from users.models import CustomUser
 def user(db):
     return CustomUser.objects.create_user(username="test", password="123")
 
+
 @pytest.fixture
 def anon_user():
     class Anon:
         is_authenticated = False
+
     return Anon()
+
 
 @pytest.fixture
 def genre(db):
     return Genre.objects.create(tmdb_id=1, name="Action")
+
 
 @pytest.fixture
 def film(db, genre):
@@ -31,6 +35,7 @@ def film(db, genre):
     )
     film.genres.add(genre)
     return film
+
 
 @pytest.fixture
 def user_film(db, user, film):
@@ -84,6 +89,7 @@ def mock_build_recommendations():
 def django_db_setup():
     """Обеспечивает django_db для всех тестов"""
     pass
+
 
 @pytest.fixture
 def tmdb_payload():

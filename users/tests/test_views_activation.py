@@ -1,8 +1,9 @@
-import pytest
+from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import default_token_generator
 from django.urls import reverse
 from django.utils import timezone
-from django.contrib.auth import authenticate
+
+import pytest
 
 
 @pytest.mark.django_db
@@ -35,9 +36,7 @@ def test_resend_activation_rate_limit(client, inactive_user):
     client.session[f"last_resend_{inactive_user.pk}"] = timezone.now().timestamp()
     client.session.save()
 
-    response = client.post(reverse("users:resend_activation"), {
-        "email": inactive_user.email
-    })
+    response = client.post(reverse("users:resend_activation"), {"email": inactive_user.email})
 
     assert response.status_code == 302
 
@@ -45,9 +44,6 @@ def test_resend_activation_rate_limit(client, inactive_user):
 @pytest.mark.django_db
 def test_auth_backend_allows_inactive_user(inactive_user):
     """Login с is_active=False"""
-    user = authenticate(
-        username=inactive_user.email,
-        password="password123"
-    )
+    user = authenticate(username=inactive_user.email, password="password123")
 
     assert user is not None

@@ -1,11 +1,11 @@
-from celery import shared_task
-from celery.utils.log import get_task_logger
 from django.contrib.auth import get_user_model
 from django.core.cache import cache
 
+from celery import shared_task
+from celery.utils.log import get_task_logger
+
 from services.recommendations import build_recommendations
 from services.tmdb import Tmdb
-
 
 logger = get_task_logger(__name__)
 User = get_user_model()
@@ -25,9 +25,8 @@ def recompute_user_recommendations(self, user_id):
 
         cache_key = f"recs:user:{user.id}"
         cache.set(cache_key, recs, 60 * 60 * 24)  # 24 часа
-        logger.info("Recs SUCCESS: user=%s count=%s cache=%s",
-                    user.id, len(recs), cache_key)
-    except Exception as e:
+        logger.info("Recs SUCCESS: user=%s count=%s cache=%s", user.id, len(recs), cache_key)
+    except Exception:
         logger.exception("Recs FAIL: user=%s task=%s", user_id, self.request.id)
         raise
 
@@ -42,6 +41,6 @@ def recompute_all_recommendations(self):
             recompute_user_recommendations.delay(user_id)
 
         logger.info("Recs ALL DISPATCHED: users=%s task=%s", len(user_ids), self.request.id)
-    except Exception as e:
+    except Exception:
         logger.exception("Recs ALL FAIL: task=%s", self.request.id)
         raise

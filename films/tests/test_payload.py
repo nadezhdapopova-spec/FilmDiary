@@ -5,10 +5,7 @@ from films.services.tmdb_movie_payload import get_tmdb_movie_payload
 
 def test_get_tmdb_movie_payload_from_cache(monkeypatch):
     """Берет данные о фильме из TMDB из кэша"""
-    monkeypatch.setattr(
-        "films.services.tmdb_movie_payload.cache.get",
-        lambda key: {"details": {}, "credits": {}}
-    )
+    monkeypatch.setattr("films.services.tmdb_movie_payload.cache.get", lambda key: {"details": {}, "credits": {}})
     data = get_tmdb_movie_payload(1)
     assert "details" in data
 
@@ -30,13 +27,16 @@ def test_get_tmdb_movie_payload_cache_miss(monkeypatch):
 
     monkeypatch.setattr("films.services.tmdb_movie_payload.cache.get", Mock(return_value=None))
 
-    monkeypatch.setattr("films.services.tmdb_movie_payload.tmdb",Mock(
+    monkeypatch.setattr(
+        "films.services.tmdb_movie_payload.tmdb",
+        Mock(
             get_movie_details=Mock(return_value=mock_details),
             get_credits=Mock(return_value=mock_credits),
-        ))
+        ),
+    )
 
     mock_cache_set = Mock()
-    monkeypatch.setattr("films.services.tmdb_movie_payload.cache.set",mock_cache_set)
+    monkeypatch.setattr("films.services.tmdb_movie_payload.cache.set", mock_cache_set)
 
     result = get_tmdb_movie_payload(123)
 

@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 from services.tmdb import Tmdb
 
+
 def test_make_cache_key_stable():
     """Проверка ключей из кэша"""
     key1 = Tmdb._make_cache_key("tmdb", "/movie", {"a": 1, "b": 2})
@@ -36,16 +37,24 @@ def test_get_http_success(monkeypatch):
 def test_build_tmdb_film(monkeypatch):
     """Проверяет построение фильма из TMDB"""
     api = Tmdb()
-    monkeypatch.setattr(api, "get_movie_details", lambda _: {
-        "title": "Test",
-        "overview": "overview",
-        "tagline": "",
-        "genres": [{"name": "Action"}],
-    })
-    monkeypatch.setattr(api, "get_credits", lambda _: {
-        "cast": [{"name": "Actor"}],
-        "crew": [{"job": "Director", "name": "Director"}],
-    })
+    monkeypatch.setattr(
+        api,
+        "get_movie_details",
+        lambda _: {
+            "title": "Test",
+            "overview": "overview",
+            "tagline": "",
+            "genres": [{"name": "Action"}],
+        },
+    )
+    monkeypatch.setattr(
+        api,
+        "get_credits",
+        lambda _: {
+            "cast": [{"name": "Actor"}],
+            "crew": [{"job": "Director", "name": "Director"}],
+        },
+    )
     raw = {"id": 123}
     film = api._build_tmdb_film(raw)
 

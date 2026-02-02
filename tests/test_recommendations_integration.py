@@ -1,11 +1,13 @@
-import pytest
 from datetime import datetime, timedelta
+
+import pytest
 
 from services.recommendations import build_recommendations
 
 
 class DummyFilm:
     """Общая сущность фильм"""
+
     def __init__(
         self,
         tmdb_id: int,
@@ -27,6 +29,7 @@ class DummyFilm:
 
 class DummyFilmRef:
     """Фильм пользователя"""
+
     def __init__(self, tmdb_id, title):
         self.tmdb_id = tmdb_id
         self.title = title
@@ -34,6 +37,7 @@ class DummyFilmRef:
 
 class DummyReview:
     """Отзыв пользователя на фильм"""
+
     def __init__(self, film, rating, days_ago=0):
         self.film = film
         self.user_rating = rating
@@ -42,6 +46,7 @@ class DummyReview:
 
 class DummyUser:
     """Пользователь"""
+
     def __init__(self, reviews):
         self._reviews = reviews
 
@@ -55,6 +60,7 @@ class DummyUser:
 
 class DummyTmdb:
     """Фильм tmdb"""
+
     def __init__(self, films):
         self._films = films
 
