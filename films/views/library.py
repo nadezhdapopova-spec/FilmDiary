@@ -28,7 +28,7 @@ class HomeView(TemplateView):
 
         if self.request.user.is_authenticated:
             recent_watched = (
-                Review.objects.filter(user=self.request.user).select_related("film").order_by("-watched_at")
+                Review.objects.filter(user=self.request.user).select_related("film").order_by("-watched_at")[:5]
             )
             context.update(
                 {
@@ -36,7 +36,7 @@ class HomeView(TemplateView):
                     "recent_watched": recent_watched,
                 }
             )
-        context["search_type"] = "films"
+        context["search_type"] = "tmdb"
         context["home_page"] = True
         return context
 

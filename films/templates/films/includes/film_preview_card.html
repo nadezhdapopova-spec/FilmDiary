@@ -28,12 +28,14 @@
         {{ film.release_date|slice:":4" }}
         {% if film.genres %}
           ,
-          {% if film.genres.all %}  {# проверка на QuerySet #}
-            {% for genre in film.genres.all %}
-              {{ genre.name }}{% if not forloop.last %}, {% endif %}
-            {% endfor %}
+          {% if film.is_tmdb_dict %}
+            {{ film.genres }}
           {% else %}
-            {{ film.genres }}  {# строка для TMDB #}
+            {% if film.genres.exists %}
+              {% for genre in film.genres.all %}
+                {{ genre.name }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            {% endif %}
           {% endif %}
         {% endif %}
       </p>

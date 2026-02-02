@@ -79,22 +79,29 @@ def film_search_view(request):
     source = request.GET.get("source", "tmdb")  # 'tmdb' или 'user_films' или 'favorites'
     params = f"&q={query}&source={source}" if query else ""
     page_number = int(request.GET.get("page", 1))
-
     user = request.user if request.user.is_authenticated else None
-    results = search_films(source=source, query=query, user=user)
+    results = search_films(
+        query=query,
+        user=user,
+        page_num=1,
+        source=source
+    )
 
     is_user_films = source in ["user_films", "favorites", "watched", "reviewed"]
+    is_tmdb = source == "tmdb"
     paginator = Paginator(results, 12)
     page_obj = paginator.get_page(page_number)
 
     context = {
         "search_type": source,
         "is_user_films": is_user_films,
+        "is_tmdb": is_tmdb,
         "query": query,
         "page_obj": page_obj,
         "items": page_obj.object_list,
         "params": params,
         "view_url": "films:film_search",
         "template": "search",
+        "is_search_context": True,
     }
     return render(request, "films/film_search.html", context)

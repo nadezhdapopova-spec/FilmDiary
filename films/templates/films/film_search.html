@@ -36,11 +36,11 @@
             <div class="movie-search-grid">
               {% for obj in items %}
                 {% if search_type == 'user_films' or search_type == 'favorites' %}
-                  {% include 'films/includes/my_film_preview_card.html' with user_film=obj %}
+                  {% include 'films/includes/my_film_preview_card.html' with user_film=obj.user_film review=obj.review is_planned=obj.is_planned %}
                 {% elif search_type == 'watched' or search_type == 'reviewed' %}
-                  {% include 'reviews/includes/review_card.html' with review=obj %}
+                  {% include 'reviews/includes/review_card.html' with review=obj.review user_film=obj.user_film is_planned=obj.is_planned %}
                 {% else %}
-                  {% include "films/includes/film_preview_card.html" with film=obj %}
+                  {% include "films/includes/film_preview_card.html" with film=obj.film user_film=obj.user_film review=obj.review is_planned=obj.is_planned %}
                 {% endif %}
               {% endfor %}
             </div>

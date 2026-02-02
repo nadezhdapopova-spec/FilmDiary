@@ -26,7 +26,6 @@
         </div>
 
         {% if review.user_rating %}
-{#          <div class="movie-badge movie-badge--rating">{{ review.user_rating|floatformat:1 }}</div>#}
           {% include 'films/includes/rating.html' with film=review %}
         {% endif %}
       </div>
@@ -42,7 +41,6 @@
         {% else %}
           <span class="movie-title">{{ review.film.title }}</span>
         {% endif %}
-{#      <a class="movie-title" href="{% url "films:film_detail" tmdb_id=review.film.tmdb_id %}">{{ review.film.title }}</a>#}
       <p class="movie-extra">
         {{ review.film.release_date|date:"Y"|default:"—" }}
         {% if review.film.genres.exists %}
