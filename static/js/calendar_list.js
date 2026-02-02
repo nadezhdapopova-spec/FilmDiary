@@ -136,7 +136,10 @@ function renderEvents(apiResponse) {
                 </div>
                 <div class="event-actions">
                     <a href="${filmUrl}" title="Подробнее">🎬</a>
-                    <button class="mark-watched" data-event-id="${event.id}" title="Отменить просмотр">➖</button>
+                    <button class="mark-watched" 
+                      data-event-id="${event.id}" 
+                      data-film-id="${event.film_tmdb_id}" 
+                      title="Отменить просмотр">➖</button>
                 </div>
             `;
 
@@ -223,7 +226,7 @@ function deleteEvent(eventId, buttonEl) {
         method: "DELETE",
         headers: {
             "X-Requested-With": "XMLHttpRequest",
-            "X-CSRFToken": getCookie("csrftoken"), // для CSRF защиты Django
+            "X-CSRFToken": getCookie("csrftoken"),
         }
     })
     .then(response => {
@@ -234,10 +237,9 @@ function deleteEvent(eventId, buttonEl) {
         if (!response.ok) {
             throw new Error("Ошибка удаления события");
         }
-        return Promise.resolve();
     })
-    .then(async() => {
-        // УДАЛЕНИЕ ИЗ DOM - локальное удаление
+    .then(() => {
+        // Локальное удаление из DOM
         const card = buttonEl.closest(".event-card");
         if (card && card.parentNode) {
             card.parentNode.removeChild(card);
@@ -261,8 +263,10 @@ function deleteEvent(eventId, buttonEl) {
             `;
         }
 
-        const filmTmdbId = await getFilmTmdbIdFromEventId(eventId);
-        window.dispatchEvent(new CustomEvent('calendarEventDeleted', {
+        // 👇 берём tmdb_id прямо из кнопки, без запроса к серверу
+        const filmTmdbId = buttonEl.dataset.filmId;
+
+        window.dispatchEvent(new CustomEvent("calendarEventDeleted", {
             detail: {
                 eventId: eventId,
                 filmTmdbId: filmTmdbId

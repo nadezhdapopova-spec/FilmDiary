@@ -30,9 +30,8 @@ class HomeView(TemplateView):
 
         if self.request.user.is_authenticated:
             today = now().date()
-
             recent_watched = Review.objects.filter(user=self.request.user).select_related("film").order_by(
-                "-updated_at")
+                "-watched_at")
             context.update({
                 "recs_for_me": build_recommendation_cards(self.request.user, limit=4),
                 "recent_watched": recent_watched,

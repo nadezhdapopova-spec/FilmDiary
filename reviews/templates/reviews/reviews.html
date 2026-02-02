@@ -20,6 +20,18 @@
           {% include 'includes/search_bar.html' %}
         </div>
 
+        <div class="sort-bar">
+          <span class="sort-label">Сортировать:</span>
+          <a href="?sort=date"
+             class="sort-btn {% if current_sort == 'date' %}active{% endif %}">
+             📅 по дате
+          </a>
+          <a href="?sort=rating"
+             class="sort-btn {% if current_sort == 'rating' %}active{% endif %}">
+             ⭐ по оценке
+          </a>
+        </div>
+
         {% if page_obj %}
           <div class="movie-search-grid" data-page="watched">
             {% for review in reviews %}

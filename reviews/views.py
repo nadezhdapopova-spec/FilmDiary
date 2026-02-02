@@ -32,6 +32,12 @@ class BaseReviewListView(LoginRequiredMixin, ListView):
         if not (user.is_superuser or is_manager(user)):
             qs = qs.filter(user=user)
 
+        sort = self.request.GET.get("sort", "date")
+        if sort == "rating":
+            qs = qs.order_by("-user_rating", "-created_at")
+        else:
+            qs = qs.order_by("-created_at")
+
         user_films = UserFilm.objects.filter(
             user=user,
             film=OuterRef("film")
@@ -64,6 +70,7 @@ class WatchedListView(BaseReviewListView):
             "search_type": "watched",
             "query": query,
             "params": f"&q={query}&source=watched" if query else "&source=watched",
+            "current_sort": self.request.GET.get("sort", "date"),
             "template": "reviews",
         })
         return context
@@ -107,6 +114,7 @@ class ReviewsListView(WatchedListView):
             "search_type": "reviewed",
             "query": query,
             "params": f"&q={query}&source=reviewed" if query else "&source=reviewed",
+            "current_sort": self.request.GET.get("sort", "date"),
             "template": "reviews",
         })
         return context

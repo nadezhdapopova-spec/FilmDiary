@@ -29,6 +29,9 @@ class CalendarEventViewSet(viewsets.ModelViewSet):
         """Возвращает фильмы пользователя, запланированные к просмотру"""
         qs = CalendarEvent.objects.filter(user=self.request.user).select_related("film")
 
+        if self.action in ["destroy", "retrieve", "update", "partial_update"]:
+            return qs
+
         view = self.request.query_params.get("view", "active")
         today = now().date()
 
