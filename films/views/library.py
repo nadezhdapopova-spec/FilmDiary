@@ -30,10 +30,25 @@ class HomeView(TemplateView):
             recent_watched = (
                 Review.objects.filter(user=self.request.user).select_related("film").order_by("-watched_at")[:5]
             )
+
+            film_ids = [r.film_id for r in recent_watched]
+            user_films = UserFilm.objects.filter(user=self.request.user, film_id__in=film_ids)
+            user_films_map = {uf.film_id: uf for uf in user_films}
+
+            recent_watched_with_status = []
+            for review in recent_watched:
+                recent_watched_with_status.append({
+                    "film": review.film,
+                    "user_film": user_films_map.get(review.film_id),
+                    "review": review,
+                    "is_favorite": bool(
+                        user_films_map.get(review.film_id) and user_films_map[review.film_id].is_favorite),
+                })
+
             context.update(
                 {
                     "recs_for_me": build_recommendation_cards(self.request.user, limit=4),
-                    "recent_watched": recent_watched,
+                    "recent_watched": recent_watched_with_status,
                 }
             )
         context["search_type"] = "tmdb"

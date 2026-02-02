@@ -116,6 +116,7 @@ def search_user_film(query: str, user):
             "film": uf.film,
             "review": reviews_map.get(uf.film_id),
             "is_planned": uf.film_id in planned_ids,
+            "is_favorite": uf.is_favorite,
         }
         for uf in films
     ]
@@ -155,6 +156,7 @@ def search_favorite_films(query: str, user):
             "film": uf.film,
             "review": reviews_map.get(uf.film_id),
             "is_planned": uf.film_id in planned_ids,
+            "is_favorite": uf.is_favorite,
         }
         for uf in films
     ]
@@ -182,8 +184,7 @@ def search_watched_films(query: str, user):
             planned_date__gte=timezone.now().date(),
         ).values_list("film_id", flat=True)
     )
-
-    return [
+    items = [
         {
             "film": r.film,
             "user_film": user_map.get(r.film_id),
@@ -192,6 +193,10 @@ def search_watched_films(query: str, user):
         }
         for r in reviews
     ]
+    for item in items:   # добавляем is_favorite к каждому review
+        item["review"].is_favorite = bool(item["user_film"] and item["user_film"].is_favorite)
+
+    return items
 
 
 def search_reviewed_films(query: str, user):
@@ -215,8 +220,7 @@ def search_reviewed_films(query: str, user):
             planned_date__gte=timezone.now().date(),
         ).values_list("film_id", flat=True)
     )
-
-    return [
+    items = [
         {
             "film": r.film,
             "user_film": user_map.get(r.film_id),
@@ -225,6 +229,10 @@ def search_reviewed_films(query: str, user):
         }
         for r in reviews
     ]
+    for item in items:  # добавляем is_favorite к каждому review
+        item["review"].is_favorite = bool(item["user_film"] and item["user_film"].is_favorite)
+
+    return items
 
 
 def search_films(query: str, user, page_num: int = 1, source: str = "tmdb"):

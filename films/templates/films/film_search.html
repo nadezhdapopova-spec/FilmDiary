@@ -38,7 +38,7 @@
                 {% if search_type == 'user_films' or search_type == 'favorites' %}
                   {% include 'films/includes/my_film_preview_card.html' with user_film=obj.user_film review=obj.review is_planned=obj.is_planned %}
                 {% elif search_type == 'watched' or search_type == 'reviewed' %}
-                  {% include 'reviews/includes/review_card.html' with review=obj.review user_film=obj.user_film is_planned=obj.is_planned %}
+                  {% include 'reviews/includes/review_card.html' with review=obj.review user_film=obj.user_film is_planned=obj.is_planned is_favorite=obj.is_favorite%}
                 {% else %}
                   {% include "films/includes/film_preview_card.html" with film=obj.film user_film=obj.user_film review=obj.review is_planned=obj.is_planned %}
                 {% endif %}
