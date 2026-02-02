@@ -81,7 +81,7 @@ def film_search_view(request):
     page_number = int(request.GET.get("page", 1))
 
     user = request.user if request.user.is_authenticated else None
-    results = search_films(source=source, query=query, page_num=page_number, user=user)
+    results = search_films(source=source, query=query, user=user)
 
     is_user_films = source in ["user_films", "favorites", "watched", "reviewed"]
     paginator = Paginator(results, 12)
@@ -92,6 +92,7 @@ def film_search_view(request):
         "is_user_films": is_user_films,
         "query": query,
         "page_obj": page_obj,
+        "items": page_obj.object_list,
         "params": params,
         "view_url": "films:film_search",
         "template": "search",

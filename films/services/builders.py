@@ -16,7 +16,7 @@ def build_film_card(
         user_film = get_user_film(user, film) if user else None
 
         return {
-            "tmdb_id": int(film.tmdb_id) if film.tmdb_id else None,
+            "tmdb_id": int(film.tmdb_id) if film.tmdb_id is not None else None,
             "title": film.title,
             "poster_url": build_poster_url(film.poster_path),
             "release_date": film.release_date.year if film.release_date else "—",
