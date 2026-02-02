@@ -50,7 +50,7 @@ def send_daily_reminders():
         user_tz = ZoneInfo(event.user.timezone)
         user_now = now_utc.astimezone(user_tz)
 
-        if event.planned_date == user_now.date() and time(17, 0) <= user_now.time() < time(17, 30):
+        if event.planned_date == user_now.date() and time(12, 0) <= user_now.time() < time(12, 30):
             events_by_user[event.user].append(event)
 
     for user, user_events in events_by_user.items():

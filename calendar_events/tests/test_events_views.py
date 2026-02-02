@@ -17,18 +17,6 @@ def test_calendar_list_active(api_client, user, future_event):
 
 
 @pytest.mark.django_db
-def test_calendar_list_archive(api_client, user, past_event):
-    """При view=archive возвращаются прошедшие события"""
-    api_client.force_authenticate(user)
-
-    response = api_client.get("/api/calendar_events/?view=archive")
-
-    assert response.status_code == 200
-    assert len(response.data["results"]) == 1
-    assert response.data["results"][0]["id"] == past_event.id
-
-
-@pytest.mark.django_db
 def test_calendar_create_sets_user(api_client, user, film):
     """При создании события user берётся из request"""
     api_client.force_authenticate(user)

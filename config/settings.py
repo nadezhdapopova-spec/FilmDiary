@@ -220,21 +220,19 @@ CSRF_TRUSTED_ORIGINS = [
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
-CELERY_TIMEZONE = "Europe/Moscow"
-CELERY_ENABLE_UTC = False
+CELERY_TIMEZONE = "UTC"
+CELERY_ENABLE_UTC = True
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
 CELERY_BEAT_SCHEDULE = {
     "send_daily_calendar_reminders": {
         "task": "calendar_events.tasks.send_daily_reminders",
-        "schedule": crontab(hour=13, minute=0),
-        # "schedule": crontab(minute="*/1"),   # каждую минуту
+        "schedule": crontab(minute=0, hour="*"),
     },
     "recompute-recommendations-nightly": {
         "task": "films.tasks.recompute_all_recommendations",
-        "schedule": crontab(hour=3, minute=22),
-        # "schedule": crontab(minute="*/1"),
+        "schedule": crontab(hour=1, minute=0),
     },
 }
 

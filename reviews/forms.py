@@ -42,5 +42,6 @@ class ReviewForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         if (
             self.instance and self.instance.watched_at
-        ):  # Если у формы уже есть instance с датой, приводим её к строке ISO для календаря
+        ):
             self.initial["watched_at"] = self.instance.watched_at.strftime("%Y-%m-%d")
+            # Если у формы уже есть instance с датой, приводим её к строке ISO для календаря
