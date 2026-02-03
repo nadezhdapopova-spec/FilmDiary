@@ -19,6 +19,7 @@ services:
       - fd_web_media:/app/media
     expose:
       - "8000"
+    restart: unless-stopped
     depends_on:
       db:
         condition: service_healthy
@@ -28,6 +29,7 @@ services:
     image: nginx:alpine
     ports:
       - "443:443"
+    restart: unless-stopped
     volumes:
       - fd_static_volume:/app/staticfiles:ro
       - fd_web_media:/app/media:ro
@@ -46,6 +48,7 @@ services:
       - fd_postgres_data:/var/lib/postgresql/data
     expose:
       - "5432"
+    restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
       interval: 30s
@@ -55,6 +58,7 @@ services:
     image: redis:alpine
     expose:
       - '6379'
+    restart: unless-stopped
     volumes:
       - fd_redis_data:/data
   celery:
@@ -67,6 +71,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - ALLOWED_URLS=${ALLOWED_URLS}
+    restart: unless-stopped
     depends_on:
       - redis
       - db
@@ -80,6 +85,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD}
       - ALLOWED_HOSTS=${ALLOWED_HOSTS}
       - ALLOWED_URLS=${ALLOWED_URLS}
+    restart: unless-stopped
     depends_on:
       - redis
       - db
