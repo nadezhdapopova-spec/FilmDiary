@@ -1,0 +1,119 @@
+name: ci_cd.yml
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install linters
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 isort black
+
+      - name: Run linters
+        run: make lint
+
+  test:
+    needs: lint
+    runs-on: ubuntu-latest
+
+    env:
+      SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
+      ALLOWED_HOSTS: 'localhost,127.0.0.1'
+
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        mkdir -p ./static
+
+    - name: Run tests
+      run: python manage.py test -v 2 --failfast
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Log in to Docker Hub
+        run: echo ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+
+      - name: Build Docker image
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/filmdiary:${{ github.sha }} .
+
+      - name: Push Docker image in Docker Hub
+        run: docker push ${{ secrets.DOCKER_HUB_USERNAME }}/filmdiary:${{ github.sha }}
+
+#  deploy:
+#    needs: build
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Set up SSH
+#        uses: webfactory/ssh-agent@v0.9.0
+#        with:
+#          ssh-private-key: ${{ secrets.SSH_KEY }}
+#
+#      - name: Check out code
+#        uses: actions/checkout@v3
+#
+#      - name: Deploy to server
+#        run: |
+#          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+#          sed -i "s/server_name localhost;/server_name ${{ secrets.BASE_SERVER_URL }};/" nginx.conf
+#          cat > .env << EOF
+#          SECRET_KEY=${{ secrets.SECRET_KEY }}
+#          DEBUG=False
+#          DB_NAME=film_diary
+#          DB_USER=postgres
+#          DB_HOST=db
+#          DB_PORT=5432
+#          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+#          LOCATION=redis://redis:6379/1
+#          CELERY_BROKER_URL=redis://redis:6379/2
+#          CELERY_RESULT_BACKEND=redis://redis:6379/3
+#          EMAIL_HOST_USER=${{ secrets.EMAIL_HOST_USER }}
+#          EMAIL_HOST_PASSWORD=${{ secrets.EMAIL_HOST_PASSWORD }}
+#          EMAIL_HOST=smtp.yandex.ru
+#          EMAIL_PORT=465
+#          EMAIL_USE_TLS=False
+#          EMAIL_USE_SSL=True
+#          SUPERUSER_EMAIL=${{ secrets.SUPERUSER_EMAIL }}
+#          SUPERUSER_PASSWORD=${{ secrets.SUPERUSER_PASSWORD }}
+#          MANAGER_EMAIL=${{ secrets.MANAGER_EMAIL }}
+#          MANAGER_PASSWORD=${{ secrets.MANAGER_PASSWORD }}
+#          TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }}
+#          TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
+#          DJANGO_LOG_LEVEL=INFO
+#          BASE_SERVER_URL=${{ secrets.BASE_SERVER_URL }}
+#          DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
+#          DOCKER_HUB_TAG=${{ github.sha }}
+#          EOF
+#          rsync -avz docker-compose.yaml .env nginx.conf ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/home/${{ secrets.SSH_USER }}/filmdiary/
+#          rm -f .env
+#          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+#          cd /home/${{ secrets.SSH_USER }}/filmdiary
+#          docker compose pull
+#          docker compose up -d
+#          EOF
