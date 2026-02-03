@@ -37,13 +37,16 @@ class HomeView(TemplateView):
 
             recent_watched_with_status = []
             for review in recent_watched:
-                recent_watched_with_status.append({
-                    "film": review.film,
-                    "user_film": user_films_map.get(review.film_id),
-                    "review": review,
-                    "is_favorite": bool(
-                        user_films_map.get(review.film_id) and user_films_map[review.film_id].is_favorite),
-                })
+                recent_watched_with_status.append(
+                    {
+                        "film": review.film,
+                        "user_film": user_films_map.get(review.film_id),
+                        "review": review,
+                        "is_favorite": bool(
+                            user_films_map.get(review.film_id) and user_films_map[review.film_id].is_favorite
+                        ),
+                    }
+                )
 
             context.update(
                 {

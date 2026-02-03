@@ -80,12 +80,7 @@ def film_search_view(request):
     params = f"&q={query}&source={source}" if query else ""
     page_number = int(request.GET.get("page", 1))
     user = request.user if request.user.is_authenticated else None
-    results = search_films(
-        query=query,
-        user=user,
-        page_num=1,
-        source=source
-    )
+    results = search_films(query=query, user=user, page_num=1, source=source)
 
     is_user_films = source in ["user_films", "favorites", "watched", "reviewed"]
     is_tmdb = source == "tmdb"

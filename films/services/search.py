@@ -29,16 +29,10 @@ def search_tmdb_film(query: str, user, page_num: int = 1) -> list[dict]:
         reviews_map = {r.film.tmdb_id: r for r in reviews}
         planned_ids = set(
             CalendarEvent.objects.filter(
-                user=user,
-                film__tmdb_id__in=ids,
-                planned_date__gte=timezone.now().date()
+                user=user, film__tmdb_id__in=ids, planned_date__gte=timezone.now().date()
             ).values_list("film__tmdb_id", flat=True)
         )
-    all_genre_ids = set(
-        g_id
-        for item in results
-        for g_id in item.get("genre_ids", [])
-    )
+    all_genre_ids = set(g_id for item in results for g_id in item.get("genre_ids", []))
     genre_map = {}
     if all_genre_ids:
         genres_qs = Genre.objects.filter(tmdb_id__in=all_genre_ids)
@@ -55,9 +49,7 @@ def search_tmdb_film(query: str, user, page_num: int = 1) -> list[dict]:
             "tmdb_id": tmdb_id,
             "title": item.get("title") or item.get("name", "Без названия"),
             "poster_url": (
-                f"https://image.tmdb.org/t/p/w342{item['poster_path']}"
-                if item.get("poster_path")
-                else None
+                f"https://image.tmdb.org/t/p/w342{item['poster_path']}" if item.get("poster_path") else None
             ),
             "poster_path": item.get("poster_path"),
             "release_date": item.get("release_date", "")[:4] or "-",
@@ -67,12 +59,14 @@ def search_tmdb_film(query: str, user, page_num: int = 1) -> list[dict]:
             "is_favorite": is_favorite,
             "is_tmdb_dict": True,
         }
-        items.append({
-            "film": film_dict,
-            "user_film": user_films_map.get(tmdb_id),
-            "review": reviews_map.get(tmdb_id),
-            "is_planned": tmdb_id in planned_ids,
-        })
+        items.append(
+            {
+                "film": film_dict,
+                "user_film": user_films_map.get(tmdb_id),
+                "review": reviews_map.get(tmdb_id),
+                "is_planned": tmdb_id in planned_ids,
+            }
+        )
 
     return items
 
@@ -88,9 +82,7 @@ def get_film_statuses(user, film_ids):
     reviews_qs = Review.objects.filter(user=user, film_id__in=film_ids)
     reviews_map = {r.film_id: r for r in reviews_qs}
 
-    planned_qs = CalendarEvent.objects.filter(
-        user=user, film_id__in=film_ids, planned_date__gte=timezone.now().date()
-    )
+    planned_qs = CalendarEvent.objects.filter(user=user, film_id__in=film_ids, planned_date__gte=timezone.now().date())
     planned_ids = set(planned_qs.values_list("film_id", flat=True))
 
     return reviews_map, planned_ids
@@ -155,10 +147,7 @@ def search_watched_films(query: str, user):
     if not reviews:
         return []
     film_ids = [r.film_id for r in reviews]
-    user_map = {
-        uf.film_id: uf
-        for uf in UserFilm.objects.filter(user=user, film_id__in=film_ids)
-    }
+    user_map = {uf.film_id: uf for uf in UserFilm.objects.filter(user=user, film_id__in=film_ids)}
     reviews_map, planned_ids = get_film_statuses(user, film_ids)
     items = [
         {
@@ -169,7 +158,7 @@ def search_watched_films(query: str, user):
         }
         for r in reviews
     ]
-    for item in items:   # добавляем is_favorite к каждому review
+    for item in items:  # добавляем is_favorite к каждому review
         item["review"].is_favorite = bool(item["user_film"] and item["user_film"].is_favorite)
 
     return items
@@ -182,10 +171,7 @@ def search_reviewed_films(query: str, user):
         qs = qs.filter(film__title__icontains=query)
     reviews = list(qs)
     film_ids = [r.film_id for r in reviews]
-    user_map = {
-        uf.film_id: uf
-        for uf in UserFilm.objects.filter(user=user, film_id__in=film_ids)
-    }
+    user_map = {uf.film_id: uf for uf in UserFilm.objects.filter(user=user, film_id__in=film_ids)}
     reviews_map, planned_ids = get_film_statuses(user, film_ids)
     items = [
         {

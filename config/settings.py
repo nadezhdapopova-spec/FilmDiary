@@ -229,7 +229,6 @@ CELERY_BEAT_SCHEDULE = {
     "send_daily_calendar_reminders": {
         "task": "calendar_events.tasks.send_daily_reminders",
         "schedule": crontab(minute=0, hour="*"),
-
     },
     "recompute-recommendations-nightly": {
         "task": "films.tasks.recompute_all_recommendations",

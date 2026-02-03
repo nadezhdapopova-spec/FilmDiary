@@ -57,4 +57,4 @@ def send_confirm_email_task(self, user_id: str, new_email: str, confirm_url: str
         return "OK"
 
     except Exception as exc:
-        raise self.retry(exc=exc, countdown=10)  # повторная попытка отправки, если SMTP упал
+        raise self.retry(exc=exc, countdown=10)  # повторная попытка отправки

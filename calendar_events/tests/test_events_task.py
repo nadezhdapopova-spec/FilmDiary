@@ -16,10 +16,7 @@ def test_send_daily_reminders_sends_and_marks(mocker, user, film):
     user.save()
     planned_date = date.today()
     event = CalendarEvent.objects.create(user=user, film=film, planned_date=planned_date, reminder_sent=False)
-    fake_now_utc = timezone.now().replace(
-        year=2026, month=2, day=3,
-        hour=9, minute=10, second=0, microsecond=0
-    )
+    fake_now_utc = timezone.now().replace(year=2026, month=2, day=3, hour=9, minute=10, second=0, microsecond=0)
     mock_send = mocker.patch("calendar_events.tasks.send_telegram_message.delay")
     mocker.patch("calendar_events.tasks.timezone.now", return_value=fake_now_utc)
     send_daily_reminders()
