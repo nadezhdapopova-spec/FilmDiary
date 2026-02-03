@@ -112,6 +112,7 @@ jobs:
           BASE_SERVER_URL=${{ secrets.BASE_SERVER_URL }}
           DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_TAG=${{ github.sha }}
+          CERTIFICATE_DIR=${{ secrets.NGINX_CERTIFICATE_DIR }}
           EOF
           rsync -avz docker-compose.yaml .env nginx.conf ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:/home/${{ secrets.SSH_USER }}/filmdiary/
           rm -f .env
