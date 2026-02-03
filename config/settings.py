@@ -161,7 +161,7 @@ MESSAGE_TAGS = {
 
 AUTHENTICATION_BACKENDS = [
     "users.backends.EmailBackendAllowInactive",  # к кастомному backend
-    "django.contrib.auth.backends.ModelBackend",  # для админки, базовый бэкенд аутентификации, проверяет базу данных пользователей Django и запрашивает встроенные разрешения
+    "django.contrib.auth.backends.ModelBackend",  # для админки, базовый бэкенд аутентификации
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
@@ -236,11 +236,9 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-
 # Mail server settings
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "False").lower() == "true"
