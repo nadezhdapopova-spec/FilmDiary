@@ -88,17 +88,53 @@ poetry install
 ````
 3. Заполните .env
 ````
-...
+env.sample
+
+SECRET_KEY=your_django_secret_key_here
+DEBUG=False
+ALLOWED_HOSTS=localhost
+
+DB_NAME=your_database_name_here
+DB_USER=your_database_user_here
+DB_PASSWORD=your_database_password_here
+DB_HOST=db
+DB_PORT=5432
+
+TMDB_API_KEY=your_TMDB_api_key
+
+EMAIL_HOST=smtp.yandex.ru
+EMAIL_PORT=465
+EMAIL_USE_TLS=False
+EMAIL_USE_SSL=True
+EMAIL_HOST_USER=your_email_host_user_here
+EMAIL_HOST_PASSWORD=your_email_host_password_here
+
+LOCATION=redis://redis:6379/1
+CELERY_BROKER_URL=redis://redis:6379/2
+CELERY_RESULT_BACKEND=redis://redis:6379/3
+
+TELEGRAM_TOKEN=telegtam_token
+
+SUPERUSER_EMAIL=superuser_email_here
+SUPERUSER_PASSWORD=superuser_password_here
+MANAGER_EMAIL=manager_email_here
+MANAGER_PASSWORD=manager_password_here
+
+DJANGO_LOG_LEVEL=INFO
 ````
 4. Выполните миграции
 ````
 python manage.py migrate
 ````
-5. Запустите сервер
+5. Создайте группу Manager и профили суперпользователя и менеджера через кастомную команду
+````
+python manage.py bootstrap_project
+````
+6. Запустите сервер
 ````
 python manage.py runserver
 ````
-6. Запустите Celery, celery-beat
+7. Запустите Celery, celery-beat
 ````
 celery -A config worker -l INFO (для Windows - celery -A config worker -l INFO -P solo)
 celery -A config beat -l INFO
@@ -186,6 +222,41 @@ celery -A config beat -l INFO
 но не может выполнять действия, изменяющие данные (добавление/редактирование/удаление фильмов, отзывов, событий, 
 изменение профиля).
 
+**Менеджер-панель**
+
+Менеджер-панель — это административный интерфейс для управления пользователями системы.
+Доступ к панели имеют только пользователи с ролью Manager и суперпользователи.
+
+*Функциональность панели*:
+
+- просмотр списка активных и заблокированных пользователей; 
+- просмотр профиля пользователя;
+- просмотр фильмов пользователя; 
+- просмотр отзывов; 
+- просмотр запланированных событий в календаре; 
+- блокировка и разблокировка аккаунтов. 
+
+Панель позволяет менеджерам модерировать контент и оперативно реагировать на нарушения правил.
+
+**Блокировка пользователя**
+
+При блокировке пользователя:
+- пользователь помечается как is_blocked = True;
+- все активные сессии пользователя принудительно удаляются;
+- пользователь разлогинивается на всех устройствах;
+- повторный вход в систему становится невозможен.
+
+Менеджер не может заблокировать самого себя.
+
+Повторная блокировка уже заблокированного пользователя предотвращается.
+
+Заблокированный пользователь сохраняет возможность зайти на главную страницу приложения 
+(для неавторизованного пользователя), перейти в раздел Обратня связь и отправить сообщение, заполнив форму
+обратной связи. Сообщение сохраняется в базу данных и становится доступным менеджеру и суперпользователю 
+для рассмотрения.
+
+Разблокировка пользователя снимает ограничение и возвращает возможность входа в систему.
+
 ### DRF: calendar_events
 
 - **CRUD API** (`/api/calendar_events/`) — добавление/редактирование/удаление планов просмотров
@@ -196,21 +267,25 @@ celery -A config beat -l INFO
 - **Валидация**: один фильм = одна дата на пользователя
 
 #### **Техническая реализация**
-CalendarEventViewSet (DRF ModelViewSet)
-├── queryset: фильтр по user + active/archive
-├── ManagerOrOwnerPermission (superuser/manager + владелец)
-├── CalendarEventSerializer (film_title, film_tmdb_id)
-├── CalendarEventPaginator (12/стр)
-├── upcoming (48ч вперед)
-└── AJAX Frontend (fetch + пагинация + модальные окна)
-└── Celery @daily_reminders (TG бот)
-└── Интегрировано с профилем пользователя (Telegram ID)
+    CalendarEventViewSet (DRF ModelViewSet)
+    ├── queryset: фильтр по user + active/archive
+    ├── ManagerOrOwnerPermission (superuser/manager + владелец)
+    ├── CalendarEventSerializer (film_title, film_tmdb_id)
+    ├── CalendarEventPaginator (12/стр)
+    ├── upcoming (48ч вперед)
+    └── AJAX Frontend (fetch + пагинация + модальные окна)
+    └── Celery @daily_reminders (TG бот)
+    └── Интегрировано с профилем пользователя (Telegram ID)
 
 #### **Эндпоинты**
 GET /api/calendar_events/?view=active → активные планы
+
 GET /api/calendar_events/?view=archive → архив
+
 GET /api/calendar_events/upcoming/ → ближайшие 48ч
+
 POST /api/calendar_events/ → создать план
+
 DELETE /api/calendar_events/{id}/ → отменить просмотр
 
 #### **Документация DRF части приложения**
@@ -226,7 +301,7 @@ DELETE /api/calendar_events/{id}/ → отменить просмотр
 
 **Архитектура**
 
-Tmdb() → requests + Django cache (TTL 1-12ч) → TmdbFilm dataclass
+    Tmdb() → requests + Django cache (TTL 1-12ч) → TmdbFilm dataclass
      ├── _get() — GET + retry(3) + backoff(1-4s) + MD5 cache_key
      └── _get_multipage() — пагинация (до N страниц)
 
@@ -394,7 +469,7 @@ pytest --cov=. --cov-report=html
 
 Проект развёртывается на удалённом сервере с помощью Docker Compose и GitHub Actions.
 
-**Адрес сервера с развернутым приложением:** http://homeworks.creepysnakes.su/
+**Адрес сервера с развернутым приложением:** http://diploma.creepysnakes.su/
 
 ### Архитектура
 
@@ -431,7 +506,7 @@ sudo apt install -y docker.io docker-compose-plugin nginx
 - открыты порты 80, 443, 22
 
 - проект размещается в директории:
-/home/<user>/habitladder
+/home/<user>/filmdiary
 
 ### Переменные окружения
 
@@ -441,23 +516,35 @@ sudo apt install -y docker.io docker-compose-plugin nginx
 
 - используется на сервере и создаётся автоматически в GitHub Actions
 
+Дополните файл .env:
+````
+DOCKER_HUB_USERNAME=your_docker_hub_username_here
+DOCKER_HUB_TAG=docker_hub_filmdiary_image_tag_here
+BASE_SERVER_URL=localhost
+````
+
 ### GitHub Secrets
 
 В репозитории → Settings → Secrets and variables → Actions должны быть добавлены:
 
-| Secret                    | Назначение              |
-| ------------------------- |-------------------------|
-| `DJANGO_SECRET_KEY`       | Django SECRET_KEY       |
-| `DB_PASSWORD`             | Пароль PostgreSQL       |
-| `EMAIL_HOST_USER`         | Почта                   |
-| `EMAIL_HOST_PASSWORD`     | Пароль почты            |
-| `TELEGRAM_TOKEN`          | Telegram token          |
-| `BASE_SERVER_URL`         | Домен или IP сервера    |
-| `DOCKER_HUB_USERNAME`     | Docker Hub username     |
-| `DOCKER_HUB_ACCESS_TOKEN` | Docker Hub access token |
-| `SSH_KEY`                 | Приватный SSH-ключ      |
-| `SSH_USER`                | Пользователь сервера    |
-| `SERVER_IP`               | IP сервера              |
+| Secret                    | Назначение               |
+|---------------------------|--------------------------|
+| `DJANGO_SECRET_KEY`       | Django SECRET_KEY        |
+| `DB_PASSWORD`             | Пароль PostgreSQL        |
+| `EMAIL_HOST_USER`         | Почта                    |
+| `EMAIL_HOST_PASSWORD`     | Пароль почты             |
+| `TELEGRAM_TOKEN`          | Telegram token           |
+| `TMDB_API_KEY`            | Ключ API TMDB            |
+| `BASE_SERVER_URL`         | Домен или IP сервера     |
+| `DOCKER_HUB_USERNAME`     | Docker Hub username      |
+| `DOCKER_HUB_ACCESS_TOKEN` | Docker Hub access token  |
+| `SSH_KEY`                 | Приватный SSH-ключ       |
+| `SSH_USER`                | Пользователь сервера     |
+| `SERVER_IP`               | IP сервера               |
+| `SUPERUSER_EMAIL`         | email суперпользователя  |
+| `SUPERUSER_PASSWORD`      | Пароль суперпользователя |
+| `MANAGER_EMAIL`           | email менеджера          |
+| `MANAGER_PASSWORD`        | Пароль менеджера         |
 
 ### CI/CD (GitHub Actions)
 
@@ -516,7 +603,7 @@ Workflow запускается автоматически при каждом p
 
 Ручной деплой на сервере:
 ````
-cd ~/habitladder
+cd ~/filmdiary
 docker compose pull
 docker compose up -d
 ````
