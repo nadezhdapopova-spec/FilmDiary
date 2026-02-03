@@ -1,7 +1,8 @@
 services:
   web:
     container_name: filmdiary_web
-    image: ${DOCKER_HUB_USERNAME}/filmdiary:${DOCKER_HUB_TAG}
+    #image: ${DOCKER_HUB_USERNAME}/filmdiary:${DOCKER_HUB_TAG}
+    build: .
     env_file:
       - .env
     environment:
@@ -15,6 +16,7 @@ services:
       - ALLOWED_HOSTS=${BASE_SERVER_URL}
     volumes:
       - fd_static_volume:/app/staticfiles
+      - fd_web_media:/app/media
     expose:
       - "8000"
     depends_on:
@@ -28,6 +30,7 @@ services:
       - "80:80"
     volumes:
       - fd_static_volume:/app/staticfiles:ro
+      - fd_web_media:/app/media:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
       - web
@@ -49,6 +52,8 @@ services:
       retries: 5
   redis:
     image: redis:alpine
+    expose:
+      - '6379'
     volumes:
       - fd_redis_data:/data
   celery:
@@ -79,3 +84,4 @@ volumes:
   fd_postgres_data:
   fd_redis_data:
   fd_static_volume:
+  fd_web_media:
