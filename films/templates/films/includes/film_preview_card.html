@@ -35,6 +35,8 @@
               {% for genre in film.genres.all %}
                 {{ genre.name }}{% if not forloop.last %}, {% endif %}
               {% endfor %}
+            {% else %}
+              {{ film.genres }}
             {% endif %}
           {% endif %}
         {% endif %}

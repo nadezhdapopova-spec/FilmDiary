@@ -76,27 +76,27 @@ class FilmRecommendsView(LoginRequiredMixin, TemplateView):
         elif recommend_type == "popular":
             title = "Популярные фильмы"
             films = tmdb.get_popular(pages=3)
-            cards = build_tmdb_collection_cards(films)
+            cards = build_tmdb_collection_cards(films, user=self.request.user)
 
         elif recommend_type == "now_playing":
             title = "Сейчас в кино"
             films = tmdb.get_now_playing(pages=2)
-            cards = build_tmdb_collection_cards(films)
+            cards = build_tmdb_collection_cards(films, user=self.request.user)
 
         elif recommend_type == "upcoming":
             title = "Скоро в кино"
             films = tmdb.get_upcoming(pages=2)
-            cards = build_tmdb_collection_cards(films)
+            cards = build_tmdb_collection_cards(films, user=self.request.user)
 
         elif recommend_type == "trending":
             title = "Тренды недели"
             films = tmdb.get_trending().get("results", [])
-            cards = build_tmdb_collection_cards(films)
+            cards = build_tmdb_collection_cards(films, user=self.request.user)
 
         elif recommend_type == "top_rated":
             title = "Топ-рейтинговые фильмы"
             films = tmdb.get_top_rated(pages=2)
-            cards = build_tmdb_collection_cards(films)
+            cards = build_tmdb_collection_cards(films, user=self.request.user)
 
         context.update(
             {

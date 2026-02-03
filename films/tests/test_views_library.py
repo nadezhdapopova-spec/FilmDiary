@@ -41,7 +41,7 @@ class TestFilmViewsCatalog:
                 return [{"id": 1}]
 
         monkeypatch.setattr("films.views.library.Tmdb", lambda: FakeTmdb())
-        monkeypatch.setattr("films.views.library.build_tmdb_collection_cards", lambda films: films)
+        monkeypatch.setattr("films.views.library.build_tmdb_collection_cards", lambda films, user=None: films)
         response = client.get(reverse("films:recommends"), {"type": "popular"})
 
         assert response.context["recommend_title"] == "Популярные фильмы"
