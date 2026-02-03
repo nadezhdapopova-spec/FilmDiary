@@ -31,7 +31,7 @@ jobs:
 
     env:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      ALLOWED_HOSTS: 'localhost,127.0.0.1'
+      ALLOWED_HOSTS: 'http://127.0.0.1'
 
     steps:
     - name: Check out code
