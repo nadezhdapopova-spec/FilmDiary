@@ -1,5 +1,6 @@
-import pytest
 from django.urls import reverse
+
+import pytest
 
 
 @pytest.mark.django_db
@@ -11,9 +12,7 @@ def test_profile_email_change_triggers_task(client, user, mocker):
     new_email = "new@mail.com"
     assert old_email != new_email
 
-    task = mocker.patch(
-        "users.views.users_views.send_confirm_email_task.delay"
-    )
+    task = mocker.patch("users.views.users_views.send_confirm_email_task.delay")
 
     response = client.post(
         reverse("users:profile"),

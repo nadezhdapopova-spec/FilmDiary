@@ -86,9 +86,9 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PASSWORD"),
         "HOST": "127.0.0.1",
         "PORT": os.getenv("DB_PORT"),
-        "CONN_MAX_AGE": 0,       # закрываем после КАЖДОГО запроса, каждое соединение свежее
+        "CONN_MAX_AGE": 0,  # закрываем после КАЖДОГО запроса, каждое соединение свежее
         "OPTIONS": {
-            'connect_timeout': 5,  # таймаут подключения, Django ждет подключения к PostgreSQL 5 секунд, а не 30
+            "connect_timeout": 5,  # таймаут подключения, Django ждет подключения к PostgreSQL 5 секунд, а не 30
             "keepalives": 1,
             "keepalives_idle": 30,
             "keepalives_interval": 5,
@@ -161,7 +161,7 @@ MESSAGE_TAGS = {
 
 AUTHENTICATION_BACKENDS = [
     "users.backends.EmailBackendAllowInactive",  # к кастомному backend
-    "django.contrib.auth.backends.ModelBackend",  # для админки, базовый бэкенд аутентификации, проверяет базу данных пользователей Django и запрашивает встроенные разрешения
+    "django.contrib.auth.backends.ModelBackend",  # для админки, базовый бэкенд аутентификации
 ]
 
 AUTH_USER_MODEL = "users.CustomUser"
@@ -220,29 +220,25 @@ CSRF_TRUSTED_ORIGINS = [
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
-CELERY_TIMEZONE = "Europe/Moscow"
-CELERY_ENABLE_UTC = False
+CELERY_TIMEZONE = "UTC"
+CELERY_ENABLE_UTC = True
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
 CELERY_BEAT_SCHEDULE = {
     "send_daily_calendar_reminders": {
         "task": "calendar_events.tasks.send_daily_reminders",
-        "schedule": crontab(hour=13, minute=0),
-        # "schedule": crontab(minute="*/1"),   # каждую минуту
+        "schedule": crontab(minute=0, hour="*"),
     },
     "recompute-recommendations-nightly": {
         "task": "films.tasks.recompute_all_recommendations",
-        "schedule": crontab(hour=13, minute=0),
-        # "schedule": crontab(minute="*/1"),
-    }
+        "schedule": crontab(hour=1, minute=0),
+    },
 }
-
 
 # Mail server settings
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-# EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 EMAIL_HOST = os.getenv("EMAIL_HOST")
 EMAIL_PORT = os.getenv("EMAIL_PORT")
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "False").lower() == "true"
@@ -343,7 +339,6 @@ for name, filename in MODULE_HANDLERS.items():
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
-
     "formatters": {
         "verbose": {
             "format": "%(asctime)s | %(levelname)-8s | %(name)s | %(pathname)s:%(lineno)d | %(message)s",
@@ -355,35 +350,30 @@ LOGGING = {
             "format": "%(asctime)s | %(levelname)s | [%(name)s:%(task_id)s] | %(message)s",
         },
     },
-
     "handlers": LOG_HANDLERS,
-
     "root": {
         "handlers": ["console", "file_app"],
         "level": LOG_LEVEL,
     },
-
     "loggers": {
         "django": {
             "handlers": ["console"],
             "level": "WARNING",
             "propagate": True,
         },
-        "django.request": {          # 404/500 ошибки
+        "django.request": {  # 404/500 ошибки
             "handlers": ["file_app"],
             "level": "ERROR",
             "propagate": False,
         },
         "django.db.backends": {
-            "level": "ERROR",        # SQL только ошибки
+            "level": "ERROR",  # SQL только ошибки
         },
-
         "filmdiary.films": {"handlers": ["file_films"], "level": LOG_LEVEL, "propagate": False},
         "filmdiary.reviews": {"handlers": ["file_reviews"], "level": LOG_LEVEL, "propagate": False},
         "filmdiary.events": {"handlers": ["file_events"], "level": LOG_LEVEL, "propagate": False},
         "filmdiary.telegram": {"handlers": ["file_telegram"], "level": LOG_LEVEL, "propagate": False},
         "filmdiary.users": {"handlers": ["file_users"], "level": LOG_LEVEL, "propagate": False},
-
         "films.tasks": {"handlers": ["console", "file_app"], "level": "INFO", "propagate": False},
         "users.tasks": {"handlers": ["console", "file_app"], "level": "INFO", "propagate": False},
     },

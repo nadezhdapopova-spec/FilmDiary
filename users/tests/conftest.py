@@ -1,6 +1,6 @@
-import pytest
 from django.contrib.auth import get_user_model
 
+import pytest
 
 User = get_user_model()
 
@@ -13,6 +13,7 @@ def user(db):
         username="testuser",
     )
 
+
 @pytest.fixture
 def inactive_user(db):
     return User.objects.create_user(
@@ -21,6 +22,7 @@ def inactive_user(db):
         username="inactive",
         is_active=False,
     )
+
 
 @pytest.fixture
 def blocked_user(db):

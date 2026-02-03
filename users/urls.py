@@ -9,8 +9,15 @@ from django.urls import path, reverse_lazy
 
 from users.forms.password_reset_form import CustomPasswordResetForm, CustomSetPasswordForm
 from users.views.feedback import FeedbackView
-from users.views.manager import ManagerUsersView, ManagerUserDataView, ManagerUserFilmsView, ManagerUserReviewsView, \
-    ManagerUserCalendarView, BlockUserView, UnblockUserView, ManagerUserOverviewView
+from users.views.manager import (
+    BlockUserView,
+    ManagerUserCalendarView,
+    ManagerUserFilmsView,
+    ManagerUserOverviewView,
+    ManagerUserReviewsView,
+    ManagerUsersView,
+    UnblockUserView,
+)
 from users.views.users_views import (
     ActivateAccountView,
     ActivationErrorView,
@@ -19,8 +26,8 @@ from users.views.users_views import (
     RegisterView,
     ResendActivationView,
     UserLoginView,
-    UserProfileView)
-
+    UserProfileView,
+)
 
 app_name = "users"
 

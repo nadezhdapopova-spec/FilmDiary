@@ -31,18 +31,20 @@
         {% elif page_obj.paginator.count == 0 %}
           <h3 class="card-title movie-search-body__subtitle">Пока ничего не нашли, давай попробуем еще раз</h3>
         {% else %}
+          {% if page_obj %}
           <!-- Сетка из 4 карточек -->
-          <div class="movie-search-grid">
-            {% for item in page_obj %}
-              {% if search_type == 'user_films' or search_type == 'favorites' %}
-                {% include 'films/includes/my_film_preview_card.html' with user_film=item review=None %}
-              {% elif search_type == 'watched' or search_type == 'reviewed' %}
-                {% include 'reviews/includes/review_card.html' with review=item %}
-              {% else %}
-                {% include 'films/includes/film_preview_card.html' with film=item user_film=None review=None %}
-              {% endif %}
-            {% endfor %}
-          </div>
+            <div class="movie-search-grid">
+              {% for obj in items %}
+                {% if search_type == 'user_films' or search_type == 'favorites' %}
+                  {% include 'films/includes/my_film_preview_card.html' with user_film=obj.user_film review=obj.review is_planned=obj.is_planned %}
+                {% elif search_type == 'watched' or search_type == 'reviewed' %}
+                  {% include 'reviews/includes/review_card.html' with review=obj.review user_film=obj.user_film is_planned=obj.is_planned is_favorite=obj.is_favorite%}
+                {% else %}
+                  {% include "films/includes/film_preview_card.html" with film=obj.film user_film=obj.user_film review=obj.review is_planned=obj.is_planned %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
         {% endif %}
       </div>
     </div>

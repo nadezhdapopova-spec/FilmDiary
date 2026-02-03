@@ -35,5 +35,3 @@ def test_review_str(review):
 
     assert review.user.username in result
     assert review.film.title in result
-
-

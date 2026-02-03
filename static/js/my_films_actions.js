@@ -396,11 +396,19 @@ function applyStatusChanges(card, data) {
   const overlay = card.querySelector('.movie-card__overlay');
   if (!badges || !overlay) return;
 
-  // 1. Очистка (UI ← сервер)
-  badges.innerHTML = '';
-  overlay.querySelector('.movie-rating')?.remove();
+  // ========== FAVORITE ==========
+  const fav = badges.querySelector('.movie-badge--favorite');
+  if (data.is_favorite && !fav) {
+    badges.insertAdjacentHTML(
+      'beforeend',
+      `<span class="movie-badge movie-badge--favorite" title="Любимое">🔥</span>`
+    );
+  }
+  if (!data.is_favorite && fav) fav.remove();
 
-  if (data.has_review) {
+  // ========== WATCHED ==========
+  const watched = badges.querySelector('.movie-badge--watched');
+  if (data.has_review && !watched) {
     badges.insertAdjacentHTML(
       'beforeend',
       `<span class="movie-badge movie-badge--watched" title="Просмотрено">🍿</span>`
@@ -414,20 +422,21 @@ function applyStatusChanges(card, data) {
     );
   }
 
-  if (data.is_favorite) {
-    badges.insertAdjacentHTML(
-      'beforeend',
-      `<span class="movie-badge movie-badge--favorite" title="Любимое">🔥</span>`
-    );
-  }
-
+  // ========== RATING ==========
+  let rating = overlay.querySelector('.movie-rating');
   if (data.user_rating) {
-    const rating = document.createElement('span');
-    rating.className = 'movie-rating movie-badge movie-badge--rating';
+    if (!rating) {
+      rating = document.createElement('span');
+      rating.className = 'movie-rating movie-badge movie-badge--rating';
+      overlay.appendChild(rating);
+    }
     rating.textContent = data.user_rating;
-    overlay.appendChild(rating);
-  }
 
+    // если сервер отдаёт цвет — применяем
+    if (data.rating_color) {
+      rating.style.background = data.rating_color;
+    }
+  }
 }
 
 function getCookie(name) {

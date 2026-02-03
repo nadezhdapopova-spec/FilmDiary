@@ -12,7 +12,7 @@ header.topbar.glass-card {
   width: 100%;
   margin: 0;
   border-radius: 0 0 24px 24px;
-  padding: 0.9rem 1.4rem;
+  padding: 0.2rem 1.4rem;
 
   background: linear-gradient(
     135deg,
@@ -52,35 +52,49 @@ header.topbar.glass-card::before {
 }
 
 .topbar__inner {
-  position: relative;
-  height: calc(var(--topbar-h) - 1.7rem);
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
+  gap: 1rem;
+  min-height: var(--topbar-h);
 }
 
 /* иконка привязана к левому краю */
 .topbar__logo-fixed {
-  position: absolute;
-  left: 1rem;
-  width: 50px;
-  height: 50px;
-  object-fit: contain;
+  position: relative;        /* было absolute */
+  left: 0;
+  width: 46px;               /* чуть компактнее */
+  height: 56px;
+  align-self: center;        /* ВАЖНО */
+  margin-top: -2px;
 }
 
-/* текстовый логотип строго по центру */
+.topbar__center {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
 .topbar__title {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  max-width: 100%;
+  text-align: center;
+
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: unset;
 }
 
 /* общие настройки контейнера */
 .neon-logo {
+  line-height: 1.35;
+  padding-block: 0.22em;
   justify-self: center;
   font-family: "Pacifico", cursive, system-ui;
-  font-size: 1.4rem;
+  font-size: clamp(2.2rem, 2vw, 2rem);
+  letter-spacing: clamp(0.02em, 0.12vw, 0.06em);
   font-weight: 500;
-  letter-spacing: 0.06em;
   text-decoration: none;
   color: #ffb98a;
 
@@ -89,14 +103,25 @@ header.topbar.glass-card::before {
 
   /* мягкое свечение вокруг текста */
   text-shadow:
-    0 0 4px  rgba(255,138,0,0.9),
-    0 0 8px  rgba(255,138,0,0.95),
-    0 0 14px rgba(255,138,0,1),
-    0 0 24px rgba(255,94,0,0.9),
-    0 0 40px rgba(255,94,0,0.8);
+    0 0 1px rgba(255,138,0,0.45),
+    0 0 3px rgba(255,138,0,0.45),
+    0 0 8px rgba(255,94,0,0.25);
 
   /* имитация “горящего” неона */
-  filter: drop-shadow(0 0 18px rgba(255,138,0,0.9));
+  /*filter: drop-shadow(0 0 8px rgba(255,138,0,0.5));*/
+}
+
+.neon-logo::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  background: radial-gradient(
+    circle,
+    rgba(255,138,0,0.25),
+    transparent 70%
+  );
+  z-index: -1;
+  pointer-events: none;
 }
 
 /* лёгкое пульсирование, как у неоновой вывески */
@@ -123,15 +148,23 @@ header.topbar.glass-card::before {
 
 .neon-logo {
   animation: neon-pulse 2.4s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    #ffb98a,
+    #ffd6a0,
+    #60a5fa
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  filter: drop-shadow(0 0 12px rgba(255,138,0,0.7));
 }
 
-/* адаптация под очень узкие экраны */
-@media (max-width: 575.98px) {
-  .neon-logo {
-    font-size: 1.1rem;
-    letter-spacing: 0.04em;
-    white-space: normal;   /* разрешить перенос */
-    text-align: center;
+@media (max-width: 640px) {
+  .topbar__title {
+    white-space: normal;
+    line-height: 1.2;
+    max-width: 90%;
   }
 }
 

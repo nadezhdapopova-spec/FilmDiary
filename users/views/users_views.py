@@ -19,7 +19,6 @@ from users.forms.register_form import RegisterForm
 from users.forms.resend_activation_form import ResendActivationForm
 from users.tasks import send_activation_email_task, send_confirm_email_task
 
-
 logger = logging.getLogger("filmdiary.users")
 User = get_user_model()
 
@@ -72,8 +71,7 @@ class ActivateAccountView(View):
         user = get_object_or_404(User, pk=user_id)
 
         if user.is_blocked:
-            messages.error(request,
-                           "Аккаунт заблокирован администратором. Напишите нам, мы сообщим, что делать")
+            messages.error(request, "Аккаунт заблокирован администратором. Напишите нам, мы сообщим, что делать")
             return redirect("users:activation_error")
 
         if user.is_active:
@@ -95,6 +93,8 @@ class ActivateAccountView(View):
 
 
 class ActivationErrorView(TemplateView):
+    """Универсальная страница отображения errors"""
+
     template_name = "users/activation_error.html"
 
 
@@ -151,6 +151,7 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
     template_name = "users/profile.html"
 
     def get_context_data(self, **kwargs):
+        """Формирует контекст для профиля пользователя"""
         context = super().get_context_data(**kwargs)
         user = self.request.user
         context["profile_form"] = kwargs.get("profile_form") or UserProfileForm(instance=user)
@@ -202,9 +203,10 @@ class UserProfileView(LoginRequiredMixin, TemplateView):
 
 
 class ConfirmEmailView(View):
-    """Проверяет token, меняет email"""
+    """Класс для смены пользователем email"""
 
     def get(self, request, user_id, token):
+        """Проверяет token, меняет email"""
         user = get_object_or_404(User, pk=user_id)
 
         if default_token_generator.check_token(user, token):

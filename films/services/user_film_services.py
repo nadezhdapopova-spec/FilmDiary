@@ -12,7 +12,7 @@ def get_user_film(user, film):
 
 def map_status(user_film, has_review: bool, rating: float | None):
     """Формирует пользовательский статус фильма для карточки фильма"""
-    if user_film is None:    # нет в списке Мои фильмы
+    if user_film is None:  # нет в списке Мои фильмы
         return {
             "is_favorite": False,
             "has_review": False,
@@ -21,7 +21,7 @@ def map_status(user_film, has_review: bool, rating: float | None):
         }
 
     rating_color = None
-    if has_review:     # просмотрен - есть Review
+    if has_review:  # просмотрен - есть Review
         if rating is None:
             rating_color = "medium"
         elif rating >= 8.0:

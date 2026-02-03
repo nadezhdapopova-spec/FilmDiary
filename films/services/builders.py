@@ -1,6 +1,6 @@
 from films.models import Film, Genre
 from films.services.tmdb_movie_payload import get_tmdb_movie_payload
-from films.services.user_film_services import get_user_film, map_status, get_user_recommendations
+from films.services.user_film_services import get_user_film, get_user_recommendations, map_status
 from films.services.utils import build_poster_url, extract_year, join_genres
 
 
@@ -14,16 +14,21 @@ def build_film_card(
     """Возвращает единый формат карточки фильма для film_preview_card.html из БД и из TMDB"""
     if film:
         user_film = get_user_film(user, film) if user else None
-
+        genres_str = ", ".join(g.name for g in film.genres.all()[:2]) or "—"
         return {
-            "tmdb_id": film.tmdb_id,
+            "tmdb_id": int(film.tmdb_id) if film.tmdb_id is not None else None,
             "title": film.title,
             "poster_url": build_poster_url(film.poster_path),
             "release_date": film.release_date.year if film.release_date else "—",
-            "genres": ", ".join(g.name for g in film.genres.all()[:2]),
+            "genres": genres_str,
             "rating": round(film.vote_average, 1) if film.vote_average else None,
             "in_library": bool(user_film),
-            **map_status(user_film=user_film, has_review=False, rating=None,),
+            "is_tmdb_dict": False,
+            **map_status(
+                user_film=user_film,
+                has_review=False,
+                rating=None,
+            ),
         }
 
     if tmdb_item:
@@ -35,6 +40,7 @@ def build_film_card(
             "genres": join_genres(tmdb_item.get("genre_ids"), genre_map),
             "rating": round(tmdb_item.get("vote_average", 0), 1),
             "in_library": False,
+            "is_tmdb_dict": True,
             "is_favorite": False,
             "has_review": False,
             "user_rating": None,
@@ -49,18 +55,14 @@ def build_tmdb_collection_cards(films, user=None):
     if not films:
         return []
 
-    all_genre_ids = {
-        g for f in films for g in f.get("genre_ids", [])
-    }
+    all_genre_ids = {g for f in films for g in f.get("genre_ids", [])}
     genres = Genre.objects.filter(tmdb_id__in=all_genre_ids)
     genre_map = {g.tmdb_id: g.name for g in genres}
 
-    existing_films = {
-        f.tmdb_id: f
-        for f in Film.objects.filter(
-            tmdb_id__in=[f["id"] for f in films if f.get("id")]
-        ).prefetch_related("genres")
-    }
+    tmdb_ids = [f["id"] for f in films if f.get("id")]
+    films_qs = Film.objects.filter(tmdb_id__in=tmdb_ids).prefetch_related("genres")
+    films_list = list(films_qs)
+    existing_films = {f.tmdb_id: f for f in films_list}
 
     cards = []
 
@@ -92,13 +94,10 @@ def build_recommendation_cards(user, limit=4) -> list[dict]:
     """Возвращает единый формат карточки фильма для ежедневных персональных рекомендаций"""
     recs = get_user_recommendations(user, limit=limit)
     cards = []
-
-    films_map = {
-        f.tmdb_id: f
-        for f in Film.objects.filter(
-            tmdb_id__in=[r["tmdb_id"] for r in recs]
-        ).prefetch_related("genres")
-    }
+    tmdb_ids = [r["tmdb_id"] for r in recs]
+    films_qs = Film.objects.filter(tmdb_id__in=tmdb_ids).prefetch_related("genres")
+    films_list = list(films_qs)
+    films_map = {f.tmdb_id: f for f in films_list}  # {603: <Film: The Matrix>, 550: <Film: Fight Club>,..}
 
     for rec in recs:
         tmdb_id = rec["tmdb_id"]
@@ -110,13 +109,11 @@ def build_recommendation_cards(user, limit=4) -> list[dict]:
 
         payload = get_tmdb_movie_payload(tmdb_id)
         if payload:
+            details = payload["details"]
             cards.append(
                 build_film_card(
-                    tmdb_item=payload["details"],
-                    genre_map={
-                        g["id"]: g["name"]
-                        for g in payload["details"].get("genres", [])
-                    },
+                    tmdb_item={**details, "genre_ids": [g["id"] for g in details.get("genres", [])]},
+                    genre_map={g["id"]: g["name"] for g in details.get("genres", [])},
                     user=user,
                 )
             )

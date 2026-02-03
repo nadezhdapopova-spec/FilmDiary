@@ -2,15 +2,19 @@
 
 <header class="topbar glass-card" role="banner">
   <div class="topbar__inner">
-    <!-- Левый блок: иконка + текстовый логотип -->
-    <img src="{% static 'images/symbol_smile.png' %}"
-       alt="logo"
-       class="topbar__logo-fixed">
+    <div class="topbar__left">
+      <!-- Левый блок: иконка + текстовый логотип -->
+      <img src="{% static 'images/symbol_smile.png' %}"
+         alt="logo"
+         class="topbar__logo-fixed">
+    </div>
 
-    <!-- Центровка только текста -->
-    <a class="neon-logo topbar__title" href="/">
-      FilmDiary — твой персональный кино‑трекер
-    </a>
+    <div class="topbar__center">
+      <!-- Центровка только текста -->
+      <a class="neon-logo topbar__title" href="/">
+        FilmDiary — твой персональный кино‑трекер
+      </a>
+    </div>
 
     <!-- Auth справа -->
     <div class="topbar__actions">
@@ -25,8 +29,8 @@
       {% else %}
         <a class="auth-btn auth-btn--primary" href="{% url "users:login" %}">Вход</a>
         <a class="auth-btn auth-btn--ghost" href="{% url "users:register" %}">Регистрация</a>
-
       {% endif %}
     </div>
+
   </div>
 </header>

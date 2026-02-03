@@ -1,6 +1,7 @@
-import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+
+import pytest
 
 User = get_user_model()
 
@@ -30,9 +31,7 @@ def test_register_creates_inactive_user(client):
 @pytest.mark.django_db
 def test_register_calls_send_email(mocker, client):
     """Регистрация: проверка Celery"""
-    task = mocker.patch(
-        "users.views.users_views.send_activation_email_task.delay"
-    )
+    task = mocker.patch("users.views.users_views.send_activation_email_task.delay")
 
     response = client.post(
         reverse("users:register"),

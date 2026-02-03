@@ -40,7 +40,6 @@ class CustomUser(AbstractUser):
     ]
 
     def __str__(self):
-        """Строковое отображение пользователя"""
         return self.username
 
     class Meta:
@@ -52,7 +51,7 @@ class CustomUser(AbstractUser):
 
 
 class MessageFeedback(models.Model):
-    """Класс обратной связи пользователей"""
+    """Класс модели обратной связи пользователей"""
 
     name = models.CharField(max_length=150, verbose_name="Имя пользователя")
     email = models.EmailField(verbose_name="E-mail пользователя")

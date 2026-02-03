@@ -11,14 +11,14 @@ def can_user_edit(user, obj):
     """Проверяет, может ли пользователь редактировать объект"""
     if user.is_superuser or getattr(obj, "user", None) == user:
         return
-    raise PermissionDenied(f"Вы не можете редактировать информацию других пользователей")
+    raise PermissionDenied("Вы не можете редактировать информацию других пользователей")
 
 
 def can_user_delete(user, obj):
     """Проверяет, может ли пользователь удалить объект"""
     if user.is_superuser or getattr(obj, "user", None) == user:
         return
-    raise PermissionDenied(f"Вы не можете удалить информацию других пользователей")
+    raise PermissionDenied("Вы не можете удалить информацию других пользователей")
 
 
 def can_user_view(user, obj):

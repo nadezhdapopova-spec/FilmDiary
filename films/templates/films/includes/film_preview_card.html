@@ -28,12 +28,16 @@
         {{ film.release_date|slice:":4" }}
         {% if film.genres %}
           ,
-          {% if film.genres.all %}  {# проверка на QuerySet #}
-            {% for genre in film.genres.all %}
-              {{ genre.name }}{% if not forloop.last %}, {% endif %}
-            {% endfor %}
+          {% if film.is_tmdb_dict %}
+            {{ film.genres }}
           {% else %}
-            {{ film.genres }}  {# строка для TMDB #}
+            {% if film.genres.exists %}
+              {% for genre in film.genres.all %}
+                {{ genre.name }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            {% else %}
+              {{ film.genres }}
+            {% endif %}
           {% endif %}
         {% endif %}
       </p>
@@ -47,20 +51,28 @@
       {% if not film.in_library %} movie-card__footer--centered{% endif %}">
 
       {% if film.has_review %}
-        <span class="status-badge">
-          <span class="status-badge__text">Просмотрено</span>
+        <button class="btn-add-film glass-btn"
+            type="button"
+            onclick="window.location.href='{% url 'reviews:watched' %}'">
+          <span class="btn-add-film__text">Просмотрено</span>
           {% if film.is_favorite %}
             <span class="status-badge__icon">🔥</span>
+          {% else %}
+            <span class="status-badge__icon">🍿</span>
           {% endif %}
-        </span>
+        </button>
 
       {% elif film.in_library %}
-        <span class="status-badge">
-          <span class="status-badge__text">В моей библиотеке</span>
+        <button class="btn-add-film glass-btn"
+            type="button"
+            onclick="window.location.href='{% url 'films:my_films' %}'">
+          <span class="btn-add-film__text">В моих фильмах</span>
           {% if film.is_favorite %}
-            <span class="status-badge__icon">🔥</span>
+            <span class="btn-add-film__icon">🔥</span>
+          {% else %}
+            <span class="status-badge__icon">✔️</span>
           {% endif %}
-        </span>
+        </button>
 
       {% else %}
         <button class="btn-add-film glass-btn"

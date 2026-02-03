@@ -1,6 +1,6 @@
 from django.db import transaction
 
-from films.models import Film, Genre, Actor, FilmActor, Person, FilmCrew, UserFilm
+from films.models import Actor, Film, FilmActor, FilmCrew, Genre, Person, UserFilm
 from films.services.tmdb_movie_payload import get_tmdb_movie_payload
 
 
@@ -41,10 +41,7 @@ def save_film_from_tmdb(*, tmdb_id: int, user):
         created_film = True
 
         for genre_data in details.get("genres", []):  # жанры без дублей
-            genre, _ = Genre.objects.get_or_create(
-                tmdb_id=genre_data["id"],
-                defaults={"name": genre_data["name"]}
-            )
+            genre, _ = Genre.objects.get_or_create(tmdb_id=genre_data["id"], defaults={"name": genre_data["name"]})
             film.genres.add(genre)
 
         for idx, actor_data in enumerate(credits.get("cast", [])[:20]):  # актеры без дублей
@@ -54,14 +51,9 @@ def save_film_from_tmdb(*, tmdb_id: int, user):
                     "name": actor_data["name"],
                     "original_name": actor_data.get("original_name"),
                     "profile_path": actor_data.get("profile_path"),
-                }
+                },
             )
-            FilmActor.objects.create(
-                film=film,
-                actor=actor,
-                character=actor_data.get("character"),
-                order=idx
-            )
+            FilmActor.objects.create(film=film, actor=actor, character=actor_data.get("character"), order=idx)
 
         important_jobs = {"Director", "Writer", "Producer", "Composer"}
 
@@ -69,20 +61,18 @@ def save_film_from_tmdb(*, tmdb_id: int, user):
             if crew_data["job"] not in important_jobs:
                 continue
 
-            person, _ = Person.objects.get_or_create(   # режиссер, сценарист, продюсер, композитор без дублей
+            person, _ = Person.objects.get_or_create(  # режиссер, сценарист, продюсер, композитор без дублей
                 tmdb_id=crew_data["id"],
                 defaults={
                     "name": crew_data["name"],
                     "original_name": crew_data.get("original_name"),
                     "profile_path": crew_data.get("profile_path"),
-                }
+                },
             )
-            FilmCrew.objects.get_or_create(
-                film=film,
-                person=person,
-                job=crew_data["job"]
-            )
+            FilmCrew.objects.get_or_create(film=film, person=person, job=crew_data["job"])
 
-    user_film, created_user_film = UserFilm.objects.get_or_create(user=user, film=film)  # проверяем, есть ли фильм у пользователя
+    user_film, created_user_film = UserFilm.objects.get_or_create(
+        user=user, film=film
+    )  # проверяем, есть ли фильм у пользователя
 
     return film, created_film, user_film, created_user_film

@@ -1,6 +1,9 @@
-import pytest
 from django.core.exceptions import ValidationError
+
+import pytest
+
 from reviews.validators import validate_number_of_views
+
 
 def test_validate_number_of_views_ok():
     """Положительное целое число проходит валидацию"""

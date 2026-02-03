@@ -1,7 +1,16 @@
 from django.urls import path
 
-from films.views import UserListFilmView, FilmDetailView, AddFilmView, DeleteFilmView, HomeView, film_search_view, \
-    UpdateFilmStatusView, FavoriteFilmsView, FilmRecommendsView
+from films.views import (
+    AddFilmView,
+    DeleteFilmView,
+    FavoriteFilmsView,
+    FilmDetailView,
+    FilmRecommendsView,
+    HomeView,
+    UpdateFilmStatusView,
+    UserListFilmView,
+    film_search_view,
+)
 
 app_name = "films"
 

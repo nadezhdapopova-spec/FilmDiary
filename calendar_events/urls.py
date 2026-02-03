@@ -4,7 +4,6 @@ from rest_framework.routers import DefaultRouter
 
 from calendar_events.views import CalendarEventViewSet
 
-
 app_name = "calendar_events"
 
 router = DefaultRouter()

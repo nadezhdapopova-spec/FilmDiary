@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from films.models import UserFilm, Film
+from films.models import Film, UserFilm
 from films.services.save_film import save_film_from_tmdb
 
 
@@ -13,12 +13,14 @@ def test_film_exists_returns_film(film, user):
     assert result[0] == film
     assert result[1] is False
 
+
 @pytest.mark.django_db
 def test_no_payload_returns_none(monkeypatch, user):
     """Нет payload - возвращает (None, False)"""
     monkeypatch.setattr("films.services.save_film.get_tmdb_movie_payload", lambda tid: None)
     result = save_film_from_tmdb(tmdb_id=999, user=user)
     assert result == (None, False)
+
 
 @pytest.mark.django_db
 def test_create_user_film(film, user):
@@ -42,6 +44,7 @@ def test_save_film_from_tmdb_exists(monkeypatch, film, user):
     assert result_film == film
     assert created is False
 
+
 @pytest.mark.django_db
 def test_save_film_existing_film(user, film, monkeypatch):
     """Если фильм есть в БД"""
@@ -55,6 +58,7 @@ def test_save_film_existing_film(user, film, monkeypatch):
     assert film2 == film
     assert created_film is False
     assert created_user_film is True
+
 
 @pytest.mark.django_db
 def test_save_film_from_tmdb_creates_all(user, tmdb_payload, monkeypatch):
@@ -71,13 +75,11 @@ def test_save_film_from_tmdb_creates_all(user, tmdb_payload, monkeypatch):
     assert created_user_film is True
     assert Film.objects.count() == films_amount + 1
 
+
 @pytest.mark.django_db
 def test_save_film_tmdb_fail_rollback(user, monkeypatch):
     """Если TMDB вернул None: rollback"""
-    monkeypatch.setattr(
-        "films.services.save_film.get_tmdb_movie_payload",
-        Mock(return_value=None)
-    )
+    monkeypatch.setattr("films.services.save_film.get_tmdb_movie_payload", Mock(return_value=None))
     films_amount = Film.objects.count()
     user_films_amount = UserFilm.objects.count()
     result = save_film_from_tmdb(tmdb_id=123, user=user)
@@ -86,10 +88,12 @@ def test_save_film_tmdb_fail_rollback(user, monkeypatch):
     assert Film.objects.count() == films_amount
     assert UserFilm.objects.count() == user_films_amount
 
+
 @pytest.mark.django_db
 def test_save_film_user_film_exists(user, film, monkeypatch):
+    """Попытка повторного сохранения фильма"""
     UserFilm.objects.create(user=user, film=film)
-    monkeypatch.setattr("films.services.save_film.get_tmdb_movie_payload",Mock())
+    monkeypatch.setattr("films.services.save_film.get_tmdb_movie_payload", Mock())
 
     _, _, _, created_user_film = save_film_from_tmdb(tmdb_id=film.tmdb_id, user=user)
 

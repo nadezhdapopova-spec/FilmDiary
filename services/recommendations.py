@@ -11,7 +11,6 @@ from config import settings
 from services.tmdb import Tmdb
 from services.tmdb_film import TmdbFilm
 
-
 FEATURE_WEIGHTS = getattr(
     settings,
     "RECOMMENDER_FEATURE_WEIGHTS",
@@ -109,7 +108,9 @@ class FeatureCache:
     """Кэширование признаков фильмов, чтобы не вычислять заново"""
 
     def __init__(self):
-        self.features_map: Dict[int, Tuple[str, ...]] = {}  # словарь {123: ("actor:tom hardi": None, "director:nolan": None), ...}
+        self.features_map: Dict[int, Tuple[str, ...]] = (
+            {}
+        )  # словарь {123: ("actor:tom hardi": None, "director:nolan": None), ...}
         self.genres_map: Dict[int, Set[str]] = {}  # словарь {123: ("genre:sci-fi": None, "genre:triller": None), ...}
 
     def prepare_film(self, film: TmdbFilm) -> None:
@@ -218,7 +219,9 @@ class TextSimilarity:
         if idx_a is None or idx_b is None:
             return 0.0
 
-        return float(cosine_similarity(self.matrix[idx_a], self.matrix[idx_b])[0, 0])  # косинусное сходство между двумя текстами
+        return float(
+            cosine_similarity(self.matrix[idx_a], self.matrix[idx_b])[0, 0]
+        )  # косинусное сходство между двумя текстами
 
 
 def top_k_candidates_by_feature_weight(user_features: Iterable[str], inv: FilmIndex, k: int = TOP_K_BASE) -> Set[int]:
@@ -242,7 +245,7 @@ def top_k_candidates_by_feature_weight(user_features: Iterable[str], inv: FilmIn
         weight_f = fast_feature_weight(f)  # достаем вес признака фильма из кэша
         for f_id in inv.index.get(
             f, ()
-        ):  # берем из словаря self.index = {"genre:Sci-Fi": {1, 3}, "actor:Tom Hardy": {1},...} по очереди id фильма из f признака
+        ):  # берем из словаря inv.index = {"genre:Sci-Fi": {1, 3}, "actor:Tom Hardy": {1},...} id фильма из f признака
             candidate_weights[f_id] += weight_f  # в словаре candidate_weights к фильму по id прибавляем вес
 
     if not candidate_weights:
@@ -298,8 +301,7 @@ def get_tmdb_genre_map(api_client: Tmdb) -> Dict[str, int]:
         return {}
 
 
-def api_genre_candidates(
-    user_genre_profile: Dict[str, float], api: Tmdb, limit: int = 300) -> Set[int]:
+def api_genre_candidates(user_genre_profile: Dict[str, float], api: Tmdb, limit: int = 300) -> Set[int]:
     """
     Возвращает tmdb_id кандидатов из внешнего API TMDB по топ-3-жанрам пользователя:
     user_genre_profile: жанровый профиль пользователя;
@@ -398,7 +400,9 @@ def build_recommendations(user, api: Tmdb) -> List[Dict]:
     с movie_id, нормализованным score и списком вкладов/объяснений:
     [{"movie_id": id, "score": 0..1, "reasons": [...]},...]
     """
-    user_reviews = list(user.reviews.select_related("film"))  # получаем ревью один раз, чтобы не делать много SQL-запросов
+    user_reviews = list(
+        user.reviews.select_related("film")
+    )  # получаем ревью один раз, чтобы не делать много SQL-запросов
     watched = {r.film.tmdb_id for r in user_reviews}
 
     films = api.get_candidate_pool()
@@ -413,10 +417,14 @@ def build_recommendations(user, api: Tmdb) -> List[Dict]:
 
     textsim = TextSimilarity(films)
 
-    user_genre_profile = build_user_genre_profile(user_reviews, feature_cache)  # формируем профиль любимых жанров пользователя
+    user_genre_profile = build_user_genre_profile(
+        user_reviews, feature_cache
+    )  # формируем профиль любимых жанров пользователя
 
     scores: Dict[int, float] = defaultdict(float)  # movie_id: накопленный вес фильма (score)
-    reasons: Dict[int, List[Dict]] = defaultdict(list)  # movie_id: id фильма и объяснение, почему рекомендует его по вкладу
+    reasons: Dict[int, List[Dict]] = defaultdict(
+        list
+    )  # movie_id: id фильма и объяснение, почему рекомендует его по вкладу
 
     for review in user_reviews:  # цикл по всем просмотренным фильмам
         src_id = review.film.tmdb_id
@@ -434,35 +442,33 @@ def build_recommendations(user, api: Tmdb) -> List[Dict]:
         candidates -= watched
 
         for c_id in candidates:
-            sim_struct = weighted_jaccard_by_features(
-                src_feats,
-                feature_cache.get_features(c_id)
-            )
+            sim_struct = weighted_jaccard_by_features(src_feats, feature_cache.get_features(c_id))
             sim_text = textsim.similarity(src_id, c_id)
             s_genre = genre_similarity(src_feats, feature_cache.get_features(c_id))
 
             boost = compute_genre_boost_for_candidate(user_genre_profile, feature_cache.get_genres_by_id(c_id))
 
             score = (
-                            W_STRUCT * sim_struct +
-                            W_TEXT * sim_text +
-                            GENRE_SIM_WEIGHT * s_genre +
-                            GENRE_PROFILE_WEIGHT * boost
-                    ) * weight
+                W_STRUCT * sim_struct + W_TEXT * sim_text + GENRE_SIM_WEIGHT * s_genre + GENRE_PROFILE_WEIGHT * boost
+            ) * weight
 
             scores[c_id] += score
-            reasons[c_id].append({
-                "from": review.film.title,
-                "sim_struct": round(sim_struct, 3),
-                "sim_text": round(sim_text, 3),
-                "genre": round(s_genre, 3),
-            })
+            reasons[c_id].append(
+                {
+                    "from": review.film.title,
+                    "sim_struct": round(sim_struct, 3),
+                    "sim_text": round(sim_text, 3),
+                    "genre": round(s_genre, 3),
+                }
+            )
 
-    if not scores:  # нормализация итоговых баллов, наибольшее значение = 1.0, остальные - процент от наибольшего значения
+    if (
+        not scores
+    ):  # нормализация итоговых баллов, наибольшее значение = 1.0, остальные - процент от наибольшего значения
         return []
     max_s = max(scores.values())
     for k in scores:
-        scores[k] /= max_s   # теперь max(score) = 1.0
+        scores[k] /= max_s  # теперь max(score) = 1.0
 
     return sorted(  # возвращаем список словарей
         [
@@ -474,5 +480,5 @@ def build_recommendations(user, api: Tmdb) -> List[Dict]:
             for k, v in scores.items()
         ],
         key=lambda x: x["score"],
-        reverse=True
+        reverse=True,
     )

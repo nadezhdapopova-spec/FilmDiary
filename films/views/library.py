@@ -6,7 +6,6 @@ from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.timezone import now
 from django.views import View
 from django.views.generic import ListView, TemplateView
 
@@ -18,7 +17,6 @@ from reviews.models import Review
 from services.permissions import is_manager
 from services.tmdb import Tmdb
 
-
 logger = logging.getLogger("filmdiary.films")
 
 
@@ -29,15 +27,34 @@ class HomeView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         if self.request.user.is_authenticated:
-            today = now().date()
+            recent_watched = (
+                Review.objects.filter(user=self.request.user).select_related("film").order_by("-watched_at")[:5]
+            )
 
-            recent_watched = Review.objects.filter(user=self.request.user).select_related("film").order_by(
-                "-updated_at")
-            context.update({
-                "recs_for_me": build_recommendation_cards(self.request.user, limit=4),
-                "recent_watched": recent_watched,
-            })
-        context["search_type"] = "films"
+            film_ids = [r.film_id for r in recent_watched]
+            user_films = UserFilm.objects.filter(user=self.request.user, film_id__in=film_ids)
+            user_films_map = {uf.film_id: uf for uf in user_films}
+
+            recent_watched_with_status = []
+            for review in recent_watched:
+                recent_watched_with_status.append(
+                    {
+                        "film": review.film,
+                        "user_film": user_films_map.get(review.film_id),
+                        "review": review,
+                        "is_favorite": bool(
+                            user_films_map.get(review.film_id) and user_films_map[review.film_id].is_favorite
+                        ),
+                    }
+                )
+
+            context.update(
+                {
+                    "recs_for_me": build_recommendation_cards(self.request.user, limit=4),
+                    "recent_watched": recent_watched_with_status,
+                }
+            )
+        context["search_type"] = "tmdb"
         context["home_page"] = True
         return context
 
@@ -62,33 +79,35 @@ class FilmRecommendsView(LoginRequiredMixin, TemplateView):
         elif recommend_type == "popular":
             title = "Популярные фильмы"
             films = tmdb.get_popular(pages=3)
-            cards = build_tmdb_collection_cards(films)
+            cards = build_tmdb_collection_cards(films, user=self.request.user)
 
         elif recommend_type == "now_playing":
             title = "Сейчас в кино"
             films = tmdb.get_now_playing(pages=2)
-            cards = build_tmdb_collection_cards(films)
+            cards = build_tmdb_collection_cards(films, user=self.request.user)
 
         elif recommend_type == "upcoming":
             title = "Скоро в кино"
             films = tmdb.get_upcoming(pages=2)
-            cards = build_tmdb_collection_cards(films)
+            cards = build_tmdb_collection_cards(films, user=self.request.user)
 
         elif recommend_type == "trending":
             title = "Тренды недели"
             films = tmdb.get_trending().get("results", [])
-            cards = build_tmdb_collection_cards(films)
+            cards = build_tmdb_collection_cards(films, user=self.request.user)
 
         elif recommend_type == "top_rated":
             title = "Топ-рейтинговые фильмы"
             films = tmdb.get_top_rated(pages=2)
-            cards = build_tmdb_collection_cards(films)
+            cards = build_tmdb_collection_cards(films, user=self.request.user)
 
-        context.update({
-            "films": cards,
-            "recommend_type": recommend_type,
-            "recommend_title": title,
-        })
+        context.update(
+            {
+                "films": cards,
+                "recommend_type": recommend_type,
+                "recommend_title": title,
+            }
+        )
         return context
 
 
@@ -103,19 +122,16 @@ class UserListFilmView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         """Возвращает список пользователя 'Мои фильмы', осуществляет поиск по q"""
         if self.request.user.is_superuser or is_manager(self.request.user):
-            queryset = (UserFilm.objects
-                    .filter(film__tmdb_id__isnull=False)
-                    .select_related("film"))
+            queryset = UserFilm.objects.filter(film__tmdb_id__isnull=False).select_related("film")
         else:
-            queryset = (UserFilm.objects
-                        .filter(user=self.request.user, film__tmdb_id__isnull=False)
-                        .select_related("film"))
+            queryset = UserFilm.objects.filter(user=self.request.user, film__tmdb_id__isnull=False).select_related(
+                "film"
+            )
 
         query = self.request.GET.get("q", "").strip()
         if query:
             queryset = queryset.filter(film__title__icontains=query)
         return queryset.order_by("-created_at")
-
 
     def get_context_data(self, **kwargs):
         """Добавляет данные в контекст для поиска"""
@@ -123,12 +139,14 @@ class UserListFilmView(LoginRequiredMixin, ListView):
         items = context[self.context_object_name]  # список user_films на странице
 
         film_ids = [uf.film_id for uf in items]
-        reviews_map = {r.film_id: r for r in Review.objects.filter(user=self.request.user, film_id__in=film_ids)} # Получаем все отзывы пользователя на фильмы из текущего queryset
+        reviews_map = {
+            r.film_id: r for r in Review.objects.filter(user=self.request.user, film_id__in=film_ids)
+        }  # Получаем все отзывы пользователя на фильмы из текущего queryset
 
         planned_film_ids = set(
-            CalendarEvent.objects
-            .filter(user=self.request.user, film_id__in=film_ids, planned_date__gte=timezone.now().date())
-            .values_list("film_id", flat=True)
+            CalendarEvent.objects.filter(
+                user=self.request.user, film_id__in=film_ids, planned_date__gte=timezone.now().date()
+            ).values_list("film_id", flat=True)
         )
 
         context[self.context_object_name] = [
@@ -152,6 +170,7 @@ class UserListFilmView(LoginRequiredMixin, ListView):
 
 class FavoriteFilmsView(UserListFilmView):
     """Список любимых фильмов пользователя"""
+
     model = UserFilm
     context_object_name = "items"
     paginate_by = 12
@@ -159,10 +178,11 @@ class FavoriteFilmsView(UserListFilmView):
 
     def get_queryset(self):
         """Возвращает список пользователя 'Любимое', осуществляет поиск по q"""
-        queryset = UserFilm.objects.filter(
-            user=self.request.user,
-            is_favorite=True
-        ).select_related("film").order_by("-created_at")
+        queryset = (
+            UserFilm.objects.filter(user=self.request.user, is_favorite=True)
+            .select_related("film")
+            .order_by("-created_at")
+        )
 
         query = self.request.GET.get("q", "").strip()
         if query:
@@ -198,8 +218,7 @@ class AddFilmView(LoginRequiredMixin, View):
         try:
             logger.debug("AddFilm: tmdb_id=%s user=%s", tmdb_id, request.user.id)
             film, created_film, user_film, created_user_film = save_film_from_tmdb(
-                tmdb_id=int(tmdb_id),
-                user=request.user
+                tmdb_id=int(tmdb_id), user=request.user
             )
         except Exception as e:
             logger.exception("AddFilm FAIL tmdb_id=%s: %s", tmdb_id, e)
@@ -207,8 +226,7 @@ class AddFilmView(LoginRequiredMixin, View):
 
         if not film or not user_film:
             logger.warning("AddFilm: no film/user_film tmdb_id=%s", tmdb_id)
-            return JsonResponse({"status": "error", "message": "Фильм не найден или не удалось сохранить"},
-                                status=500)
+            return JsonResponse({"status": "error", "message": "Фильм не найден или не удалось сохранить"}, status=500)
 
         if created_user_film:
             logger.info("AddFilm OK: new user_film=%s tmdb_id=%s", user_film.id, tmdb_id)
@@ -230,49 +248,46 @@ class UpdateFilmStatusView(LoginRequiredMixin, View):
             logger.debug("UpdateFilm: tmdb_id=%s action=%s", tmdb_id, action)
 
             if action == "watch":
-                return JsonResponse({
-                    "status": "redirect",
-                    "url": reverse("reviews:review_create", kwargs={"tmdb_id": user_film.film.tmdb_id})
-                })
+                return JsonResponse(
+                    {
+                        "status": "redirect",
+                        "url": reverse("reviews:review_create", kwargs={"tmdb_id": user_film.film.tmdb_id}),
+                    }
+                )
             elif action == "favorite":
                 user_film.is_favorite = True
             elif action == "delete":
                 user_film.delete()
                 logger.info("UpdateFilm DELETE: tmdb_id=%s", tmdb_id)
-                return JsonResponse({
-                    "status": "success",
-                    "action": action,
-                    "removed": True
-                })
+                return JsonResponse({"status": "success", "action": action, "removed": True})
             elif action == "unfavorite":
                 user_film.is_favorite = False
                 user_film.save()
-                return JsonResponse({
-                    "status": "success",
-                    "action": action,
-                    "is_favorite": user_film.is_favorite
-                })
+                return JsonResponse({"status": "success", "action": action, "is_favorite": user_film.is_favorite})
             elif action == "delete-watched":
                 Review.objects.filter(user=request.user, film=user_film.film).delete()
-                return JsonResponse({
-                    "status": "success",
-                    "action": action,
-                    "is_favorite": user_film.is_favorite,
-                    "has_review": False,
-                    "user_rating": None
-                })
+                return JsonResponse(
+                    {
+                        "status": "success",
+                        "action": action,
+                        "is_favorite": user_film.is_favorite,
+                        "has_review": False,
+                        "user_rating": None,
+                    }
+                )
             user_film.save()
 
             review = Review.objects.filter(user=request.user, film=user_film.film).only("user_rating").first()
-            logger.debug("UpdateFilm OK: tmdb_id=%s action=%s favorite=%s",
-                         tmdb_id, action, user_film.is_favorite)
-            return JsonResponse({
-                "status": "success",
-                "action": action,
-                "is_favorite": user_film.is_favorite,
-                "has_review": bool(review),
-                "user_rating": review.user_rating if review else None
-            })
+            logger.debug("UpdateFilm OK: tmdb_id=%s action=%s favorite=%s", tmdb_id, action, user_film.is_favorite)
+            return JsonResponse(
+                {
+                    "status": "success",
+                    "action": action,
+                    "is_favorite": user_film.is_favorite,
+                    "has_review": bool(review),
+                    "user_rating": review.user_rating if review else None,
+                }
+            )
         except UserFilm.DoesNotExist:
             logger.warning("UpdateFilm: not found tmdb_id=%s user=%s", tmdb_id, request.user.id)
             return JsonResponse({"status": "error", "message": "Фильм не найден"}, status=404)

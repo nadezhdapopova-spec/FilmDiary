@@ -1,8 +1,9 @@
-import pytest
 from datetime import date
 
-from reviews.models import Review
+import pytest
+
 from films.models import Film
+from reviews.models import Review
 from users.models import CustomUser
 
 
@@ -10,9 +11,11 @@ from users.models import CustomUser
 def user(db):
     return CustomUser.objects.create_user(username="test", password="123")
 
+
 @pytest.fixture
 def other_user(db):
     return CustomUser.objects.create_user(username="test2", email="test2@test.ru", password="54321")
+
 
 @pytest.fixture
 def film(db):
@@ -21,6 +24,7 @@ def film(db):
         tmdb_id=1,
         title="Test Film",
     )
+
 
 @pytest.fixture
 def review(db, user, film):
