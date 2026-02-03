@@ -1,8 +1,7 @@
 services:
   web:
     container_name: filmdiary_web
-    #image: ${DOCKER_HUB_USERNAME}/filmdiary:${DOCKER_HUB_TAG}
-    build: .
+    image: ${DOCKER_HUB_USERNAME}/filmdiary:${DOCKER_HUB_TAG}
     env_file:
       - .env
     environment:
