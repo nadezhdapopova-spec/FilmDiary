@@ -84,7 +84,7 @@ jobs:
       - name: Deploy to server
         run: |
           ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
-          sed -i "s/server_name localhost;/server_name ${{ secrets.BASE_SERVER_URL }};/" nginx.conf
+          sed -i "s|server_name localhost;|server_name ${{ secrets.BASE_SERVER_URL }};|" nginx.conf
           cat > .env << EOF
           SECRET_KEY=${{ secrets.SECRET_KEY }}
           DEBUG=False
