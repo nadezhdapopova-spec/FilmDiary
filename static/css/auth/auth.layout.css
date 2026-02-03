@@ -1,0 +1,9 @@
+/* LAYOUT: контейнеры, сетки, меню, поиск, баннеры */
+
+.auth-wrapper {
+  min-height: calc(100vh - var(--topbar-h));
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 2.2rem 1.5rem 3rem;
+}

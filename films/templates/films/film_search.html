@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Результаты поиска{% endblock %}
+
+{% block content %}
+<main class="main-content">
+  <section class="homepage-section">
+    <div class="glass-card movie-section-card">
+      <div class="card-header">
+        <h2 class="card-title">
+          {% if search_type == 'user_films' %}
+            Мои фильмы{% if query %}: "{{ query }}"{% endif %}
+          {% elif search_type == 'favorites' %}
+            Любимое{% if query %}: "{{ query }}"{% endif %}
+          {% elif search_type == 'watched' or search_type == 'reviewed' %}
+            Просмотренное{% if query %}: "{{ query }}"{% endif %}
+          {% else %}
+            Поиск фильмов{% if query %}: "{{ query }}"{% endif %}
+          {% endif %}
+        </h2>
+      </div>
+
+      <div class="card-body movie-search-body">
+        <div class="movie-search-body__search">
+          {% include 'includes/search_bar.html' %}
+        </div>
+
+        {% if not query %}
+          <h3 class="card-title movie-search-body__subtitle">Введите ключевое слово для поиска</h3>
+        {% elif page_obj.paginator.count == 0 %}
+          <h3 class="card-title movie-search-body__subtitle">Пока ничего не нашли, давай попробуем еще раз</h3>
+        {% else %}
+          {% if page_obj %}
+          <!-- Сетка из 4 карточек -->
+            <div class="movie-search-grid">
+              {% for obj in items %}
+                {% if search_type == 'user_films' or search_type == 'favorites' %}
+                  {% include 'films/includes/my_film_preview_card.html' with user_film=obj.user_film review=obj.review is_planned=obj.is_planned %}
+                {% elif search_type == 'watched' or search_type == 'reviewed' %}
+                  {% include 'reviews/includes/review_card.html' with review=obj.review user_film=obj.user_film is_planned=obj.is_planned is_favorite=obj.is_favorite%}
+                {% else %}
+                  {% include "films/includes/film_preview_card.html" with film=obj.film user_film=obj.user_film review=obj.review is_planned=obj.is_planned %}
+                {% endif %}
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+      <div class="mt-5 text-center">
+        <div class="d-flex justify-content-center mb-2">
+          {% include "includes/pagination.html" %}
+        </div>
+
+        <div>
+          <button type="button"
+            class="auth-btn auth-btn--primary"
+            onclick="history.back()">
+            Вернуться
+          </button>
+          <a class="auth-btn auth-btn--primary" href={% url "films:home" %}>На главную</a>
+        </div>
+      </div>
+
+    {% else %}
+      <div class="mt-5 text-center">
+        <button type="button"
+          class="auth-btn auth-btn--primary"
+          onclick="history.back()">
+          Вернуться
+        </button>
+        <a class="auth-btn auth-btn--primary" href={% url "films:home" %}>На главную</a>
+      </div>
+    {% endif %}
+
+  </section>
+</main>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/add_film.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,88 @@
+<div class="movie-card glass-card">
+  <article class="movie-card">
+
+    {% if film.has_review %}
+      {% include 'films/includes/rating.html' with film=film %}
+    {% endif %}
+
+    <div class="movie-card__poster-wrapper">
+      {% if film.poster_url or film.poster_path %}
+        <img src="{{ film.poster_url|default:'https://image.tmdb.org/t/p/w342'}}{{ film.poster_path|default:'' }}"
+          alt="{{ film.title }}"
+          class="movie-poster">
+      {% else %}
+        <div class="no-poster">🎬</div>
+      {% endif %}
+    </div>
+
+    <div class="movie-meta mt-2">
+      {% if film.tmdb_id %}
+        <a class="movie-title"
+          href="{% url "films:film_detail" tmdb_id=film.tmdb_id %}">
+            {{ film.title }}
+        </a>
+      {% else %}
+        <span class="movie-title">{{ film.title }}</span>
+      {% endif %}
+      <p class="movie-extra">
+        {{ film.release_date|slice:":4" }}
+        {% if film.genres %}
+          ,
+          {% if film.is_tmdb_dict %}
+            {{ film.genres }}
+          {% else %}
+            {% if film.genres.exists %}
+              {% for genre in film.genres.all %}
+                {{ genre.name }}{% if not forloop.last %}, {% endif %}
+              {% endfor %}
+            {% else %}
+              {{ film.genres }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+      </p>
+    </div>
+
+    <!-- оранжевая черта -->
+    <div class="movie-card__divider"></div>
+
+    <!-- футер статуса -->
+    <div class="movie-card__footer
+      {% if not film.in_library %} movie-card__footer--centered{% endif %}">
+
+      {% if film.has_review %}
+        <button class="btn-add-film glass-btn"
+            type="button"
+            onclick="window.location.href='{% url 'reviews:watched' %}'">
+          <span class="btn-add-film__text">Просмотрено</span>
+          {% if film.is_favorite %}
+            <span class="status-badge__icon">🔥</span>
+          {% else %}
+            <span class="status-badge__icon">🍿</span>
+          {% endif %}
+        </button>
+
+      {% elif film.in_library %}
+        <button class="btn-add-film glass-btn"
+            type="button"
+            onclick="window.location.href='{% url 'films:my_films' %}'">
+          <span class="btn-add-film__text">В моих фильмах</span>
+          {% if film.is_favorite %}
+            <span class="btn-add-film__icon">🔥</span>
+          {% else %}
+            <span class="status-badge__icon">✔️</span>
+          {% endif %}
+        </button>
+
+      {% else %}
+        <button class="btn-add-film glass-btn"
+            data-tmdb-id="{{ film.tmdb_id }}"
+            data-title="{{ film.title }}">
+          <span class="btn-add-film__text">Хочу посмотреть</span>
+          <span class="btn-add-film__icon">+</span>
+        </button>
+      {% endif %}
+
+    </div>
+  </article>
+</div>

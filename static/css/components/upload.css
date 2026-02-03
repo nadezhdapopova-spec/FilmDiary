@@ -1,0 +1,39 @@
+/* file upload */
+
+.avatar-upload {
+  margin-top: 0.6rem;
+}
+
+.avatar-upload input[type="file"] {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border: none;
+  color: var(--auth-orange);
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* hover / focus reset */
+.avatar-upload input[type="file"]:hover,
+.avatar-upload input[type="file"]:focus,
+.avatar-upload input[type="file"]:active {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+
+.avatar-upload input[type="file"]::file-selector-button {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(255,138,0,0.6);
+  color: var(--auth-orange);
+  border-radius: 12px;
+  padding: 0.4rem 0.9rem;
+  margin-right: 0.6rem;
+  transition: all 0.25s ease;
+}
+
+.avatar-upload input[type="file"]::file-selector-button:hover {
+  background: rgba(255,138,0,0.15);
+  box-shadow: 0 0 18px rgba(255,138,0,0.45);
+}

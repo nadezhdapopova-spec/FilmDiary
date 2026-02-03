@@ -1,0 +1,16 @@
+<form method="get" action="{% url 'films:film_search' %}">
+  <div class="movie-search-bar">
+    <input name="q"
+           value="{{ request.GET.q }}"
+           placeholder="{% if template == 'my_films' %}Поиск по моим фильмам...
+                        {% elif template == 'reviews' %}Поиск по просмотренным фильмам...
+                        {% else %}Поиск фильмов...{% endif %}"
+           class="form-control movie-search-bar__input" />
+    <input type="hidden" name="source" value="{{ search_type }}">
+    <button type="submit"
+            class="auth-btn auth-btn--primary movie-search-bar__button">
+      <span class="movie-search-bar__icon">🔍</span>
+      Найти фильм
+    </button>
+  </div>
+</form>

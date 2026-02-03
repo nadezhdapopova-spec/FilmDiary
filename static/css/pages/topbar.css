@@ -1,0 +1,208 @@
+/* ========== Topbar ========== */
+:root {
+  --topbar-h: 74px;
+  --side-w: 280px;
+}
+
+header.topbar.glass-card {
+  position: sticky;
+  top: 0;
+  z-index: 1060;
+
+  width: 100%;
+  margin: 0;
+  border-radius: 0 0 24px 24px;
+  padding: 0.2rem 1.4rem;
+
+  background: linear-gradient(
+    135deg,
+    rgba(28, 36, 70, 0.92),
+    rgba(28, 36, 70, 0.72)
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+
+  border-bottom: 1px solid rgba(255,255,255,0.22);
+
+  /* объём + подсветка */
+  box-shadow:
+    0 18px 50px rgba(0, 40, 120, 0.55),
+    0 0 70px rgba(96, 165, 250, 0.40),
+    0 0 38px rgba(255, 138, 0, 0.30),
+    inset 0 1px 0 rgba(255,255,255,0.34),
+    inset 0 -8px 20px rgba(0, 0, 0, 0.45);
+}
+
+header.topbar.glass-card::before {
+  content: "";
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  top: 0;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    rgba(255,138,0,0.0),
+    rgba(255,138,0,0.95),
+    rgba(96,165,250,0.95),
+    rgba(255,138,0,0.0)
+  );
+  opacity: 0.95;
+}
+
+.topbar__inner {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  min-height: var(--topbar-h);
+}
+
+/* иконка привязана к левому краю */
+.topbar__logo-fixed {
+  position: relative;        /* было absolute */
+  left: 0;
+  width: 46px;               /* чуть компактнее */
+  height: 56px;
+  align-self: center;        /* ВАЖНО */
+  margin-top: -2px;
+}
+
+.topbar__center {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.topbar__title {
+  max-width: 100%;
+  text-align: center;
+
+  white-space: nowrap;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+/* общие настройки контейнера */
+.neon-logo {
+  line-height: 1.35;
+  padding-block: 0.22em;
+  justify-self: center;
+  font-family: "Pacifico", cursive, system-ui;
+  font-size: clamp(2.2rem, 2vw, 2rem);
+  letter-spacing: clamp(0.02em, 0.12vw, 0.06em);
+  font-weight: 500;
+  text-decoration: none;
+  color: #ffb98a;
+
+  position: relative;
+  white-space: nowrap;
+
+  /* мягкое свечение вокруг текста */
+  text-shadow:
+    0 0 1px rgba(255,138,0,0.45),
+    0 0 3px rgba(255,138,0,0.45),
+    0 0 8px rgba(255,94,0,0.25);
+
+  /* имитация “горящего” неона */
+  /*filter: drop-shadow(0 0 8px rgba(255,138,0,0.5));*/
+}
+
+.neon-logo::after {
+  content: "";
+  position: absolute;
+  inset: -12px;
+  background: radial-gradient(
+    circle,
+    rgba(255,138,0,0.25),
+    transparent 70%
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* лёгкое пульсирование, как у неоновой вывески */
+@keyframes neon-pulse {
+  0%, 100% {
+    text-shadow:
+      0 0 4px  rgba(255,138,0,0.9),
+      0 0 8px  rgba(255,138,0,0.95),
+      0 0 14px rgba(255,138,0,1),
+      0 0 24px rgba(255,94,0,0.9),
+      0 0 40px rgba(255,94,0,0.8);
+    opacity: 1;
+  }
+  50% {
+    text-shadow:
+      0 0 2px  rgba(255,138,0,0.7),
+      0 0 6px  rgba(255,138,0,0.8),
+      0 0 10px rgba(255,138,0,0.9),
+      0 0 18px rgba(255,94,0,0.75),
+      0 0 30px rgba(255,94,0,0.65);
+    opacity: 0.9;
+  }
+}
+
+.neon-logo {
+  animation: neon-pulse 2.4s ease-in-out infinite;
+  background: linear-gradient(
+    90deg,
+    #ffb98a,
+    #ffd6a0,
+    #60a5fa
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  filter: drop-shadow(0 0 12px rgba(255,138,0,0.7));
+}
+
+@media (max-width: 640px) {
+  .topbar__title {
+    white-space: normal;
+    line-height: 1.2;
+    max-width: 90%;
+  }
+}
+
+.topbar__actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  white-space: nowrap;
+  filter: drop-shadow(0 0 18px rgba(96,165,250,0.55));
+}
+
+/* аватар справа (маленький) */
+.avatar--sm {
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba(255,255,255,0.14);
+  box-shadow: 0 0 18px rgba(96,165,250,0.18);
+}
+
+.topbar__avatar-link {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 2px;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,138,0,0.25), transparent 55%),
+    radial-gradient(circle at 70% 70%, rgba(96,165,250,0.22), transparent 60%);
+}
+
+/* чтобы форма не рвала строку */
+.topbar__logout {
+  margin: 0;
+  display: inline-block;
+}
+
+.topbar__logout .auth-btn {
+  display: inline-flex;
+  width: auto;
+  align-items: center;
+  justify-content: center;
+}

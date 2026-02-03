@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}
+  {% if status_code == 404 %}Страница не найдена{% endif %}
+  {% if status_code == 500 %}Ошибка сервера{% endif %}
+  {% if status_code == 403 %}Доступ запрещён{% endif %}
+  {% if status_code == 400 %}Неверный запрос{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card">
+    <!-- Левая часть: изображение -->
+    <div class="auth-image"
+         style="background-image: url('{% static 'images/symbol_sad.png' %}')">
+    </div>
+
+    <!-- Правая часть: форма -->
+    <div class="auth-body mb-3">
+      <!-- Код + Иконка в ряд -->
+      <div class="error-header">
+        <h1 class="error-title mb-2">{{ status_code|default:"???" }}
+          {% if status_code == 404 %}🔍{% endif %}
+          {% if status_code == 500 %}💥{% endif %}
+          {% if status_code == 403 %}🚫{% endif %}
+          {% if status_code == 400 %}❓{% endif %}
+        </h1>
+      </div>
+
+      <!-- Заголовок -->
+      <h2 class="error-subtitle mb-2">
+        {% if status_code == 404 %}Страница не найдена{% endif %}
+        {% if status_code == 500 %}Что-то пошло не так{% endif %}
+        {% if status_code == 403 %}Доступ запрещён{% endif %}
+        {% if status_code == 400 %}Неверный запрос{% endif %}
+      </h2>
+
+      <!-- Текст -->
+      <p class="error-text mb-3">
+        {% if status_code == 404 %}
+          К сожалению, запрашиваемая страница не существует
+        {% elif status_code == 500 %}
+          На сервере произошла ошибка. Попробуйте позже
+        {% elif status_code == 403 %}
+          У вас нет прав доступа к этой странице
+        {% elif status_code == 400 %}
+          Запрос содержит ошибки. Проверьте данные
+        {% endif %}
+      </p>
+
+      <!-- Кнопки-->
+      <div class="error-actions mt-4">
+        <a href="{% url 'films:home' %}" class="btn btn-primary w-50 text-center">На главную</a>
+      </div>
+      <div class="auth-footer mt-4 text-center">
+        <a href="javascript:history.back()">Вернуться назад</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,111 @@
+<div class="movie-card glass-card">
+  <article class="movie-card">
+
+    <div class="movie-card__poster-wrapper">
+      {% if user_film.film.poster_path %}
+        <img src="https://image.tmdb.org/t/p/w342{{ user_film.film.poster_path }}"
+             alt="{{ user_film.film.title }}"
+             class="movie-poster"
+             loading="lazy"
+             onerror="this.src='/static/no-poster.jpg'">
+      {% else %}
+        <div class="no-poster">🎬</div>
+      {% endif %}
+
+      <div class="movie-card__overlay">
+        <div class="movie-badge-group">
+          {% if review %}
+            <span class="movie-badge movie-badge--watched" title="Просмотрено">🍿</span>
+          {% endif %}
+
+          {% if is_planned %}
+            <span class="movie-badge movie-badge--planned" title="Запланировано">📅</span>
+          {% endif %}
+
+          {% if user_film.is_favorite %}
+            <span class="movie-badge movie-badge--favorite" title="Любимое">🔥</span>
+          {% endif %}
+        </div>
+
+        {% if review %}
+{#          <div class="movie-badge movie-badge--rating">{{ review.user_rating|floatformat:1 }}</div>#}
+          {% include 'films/includes/rating.html' with film=review %}
+        {% endif %}
+      </div>
+
+    </div>
+
+    <div class="movie-meta mt-2">
+      <a class="movie-title" href="{% url "films:film_detail" tmdb_id=user_film.film.tmdb_id %}">{{ user_film.film.title }}</a>
+      <p class="movie-extra">
+        {{ user_film.film.release_date.year }}
+        {% if user_film.film.genres.exists %}
+          ,
+          {% for genre in user_film.film.genres.all %}
+            {{ genre.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        {% endif %}
+      </p>
+    </div>
+
+    <div class="movie-card__divider"></div>
+
+    <div class="movie-card__footer movie-card__footer--compact">
+      <div class="movie-card__actions-row">
+        {% if favorites_page %}
+          <button
+            class="btn-icon"
+            data-role="favorite"
+            data-action="unfavorite"
+            data-id="{{ user_film.film.tmdb_id }}"
+            data-title="{{ user_film.film.title }}"
+            title="Убрать из Любимого">
+            🔥⛔️
+          </button>
+        {% else %}
+          <button
+            class="btn-icon"
+            data-role="plan"
+            data-action="plan"
+            data-id="{{ user_film.film.tmdb_id }}"
+            data-film-db-id="{{ user_film.film.id }}"
+            data-title="{{ user_film.film.title }}"
+            title="Запланировать просмотр">
+            📅
+          </button>
+
+          <button
+            class="btn-icon"
+            data-role="watch"
+            data-action="watch"
+            data-id="{{ user_film.film.tmdb_id }}"
+            data-title="{{ user_film.film.title }}"
+            title="Добавить в Просмотрено">
+            🍿
+          </button>
+
+          <button
+            class="btn-icon"
+            data-role="favorite"
+            data-action="favorite"
+            data-id="{{ user_film.film.tmdb_id }}"
+            data-title="{{ user_film.film.title }}"
+            title="}Добавить в Любимое">
+            🔥
+          </button>
+
+          <button
+            class="btn-icon"
+            data-role="delete"
+            data-action="delete"
+            data-id="{{ user_film.film.tmdb_id }}"
+            data-title="{{ user_film.film.title }}"
+            title="Удалить">
+            ❌
+          </button>
+        {% endif %}
+
+      </div>
+    </div>
+  </article>
+</div>

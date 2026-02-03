@@ -1,0 +1,150 @@
+/* COMPONENTS: карточки */
+
+.auth-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  max-width: 820px;
+  width: 100%;
+
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: 18px;
+  box-shadow:
+    0 30px 80px rgba(0, 40, 120, 0.55),
+    0 0 60px rgba(96, 165, 250, 0.25);
+  backdrop-filter: blur(18px);
+  overflow: hidden;
+}
+
+.auth-card:hover {
+  transform: translateY(-4px);
+}
+
+.auth-register .mb-3,
+.auth-register .mb-4,
+.auth-register .form-group {
+  margin-bottom: 0.55rem;
+}
+
+/* Левая часть, картинка */
+
+.auth-image {
+  position: relative;
+  min-height: 160px;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.auth-image::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Правая часть, форма */
+.auth-body {
+  padding: 2.2rem;
+  color: #111;
+}
+
+.auth-body h2 {
+  /*margin-bottom: 0.6rem;*/
+  color: #111;
+  font-weight: 700;
+}
+
+.auth-body label {
+  color: #555;
+  font-size: 0.9rem;
+}
+
+/* Правая часть, select в auth-формах */
+.auth-card select {
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--auth-orange) 50%),
+    linear-gradient(135deg, var(--auth-orange) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 12px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: 2rem;
+}
+
+.auth-card select.form-control,
+.auth-card select {
+  appearance: none;   /* убирает системный стиль */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+
+  outline: none;
+  box-shadow: none;
+}
+
+.auth-card select:focus {
+  outline: none;
+  box-shadow: 0 0 0 .2rem rgba(255,138,0,.25);
+  border-radius: .25rem;
+  border-color: #ff8a00;
+}
+
+.auth-card select option:checked {
+  background-color: #ff8a00;
+  color: #000;
+}
+
+.auth-card select option:hover {
+  background-color: #ff8a00;
+  color: #000;
+}
+
+/* Правая часть, глаз */
+.auth-card .password-toggle {
+  color: #555;
+  position: absolute;
+  right: 0.2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+.auth-card .password-toggle:hover {
+  color: var(--accent-primary);
+}
+
+.password-wrapper {
+  position: relative;
+}
+
+/* Правая часть, footer links */
+.auth-footer {
+  text-align: center;
+  margin-top: 1rem;
+  font-size: 0.95rem;
+}
+
+.auth-footer a {
+  color: var(--accent-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.auth-footer a:hover {
+  text-decoration: underline;
+}
+
+.auth-footer--dark a {
+  color: #111; /* чёрный */
+}
+
+.auth-footer--dark a:hover {
+  color: #000;
+  text-decoration: underline;
+}
+
+/* Кастом для формы регистрации: уменьшаем отступы */
+.auth-card.auth-register .auth-body {
+  padding: 1.8rem;
+}

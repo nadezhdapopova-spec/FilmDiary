@@ -1,0 +1,343 @@
+.page-shell {
+  /*min-height: 100vh;*/
+  min-height: calc(100vh - var(--topbar-h));
+  padding: 3rem 1.5rem;
+  display: flex;
+  /*align-items: center;*/
+  /*justify-content: center;*/
+  background: url("/static/images/profile.png") center / cover no-repeat;
+}
+
+/* контейнер секции */
+.movie-section-card {
+  margin-bottom: 2rem;
+}
+
+ /* сетка маленьких карточек */
+.movie-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 1.4rem;
+  justify-content: start;
+}
+
+/* отдельная карточка фильма внутри glass-card */
+.movie-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 0.6rem;
+  background: rgba(255,255,255,0.03);
+  border-radius: 18px;
+  padding: 0.8rem;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.movie-grid .movie-card {
+  max-width: 260px;
+  width: 100%;
+}
+
+.movie-card__poster-wrapper {
+  position: relative;
+  width: 100%;
+  padding-top: 150%;      /* пропорции постера, например 2:3 */
+  overflow: hidden;
+}
+
+/* постер */
+.movie-poster,
+.no-poster {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;
+  aspect-ratio: 2 / 3; /* постер 2:3 */
+}
+
+/* текст под постером */
+.movie-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  flex-grow: 1;
+}
+
+.movie-title {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;   /* или 1–2 строки */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.movie-extra {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;   /* или 1–2 строки */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.7);
+  margin: 0;
+}
+
+/* тонкая оранжевая черта */
+.movie-card__divider {
+  height: 2px;
+  width: 100%;
+  background: linear-gradient(90deg, #ff8a00, #ffb703);
+  opacity: 0.9;
+  margin: 0.6rem 0 0;
+}
+
+/* футер карточки */
+.movie-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+  min-height: 42px;
+  color: rgb(255, 255, 255);
+}
+
+.movie-card__footer--centered {
+  justify-content: center;
+}
+
+.movie-card__footer-label {
+  opacity: 0.8;
+  color: rgb(255, 255, 255);
+}
+
+/* бейдж статуса */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+/* маленький цветной квадрат оценки */
+.status-badge__square {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+/* варианты цвета в зависимости от оценки */
+.status-badge__square--low {
+  background: #f97373;
+}
+.status-badge__square--medium {
+  background: #facc15;
+}
+.status-badge__square--high {
+  background: #4ade80;
+}
+
+.status-badge__text {
+  font-size: 1.2rem;
+  font-weight: bold;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+}
+
+.status-badge__icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* когда статуса нет */
+.status-badge--empty {
+  opacity: 0.45;
+}
+
+/* --- Оверлей поверх постера --- */
+.movie-card__poster-wrapper {
+  position: relative;
+}
+
+.movie-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 0.4rem 0.5rem;
+  pointer-events: none;  /* чтобы клики шли по постеру */
+}
+
+/* --- Значки поверх постера --- */
+.movie-badge {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  background: rgba(20, 28, 48, 0.45);
+  color: #fff;
+  font-size: 0.75rem;
+  border-radius: 8px;
+  padding: 2px 6px;
+  pointer-events: auto;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.movie-badge--rating {
+  background: rgba(255, 160, 0, 0.55);
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 0 6px rgba(255, 147, 0, 0.35);
+}
+
+.movie-badge-group {
+  display: flex;
+  gap: 0.3rem;
+}
+
+.movie-badge--planned {
+  background: rgba(0, 140, 255, 0.5);
+  box-shadow: 0 0 6px rgba(26, 145, 255, 0.4);
+}
+
+.movie-badge--watched {
+  background: rgba(0, 255, 160, 0.4);
+  box-shadow: 0 0 8px rgba(0, 255, 160, 0.35);
+}
+
+.movie-badge--favorite {
+  background: rgba(255, 80, 80, 0.5);
+  box-shadow: 0 0 8px rgba(255, 60, 60, 0.4);
+}
+
+.movie-badge:hover {
+  background: rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* --- Компактный футер --- */
+.movie-card__footer--compact {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.6rem;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.9);
+}
+
+/* ---- Маленькие иконки под статусами ---- */
+.movie-card__actions-row {
+  display: flex;
+  gap: 0.7rem;
+  justify-content: center;
+  align-items: center;
+}
+
+.btn-icon {
+  border: none;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 1rem;
+  border-radius: 10px;
+  padding: 4px 6px;
+  cursor: pointer;
+  backdrop-filter: blur(8px);
+  transition: background 0.25s ease, transform 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: rgba(255, 140, 0, 0.4);
+  transform: scale(1.1);
+  box-shadow: 0 0 10px rgba(255, 140, 0, 0.3);
+}
+
+/* ---- Модальное окно Запланировать просмотр фильма ---- */
+.plan-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.plan-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 25, 0.75);
+  backdrop-filter: blur(4px);
+}
+
+.plan-modal__content {
+  position: relative;
+  background: rgba(25, 25, 45, 0.95);
+  padding: 2rem;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 380px;
+  text-align: center;
+  color: #fff;
+  font-family: Poppins, sans-serif;
+  box-shadow:
+    0 0 30px rgba(255, 190, 80, 0.35),
+    0 0 50px rgba(80, 160, 255, 0.25);
+  animation: modalIn 0.3s ease-out;
+}
+
+.plan-modal__content h3 {
+  margin-bottom: 0.3rem;
+}
+
+.plan-title {
+  font-size: 0.9rem;
+  opacity: 0.8;
+  margin-bottom: 1rem;
+}
+
+.plan-modal input {
+  width: 100%;
+  margin-bottom: 0.8rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  border: none;
+}
+
+.plan-actions {
+  margin-top: 1rem;
+}
+
+.plan-actions button {
+  margin: 0 0.3rem;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+}
+
+.save-plan-btn {
+  background: linear-gradient(90deg, #ffbe50, #ff9f1c);
+  color: #000;
+}
+
+.cancel-plan-btn {
+  background: rgba(140, 140, 160, 0.4);
+  color: #fff;
+}
+
+@keyframes modalIn {
+  from {
+    transform: scale(0.85);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

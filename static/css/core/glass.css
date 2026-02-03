@@ -1,0 +1,7 @@
+/* glass-контейнеры, blur */
+
+.glass {
+  background: var(--bg-glass);
+  backdrop-filter: var(--blur-strong);
+  border: 1px solid var(--glass-border);
+}

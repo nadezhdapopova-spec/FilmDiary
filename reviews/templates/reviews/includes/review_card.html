@@ -1,0 +1,108 @@
+<div class="movie-card glass-card">
+  <article class="movie-card">
+
+    <div class="movie-card__poster-wrapper">
+      {% if review.film.poster_path %}
+        <img src="https://image.tmdb.org/t/p/w342{{ review.film.poster_path }}"
+             alt="{{ review.film.title }}"
+             class="movie-poster"
+             loading="lazy"
+             onerror="this.src='/static/no-poster.jpg'">
+      {% else %}
+        <div class="no-poster">🎬</div>
+      {% endif %}
+
+      <div class="movie-card__overlay">
+        <div class="movie-badge-group">
+          <span class="movie-badge movie-badge--watched" title="Просмотрено">🍿</span>
+
+          {% if review.is_planned %}
+            <span class="movie-badge movie-badge--planned" title="Запланировано">📅</span>
+          {% endif %}
+
+          {% if review.is_favorite %}
+            <span class="movie-badge movie-badge--favorite" title="Любимое">🔥</span>
+          {% endif %}
+        </div>
+
+        {% if review.user_rating %}
+          {% include 'films/includes/rating.html' with film=review %}
+        {% endif %}
+      </div>
+
+    </div>
+
+    <div class="movie-meta mt-2">
+        {% if review.film.tmdb_id %}
+          <a class="movie-title"
+             href="{% url 'films:film_detail' tmdb_id=review.film.tmdb_id %}">
+             {{ review.film.title }}
+          </a>
+        {% else %}
+          <span class="movie-title">{{ review.film.title }}</span>
+        {% endif %}
+      <p class="movie-extra">
+        {{ review.film.release_date|date:"Y"|default:"—" }}
+        {% if review.film.genres.exists %}
+          ,
+          {% for genre in review.film.genres.all %}
+            {{ genre.name }}{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+        {% endif %}
+      </p>
+    </div>
+
+    <div class="movie-card__divider"></div>
+
+    <div class="movie-card__footer movie-card__footer--compact">
+      {% if home_page %}
+        <a href="{% url 'reviews:watched' %}" class="auth-btn auth-btn--primary">
+          Подробнее
+        </a>
+      {% else %}
+        <div class="movie-card__actions-row">
+          <button
+            class="btn-icon"
+            data-role="plan"
+            data-action="plan"
+            data-id="{{ review.film.tmdb_id }}"
+            data-film-db-id="{{ review.film.id }}"
+            data-title="{{ review.film.title }}"
+            title="Запланировать новый просмотр">
+            📅
+          </button>
+
+          <button
+            class="btn-icon"
+            data-action="edit-review"
+            data-review-id="{{ review.id }}"
+            data-id="{{ review.film.tmdb_id }}"
+            data-title="{{ review.film.title }}"
+            title="Смотреть отзыв">
+            ✍️
+          </button>
+
+          <button
+            class="btn-icon"
+            data-role="favorite"
+            data-action="favorite"
+            data-id="{{ review.film.tmdb_id }}"
+            data-title="{{ review.film.title }}"
+            title="Добавить в Любимое">
+            🔥
+          </button>
+
+          <button
+            class="btn-icon"
+            data-action="delete-watched"
+            data-review-id="{{ review.id }}"
+            data-id="{{ review.film.tmdb_id }}"
+            data-title="{{ review.film.title }}"
+            title="Убрать из просмотренного">
+            <span class="btn-icon-text">➖</span>
+          </button>
+        </div>
+      {% endif %}
+    </div>
+  </article>
+</div>

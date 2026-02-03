@@ -1,0 +1,13 @@
+{% if film.user_rating %}
+<span class="movie-rating movie-badge badge position-absolute top-0 end-0 m-2
+  {% if film.user_rating >= 8.0 %}
+    bg-success
+  {% elif film.user_rating >= 6.0 %}
+    bg-warning
+  {% else %}
+    bg-danger
+  {% endif %}
+">
+  {{ film.user_rating }}
+</span>
+{% endif %}

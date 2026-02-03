@@ -1,0 +1,60 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}FilmDiary{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap">
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="layout {% block body_class %}{% endblock %}">
+
+<!-- TOP BAR -->
+{% include "includes/top_bar.html" %}
+
+<div class="layout__body">
+    {% if user.is_authenticated %}
+        {% include "includes/side_navigation.html" %}
+    {% endif %}
+
+    <main class="layout__content" role="main">
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<!-- FOOTER -->
+{% include "includes/footer.html" %}
+
+<!-- Django messages -->
+{% if messages %}
+<script>
+    window.djangoMessages = [
+        {% for message in messages %}
+        {
+            text: "{{ message|escapejs }}",
+            level: "{{ message.tags }}"
+        },
+        {% endfor %}
+    ];
+</script>
+{% endif %}
+
+<!-- JS -->
+<script src="{% static 'js/bootstrap.bundle.min.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<script src="{% static 'js/notifications.js' %}"></script>
+
+{% csrf_token %}
+{% block extra_js %}{% endblock %}
+</body>
+</html>

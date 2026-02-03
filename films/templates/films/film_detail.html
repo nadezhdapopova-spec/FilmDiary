@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Подробнее о фильме{% endblock %}
+
+{% block content %}
+<main class="main-content">
+  <section class="homepage-section">
+    <div class="glass-card">
+      <div class="card-header">
+        <h2 class="card-title">{{ film.title }}</h2>
+      </div>
+
+      <div class="card-body">
+        <div class="film-detail">
+          <div class="film-detail__poster-section">
+            <!-- Постер -->
+            <div class="film-detail__poster">
+              {% if film.poster_url %}
+                <img src="https://image.tmdb.org/t/p/w342{{ film.poster_url }}"
+                     alt="{{ film.title }}"
+                     class="film-detail__poster-img">
+              {% else %}
+                <div class="film-detail__no-poster">🎬</div>
+              {% endif %}
+            </div>
+
+            <div class="film-rating__info">
+              <p><strong>Средняя оценка на TMDB:</strong> {{ film.rating|default:"—" }}</p>
+              <p><strong>Количество оценок:</strong> {{ film.vote_count|default:"—" }}</p>
+            </div>
+          </div>
+
+          <div class="film-detail__info">
+            <p><strong>Год:</strong> {{ film.release_year|default:"—" }}</p>
+            <p><strong>Оригинальное название:</strong> {{ film.original_title|default:"—" }}</p>
+            <p><strong>Жанры:</strong>
+              {% if film.genres %}
+                {{ film.genres|join:", " }}
+              {% else %}—{% endif %}
+            </p>
+            <p><strong>Слоган:</strong> {{ film.tagline|default:"—" }}</p>
+            <p><strong>Режиссёр:</strong>
+              {% if film.director %}
+                {{ film.director|join:", " }}
+              {% else %}
+                —
+              {% endif %}
+            </p>
+            <p><strong>Сценарист:</strong>
+              {% if film.writer %}
+                {{ film.writer|join:", " }}
+              {% else %}
+                —
+              {% endif %}
+            </p>
+            <p><strong>Продюсер:</strong>
+              {% if film.producer %}
+                {{ film.producer|join:", " }}
+              {% else %}
+                —
+              {% endif %}
+            </p>
+            <p class="mt-3" align="justify"><strong>Описание:</strong> {{ film.overview|default:"Описание скоро будет" }}</p>
+            <p class="mt-4"><strong>Страна:</strong> {{ film.original_country|default:"—" }}</p>
+            <p><strong>Бюджет:</strong> {{ film.budget|default:"—" }}</p>
+            <p><strong>Мировые сборы:</strong> {{ film.revenue|default:"—" }}</p>
+            <p><strong>Дата выхода:</strong> {{ film.release_date|default:"—" }}</p>
+            <p><strong>Продолжительность:</strong> {{ film.runtime|default:"—" }} мин.</p>
+          </div>
+        </div>
+
+        {% if film.actors %}
+          <div class="film-detail__cast">
+            <h4 class="cast-title">В главных ролях</h4>
+            <div class="cast-grid cast-grid--3">
+              <!-- 1-я колонка -->
+              <div class="cast-column">
+                <ul class="cast-list">
+                  {% for actor in film.actors|slice:":4" %}
+                    <li class="cast-item">
+                      {% if actor.photo %}
+                        <img src="https://image.tmdb.org/t/p/w92{{ actor.photo }}"
+                             alt="{{ actor.name }}"
+                             class="cast-photo">
+                      {% endif %}
+                      <div class="cast-info">
+                        <strong>{{ actor.name }}</strong>
+                        {% if actor.character %}
+                          <span class="cast-role">{{ actor.character }}</span>
+                        {% endif %}
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+
+              <!-- 2-я колонка -->
+              <div class="cast-column">
+                <ul class="cast-list">
+                  {% for actor in film.actors|slice:"4:8" %}
+                    <li class="cast-item">
+                      {% if actor.photo %}
+                        <img src="https://image.tmdb.org/t/p/w92{{ actor.photo }}"
+                             alt="{{ actor.name }}"
+                             class="cast-photo">
+                      {% endif %}
+                      <div class="cast-info">
+                        <strong>{{ actor.name }}</strong>
+                        {% if actor.character %}
+                          <span class="cast-role">{{ actor.character }}</span>
+                        {% endif %}
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+
+              <!-- 3-я колонка -->
+              <div class="cast-column">
+                <ul class="cast-list">
+                  {% for actor in film.actors|slice:"8:12" %}
+                    <li class="cast-item">
+                      {% if actor.photo %}
+                        <img src="https://image.tmdb.org/t/p/w92{{ actor.photo }}"
+                             alt="{{ actor.name }}"
+                             class="cast-photo">
+                      {% endif %}
+                      <div class="cast-info">
+                        <strong>{{ actor.name }}</strong>
+                        {% if actor.character %}
+                          <span class="cast-role">{{ actor.character }}</span>
+                        {% endif %}
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          </div>
+        {% endif %}
+
+        <div class="mt-5 text-center">
+          <a class="auth-btn auth-btn--primary"
+             href="{% if request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{% url 'films:home' %}{% endif %}">
+             ← Назад
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+{% endblock %}

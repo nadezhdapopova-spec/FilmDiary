@@ -1,0 +1,35 @@
+/* theme.css */
+@import "core/variables.css";
+@import "core/layout.css";
+@import "core/buttons.css";
+@import "core/forms.css";
+@import "core/glass.css";
+@import "core/nav.css";
+
+@import "components/avatar.css";
+@import "components/card.css";
+@import "components/footer.css";
+@import "components/upload.css";
+
+@import "auth/auth.variables.css";
+@import "auth/auth.layout.css";
+@import "auth/auth.card.css";
+@import "auth/auth.forms.css";
+@import "auth/auth.buttons.css";
+@import "auth/auth.animations.css";
+
+@import "pages/profile.css";
+@import "pages/films.css";
+@import "pages/topbar.css";
+@import "pages/side_bar.css";
+@import "pages/footer.css";
+@import "pages/home.css";
+@import "pages/search_bar.css";
+@import "pages/pagination.css";
+@import "pages/film_detail.css";
+@import "pages/errors.css";
+@import "pages/reviews.css";
+@import "pages/review_form.css";
+@import "pages/review_card.css";
+@import "pages/calendar_list.css";
+@import "pages/feedback.css";

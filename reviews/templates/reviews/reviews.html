@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Просмотрено{% endblock %}
+
+{% block content %}
+<main class="main-content">
+  <section class="homepage-section">
+    <div class="glass-card movie-section-card">
+      <div class="card-header">
+        {% if search_type == "reviewed" %}
+          <h2 class="card-title">Мои отзывы ✍️</h2>
+        {% else %}
+          <h2 class="card-title">Просмотрено 🍿</h2>
+        {% endif %}
+      </div>
+
+      <div class="card-body movie-search-body">
+        <div class="movie-search-body__search mt-2 mb-3">
+          {% include 'includes/search_bar.html' %}
+        </div>
+
+        <div class="sort-bar">
+          <span class="sort-label">Сортировать:</span>
+          <a href="?sort=date"
+             class="sort-btn {% if current_sort == 'date' %}active{% endif %}">
+             📅 по дате
+          </a>
+          <a href="?sort=rating"
+             class="sort-btn {% if current_sort == 'rating' %}active{% endif %}">
+             ⭐ по оценке
+          </a>
+        </div>
+
+        {% if page_obj %}
+          <div class="movie-search-grid" data-page="watched">
+            {% for review in reviews %}
+              {% include 'reviews/includes/review_card.html' with review=review %}
+            {% endfor %}
+          </div>
+        {% else %}
+          {% if search_type == "reviewed" %}
+            <h3 class="card-title movie-search-body__subtitle">У вас пока нет отзывов</h3>
+          {% else %}
+            <h3 class="card-title movie-search-body__subtitle">Добавляй фильмы в просмотренные, формируй свою библиотеку</h3>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+      <div class="mt-5">
+        {% include "includes/pagination.html" %}
+      </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}
+{% block extra_js %}
+  <script src="{% static 'js/my_films_actions.js' %}"></script>
+{% endblock %}

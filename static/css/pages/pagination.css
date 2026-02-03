@@ -1,0 +1,33 @@
+.glass-pagination .pagination {
+  gap: 0.4rem;
+}
+
+.glass-pagination .page-link {
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.18);
+  background: rgba(9, 15, 30, 0.6);
+  backdrop-filter: blur(10px);
+  color: rgba(255,255,255,0.85);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+  padding: 0.35rem 0.9rem;
+  font-weight: 500;
+}
+
+.glass-pagination .page-link:hover {
+  background: rgba(255, 184, 0, 0.85);
+  color: #111827;
+  border-color: rgba(255, 184, 0, 0.95);
+}
+
+.glass-pagination .page-item.active .page-link {
+  background: linear-gradient(135deg, #ff8a00, #ffb703);
+  color: #111827;
+  border-color: rgba(255,255,255,0.3);
+}
+
+.glass-pagination .page-item.disabled .page-link {
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.35);
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: none;
+}

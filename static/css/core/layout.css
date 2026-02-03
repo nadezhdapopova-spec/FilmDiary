@@ -1,0 +1,43 @@
+/* центрирование, wrappers */
+
+.layout {
+  min-height: 100vh;
+  background: url("/static/images/profile_1.png") center / cover no-repeat;
+}
+
+.layout__body {
+  display: flex;
+  min-height: 100vh;
+  padding-top: 0;
+}
+
+.layout__content {
+  flex: 1;
+  min-width: 0;
+  padding: 2rem 1.5rem;
+}
+
+@media (min-width: 992px) {
+  .layout__content {
+    padding: 2.2rem 2.2rem;
+    margin-left: calc(var(--side-w-collapsed) + 0.6rem);
+  }
+}
+
+.layout.layout--profile {
+  background: url("/static/images/profile.png") center / cover no-repeat;
+}
+
+.layout.layout--auth {
+  background:
+    url("/static/images/auth_layout.png") center / cover no-repeat,
+    radial-gradient(circle at 30% 20%, rgba(31,255,215,0.18), transparent 45%),
+    radial-gradient(circle at 80% 70%, rgba(123,92,255,0.22), transparent 45%),
+    linear-gradient(180deg, #04070f, #02030a);
+}
+
+@media (min-width: 992px) {
+  .layout--auth .layout__content {
+    margin-left: 0;  /* без смещения под боковое меню */
+  }
+}

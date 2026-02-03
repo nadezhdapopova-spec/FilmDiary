@@ -1,0 +1,75 @@
+<!-- Desktop sidebar (lg+) -->
+<aside class="side-nav glass-card d-none d-lg-flex" aria-label="Навигация">
+  <div class="side-nav__brand">
+    <span class="side-nav__dot" aria-hidden="true"></span>
+    <span class="side-nav__title">Меню</span>
+  </div>
+
+  <nav class="side-nav-menu">
+    <a href="{% url 'films:home' %}"
+      class="side-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+      <span class="side-link__icon">🏠</span>
+      <span class="side-link__text">Главная</span>
+    </a>
+    <a href="{% url 'films:my_films' %}"
+      class="side-link {% if request.resolver_match.url_name == 'my_films' %}active{% endif %}">
+      <span class="side-link__icon">🎬</span>
+      <span class="side-link__text">Мои фильмы</span>
+    </a>
+    <a href="{% url 'reviews:watched' %}"
+      class="side-link {% if request.resolver_match.url_name == 'watched' %}active{% endif %}">
+      <span class="side-link__icon">🍿</span>
+      <span class="side-link__text">Просмотрено</span>
+    </a>
+    <a href="{% url 'films:favorite_films' %}"
+      class="side-link {% if request.resolver_match.url_name == 'favorite_films' %}active{% endif %}">
+      <span class="side-link__icon">🔥</span>
+      <span class="side-link__text">Любимое</span>
+    </a>
+    <a href="{% url 'reviews:reviews' %}"
+      class="side-link {% if request.resolver_match.url_name == 'reviews' %}active{% endif %}">
+      <span class="side-link__icon">✍️</span>
+      <span class="side-link__text">Отзывы</span>
+    </a>
+    <a href="{% url 'calendar_events_pages:calendar_list' %}"
+      class="side-link {% if request.resolver_match.url_name == 'calendar_list' %}active{% endif %}">
+      <span class="side-link__icon">📅</span>
+      <span class="side-link__text">Календарь</span>
+    </a>
+    <a href="{% url 'users:profile' %}"
+      class="side-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+      <span class="side-link__icon">🧑</span>
+      <span class="side-link__text">Профиль</span>
+    </a>
+  </nav>
+
+  <div class="side-nav__glow" aria-hidden="true"></div>
+</aside>
+
+<!-- Offcanvas (мобайл / планшет) -->
+<aside
+  class="offcanvas offcanvas-start glass-offcanvas d-lg-none"
+  tabindex="-1"
+  id="sideMenu"
+  aria-labelledby="sideMenuLabel"
+  data-bs-scroll="true"
+  data-bs-backdrop="true"
+>
+  <div class="offcanvas-header">
+    <h5 class="offcanvas-title" id="sideMenuLabel">Меню</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Закрыть"></button>
+  </div>
+
+  <div class="offcanvas-body">
+    <nav class="side-nav-menu">
+      <!-- те же ссылки, можно без span.side-link__text, иконки уже есть -->
+      <a href="/films/home/" class="side-link {% if request.path|slice:'6:11' == '/home' %}active{% endif %}">🏠 Главная</a>
+      <a href="/films/my_films/" class="side-link {% if request.path|slice:'6:15' == '/my_films' %}active{% endif %}">🎬 Мои фильмы</a>
+      <a href="/reviews/watched/" class="side-link {% if request.path|slice:'6:14' == '/watched' %}active{% endif %}">🍿 Просмотрено</a>
+      <a href="/films/favorite/" class="side-link {% if request.path|slice:'6:16' == '/favorite' %}active{% endif %}">🔥 Любимое</a>
+      <a href="/reviews/reviews" class="side-link {% if request.path|slice:'8:19' == '/reviews' %}active{% endif %}">✍️ Отзывы</a>
+      <a href="/calendar/my_calendar" class="side-link {% if request.path|slice:'9:21' == '/my_calendar' %}active{% endif %}">📅 Календарь</a>
+      <a href="/users/profile" class="side-link {% if request.path|slice:'6:14' == '/profile' %}active{% endif %}">🧑 Профиль </a>
+    </nav>
+  </div>
+</aside>

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Мои фильмы{% endblock %}
+
+{% block content %}
+<main class="main-content">
+  <section class="homepage-section">
+    <div class="glass-card movie-section-card">
+      <div class="card-header">
+        {% if search_type == "favorites" %}
+          <h2 class="card-title">Мои любимые фильмы 🔥</h2>
+        {% else %}
+          <h2 class="card-title">Мои фильмы 🎬</h2>
+        {% endif %}
+      </div>
+
+      <div class="card-body movie-search-body">
+        <div class="movie-search-body__search mt-2 mb-3">
+          {% include 'includes/search_bar.html' %}
+        </div>
+
+        {% if page_obj %}
+          <div class="movie-search-grid" data-page="{% if search_type == 'favorites' %}favorites{% else %}my-films{% endif %}">
+            {% for obj in items %}
+              {% include 'films/includes/my_film_preview_card.html' with user_film=obj.user_film review=obj.review is_planned=obj.is_planned %}
+            {% endfor %}
+          </div>
+        {% else %}
+          {% if search_type == "favorites" %}
+            <h3 class="card-title movie-search-body__subtitle">Ставь 🔥 на фильмы, формируй свой список фаворитов</h3>
+          {% else %}
+            <h3 class="card-title movie-search-body__subtitle">У вас пока нет фильмов</h3>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+
+    {% if page_obj.has_other_pages %}
+      <div class="mt-5">
+        {% include "includes/pagination.html" %}
+      </div>
+    {% endif %}
+  </section>
+</main>
+{% endblock %}
+{% block extra_js %}
+  <script src="{% static 'js/my_films_actions.js' %}"></script>
+{% endblock %}

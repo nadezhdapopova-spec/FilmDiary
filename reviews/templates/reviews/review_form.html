@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+{% load static %}
+{% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
+
+{% block title %}Оценка фильма{% endblock %}
+
+{% block content %}
+<div class="auth-wrapper">
+  <div class="auth-card auth-register review-page-card">
+
+    <!-- Левая часть: изображение -->
+    <div class="movie-card glass-card">
+      <div class="movie-card">
+
+        <div class="movie-card__poster-wrapper">
+          {% if film.poster_url or film.poster_path %}
+            <img src="{{ film.poster_url|default:'https://image.tmdb.org/t/p/w342'}}{{ film.poster_path|default:'' }}"
+              alt="{{ film.title }}"
+              class="movie-poster">
+          {% else %}
+            <div class="no-poster">🎬</div>
+          {% endif %}
+        </div>
+
+        <div class="movie-meta-review mt-2">
+          <span class="film-title">{{ film.title }}</span>
+          <p class="movie-extra-movie mt-3">
+            {{ film.release_date|date:"Y"|default:"—" }}
+            {% if film.genres.exists %}
+              ,
+              {% for genre in film.genres.all %}
+                  {{ genre.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            {% endif %}
+          </p>
+          <p class="movie-extra-movie mt-4 movie-overview">
+            {% if film.tagline %}
+              {{ film.tagline }}
+            {% elif film.overview %}
+              {{ film.overview }}
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Правая часть: форма -->
+    <div class="review-form">
+      <h2>Оценка фильма 🍿</h2>
+
+      <form method="post" novalidate>
+        {% csrf_token %}
+
+        {{ form.watched_at|as_crispy_field }}
+        {{ form.number_of_views|as_crispy_field }}
+
+        <div class="ratings-grid">
+          {% for field in form %}
+            {% if field.name in rating_fields %}
+              <div class="rating-row" data-field="{{ field.id_for_label }}">
+                <label class="rating-label">{{ field.label }}</label>
+
+                {{ field.as_hidden }}
+
+                <div class="stars" data-input-id="{{ field.id_for_label }}">
+                  {% for i in stars %}
+                    <span class="star" data-value="{{ i }}">★</span>
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+        <p class="avg-rating">
+          <strong>Общая оценка:</strong>
+          <span id="avg-rating">—</span>
+        </p>
+
+        <div class="review-text-block">
+          <details class="review-collapse">
+            <summary>🔽 Отзыв (можешь написать отзыв позже)</summary>
+            {{ form.review }}
+          </details>
+        </div>
+
+        <div class="btn-group-review">
+          <button type="submit" class="btn btn-primary review btn-review-equal">
+            Сохранить
+          </button>
+          <a href="{{ back_url }}" class="btn btn-primary btn-review-equal">
+              Назад</a>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script src="{% static 'js/rating_counter.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,19 @@
+from django.contrib.auth import get_user_model
+from django.contrib.auth.backends import ModelBackend
+
+User = get_user_model()
+
+
+class EmailBackendAllowInactive(ModelBackend):
+    """Аутентификация по email, позволяет вход даже если is_active=False"""
+
+    def authenticate(self, request, username=None, password=None, **kwargs):
+        if username is None or password is None:
+            return None
+        try:
+            user = User.objects.get(email=username)
+        except User.DoesNotExist:
+            return None
+        if user.check_password(password):
+            return user  # возвращаем пользователя даже если user.is_active=False
+        return None

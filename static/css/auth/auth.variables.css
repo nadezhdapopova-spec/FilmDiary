@@ -1,0 +1,32 @@
+/* VARIABLES: цвета, шрифты */
+
+:root {
+  --auth-bg-overlay: rgba(5, 8, 20, 0.75);
+
+  --auth-card-bg: rgba(18, 22, 40, 0.55);
+  --auth-card-border: rgba(120, 150, 255, 0.25);
+
+  --auth-blue-glow:
+    0 0 40px rgba(80, 120, 255, 0.35),
+    0 0 80px rgba(80, 120, 255, 0.15);
+
+  --auth-orange: #989292;
+
+  --auth-text-main: #ffffff;
+  --auth-text-muted: rgba(255,255,255,0.7);
+
+  --auth-radius-lg: 18px;
+  --auth-radius-md: 14px;
+
+  --auth-transition: 0.3s ease;
+}
+
+.auth-wrapper {
+  --bg-card: transparent;
+  --text-main: #111;
+  --text-secondary: #555;
+}
+
+:root {
+  --accent-primary: #ff8a00;
+}
