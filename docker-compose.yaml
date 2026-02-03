@@ -12,7 +12,8 @@ services:
       - TMDB_API_KEY=${TMDB_API_KEY}
       - EMAIL_HOST_USER=${EMAIL_HOST_USER}
       - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
-      - ALLOWED_HOSTS=${BASE_SERVER_URL}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - ALLOWED_URLS=${ALLOWED_URLS}
     volumes:
       - fd_static_volume:/app/staticfiles
       - fd_web_media:/app/media
@@ -64,7 +65,8 @@ services:
     environment:
       - SECRET_KEY=${SECRET_KEY}
       - DB_PASSWORD=${DB_PASSWORD}
-      - ALLOWED_HOSTS=${BASE_SERVER_URL}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - ALLOWED_URLS=${ALLOWED_URLS}
     depends_on:
       - redis
       - db
@@ -76,7 +78,8 @@ services:
     environment:
       - SECRET_KEY=${SECRET_KEY}
       - DB_PASSWORD=${DB_PASSWORD}
-      - ALLOWED_HOSTS=${BASE_SERVER_URL}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS}
+      - ALLOWED_URLS=${ALLOWED_URLS}
     depends_on:
       - redis
       - db

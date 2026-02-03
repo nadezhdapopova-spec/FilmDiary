@@ -31,7 +31,8 @@ jobs:
 
     env:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
-      ALLOWED_HOSTS: 'http://127.0.0.1'
+      ALLOWED_HOSTS: '127.0.0.1'
+      ALLOWED_URLS: 'http://127.0.0.1'
 
     steps:
     - name: Check out code
@@ -109,7 +110,8 @@ jobs:
           TELEGRAM_TOKEN=${{ secrets.TELEGRAM_TOKEN }}
           TMDB_API_KEY=${{ secrets.TMDB_API_KEY }}
           DJANGO_LOG_LEVEL=INFO
-          BASE_SERVER_URL=${{ secrets.BASE_SERVER_URL }}
+          ALLOWED_HOSTS=${{ secrets.BASE_SERVER_URL }}
+          ALLOWED_URLS=http://${{ secrets.BASE_SERVER_URL }},https://${{ secrets.BASE_SERVER_URL }}
           DOCKER_HUB_USERNAME=${{ secrets.DOCKER_HUB_USERNAME }}
           DOCKER_HUB_TAG=${{ github.sha }}
           CERTIFICATE_DIR=${{ secrets.NGINX_CERTIFICATE_DIR }}
