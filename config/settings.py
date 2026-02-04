@@ -97,12 +97,26 @@ DATABASES = {
     }
 }
 
+# Caches settings
+
+CACHE_ENABLED = True
+if CACHE_ENABLED:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": os.getenv("LOCATION"),
+        }
+    }
+
 IS_TESTING = any(x in " ".join(sys.argv) for x in ["pytest", "test"])
 if IS_TESTING:
-    DATABASES = {
+    DATABASES["default"] = {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": BASE_DIR / "test_bd.sqlite3",
+    }
+    CACHES = {
         "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "test_bd.sqlite3",
+            "BACKEND": "django.core.cache.backends.dummy.DummyCache",
         }
     }
 
@@ -177,16 +191,6 @@ SIMPLE_JWT = {
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
 
-# Caches settings
-
-CACHE_ENABLED = True
-if CACHE_ENABLED:
-    CACHES = {
-        "default": {
-            "BACKEND": "django.core.cache.backends.redis.RedisCache",
-            "LOCATION": os.getenv("LOCATION"),
-        }
-    }
 
 # Rest_framework settings
 
