@@ -97,7 +97,8 @@ DATABASES = {
     }
 }
 
-if "test" in sys.argv:
+IS_TESTING = any(x in " ".join(sys.argv) for x in ["pytest", "test"])
+if IS_TESTING:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
