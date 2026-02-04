@@ -121,5 +121,5 @@ jobs:
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
           cd /home/${{ secrets.SSH_USER }}/filmdiary
           docker compose pull
-          docker compose up -d
+          docker compose up -d --force-recreate
           EOF
