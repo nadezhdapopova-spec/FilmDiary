@@ -1,5 +1,7 @@
 # 🎬 FilmDiary — персональный кино-трекер с системой рекомендаций
 
+Адрес сервера с развернутым приложением: https://diploma.creepysnakes.su/
+
 ## ✔️ Цель проекта
 Проект создан как исследование персональных рекомендательных систем и архитектуры пользовательских сервисов 
 с асинхронными задачами и внешними API.
@@ -52,7 +54,7 @@ Fullstack приложение для ведения структурирова�
 - Систему прав доступа;
 - Пагинацию;
 - CORS для работы с фронтендом (реализовано ?);
-- Покрытие тестами на 85%;
+- Покрытие тестами на 79%;
 - Документацию для части DRF.
 
 ### Технологии
@@ -70,7 +72,7 @@ PostgreSQL
 
 ZoneInfo (таймзоны)
 
-Coverage (85%)
+Coverage (79%)
 
 Flake8 (100%, исключая миграции), isort
 
@@ -92,7 +94,8 @@ env.sample
 
 SECRET_KEY=your_django_secret_key_here
 DEBUG=False
-ALLOWED_HOSTS=localhost
+ALLOWED_HOSTS=localhost,127.0.0.1
+ALLOWED_URLS=http://localhost,https://localhost,http://127.0.0.1,https://127.0.0.1
 
 DB_NAME=your_database_name_here
 DB_USER=your_database_user_here
@@ -449,7 +452,7 @@ Frontend проекта реализует интерактивный интер
 - тесты Celery задач;
 - тесты бизнес-логики профиля пользователя.
 
-**Покрытие тестами:** 85%
+**Покрытие тестами:** 79%
 
 **Запуск тестов:**
 ```bash
@@ -505,9 +508,6 @@ sudo apt install -y docker.io docker-compose-plugin nginx
 
 - открыты порты 80, 443, 22
 
-- проект размещается в директории:
-/home/<user>/filmdiary
-
 ### Переменные окружения
 
 **Файл .env:**
@@ -521,30 +521,32 @@ sudo apt install -y docker.io docker-compose-plugin nginx
 DOCKER_HUB_USERNAME=your_docker_hub_username_here
 DOCKER_HUB_TAG=docker_hub_filmdiary_image_tag_here
 BASE_SERVER_URL=localhost
+CERTIFICATE_DIR=your_local_directory_with_SSL_sertificates
 ````
 
 ### GitHub Secrets
 
 В репозитории → Settings → Secrets and variables → Actions должны быть добавлены:
 
-| Secret                    | Назначение               |
-|---------------------------|--------------------------|
-| `DJANGO_SECRET_KEY`       | Django SECRET_KEY        |
-| `DB_PASSWORD`             | Пароль PostgreSQL        |
-| `EMAIL_HOST_USER`         | Почта                    |
-| `EMAIL_HOST_PASSWORD`     | Пароль почты             |
-| `TELEGRAM_TOKEN`          | Telegram token           |
-| `TMDB_API_KEY`            | Ключ API TMDB            |
-| `BASE_SERVER_URL`         | Домен или IP сервера     |
-| `DOCKER_HUB_USERNAME`     | Docker Hub username      |
-| `DOCKER_HUB_ACCESS_TOKEN` | Docker Hub access token  |
-| `SSH_KEY`                 | Приватный SSH-ключ       |
-| `SSH_USER`                | Пользователь сервера     |
-| `SERVER_IP`               | IP сервера               |
-| `SUPERUSER_EMAIL`         | email суперпользователя  |
-| `SUPERUSER_PASSWORD`      | Пароль суперпользователя |
-| `MANAGER_EMAIL`           | email менеджера          |
-| `MANAGER_PASSWORD`        | Пароль менеджера         |
+| Secret                    | Назначение                                |
+|---------------------------|-------------------------------------------|
+| `DJANGO_SECRET_KEY`       | Django SECRET_KEY                         |
+| `DB_PASSWORD`             | Пароль PostgreSQL                         |
+| `EMAIL_HOST_USER`         | Почта                                     |
+| `EMAIL_HOST_PASSWORD`     | Пароль почты                              |
+| `TELEGRAM_TOKEN`          | Telegram token                            |
+| `TMDB_API_KEY`            | Ключ API TMDB                             |
+| `BASE_SERVER_URL`         | Домен или IP сервера                      |
+| `DOCKER_HUB_USERNAME`     | Docker Hub username                       |
+| `DOCKER_HUB_ACCESS_TOKEN` | Docker Hub access token                   |
+| `SSH_KEY`                 | Приватный SSH-ключ                        |
+| `SSH_USER`                | Пользователь сервера                      |
+| `SERVER_IP`               | IP сервера                                |
+| `SUPERUSER_EMAIL`         | email суперпользователя                   |
+| `SUPERUSER_PASSWORD`      | Пароль суперпользователя                  |
+| `MANAGER_EMAIL`           | email менеджера                           |
+| `MANAGER_PASSWORD`        | Пароль менеджера                          |
+| `NGINX_CERTIFICATE_DIR`   | Путь к папке с SSL сертификатами на хосте |
 
 ### CI/CD (GitHub Actions)
 
