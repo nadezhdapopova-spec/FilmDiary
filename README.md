@@ -370,7 +370,7 @@ keyword:dream
 
 **Схема получения рекомендаций**
 
-![recoms_scheme.png](media/default/recoms_scheme.png)
+![screenshot](readme_assets/screenshot.png)
 
 **Веса (настраиваемые)**
 
