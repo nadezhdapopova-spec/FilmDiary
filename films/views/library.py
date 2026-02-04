@@ -110,7 +110,7 @@ class FilmRecommendsView(LoginRequiredMixin, TemplateView):
 
         context.update(
             {
-                "films": page_obj,
+                "films": list(page_obj),
                 "page_obj": page_obj,
                 "is_paginated": page_obj.has_other_pages(),
                 "params": f"&{params.urlencode()}" if params else "",
