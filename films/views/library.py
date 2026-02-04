@@ -2,6 +2,7 @@ import logging
 
 from django.contrib import messages
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -101,9 +102,18 @@ class FilmRecommendsView(LoginRequiredMixin, TemplateView):
             films = tmdb.get_top_rated(pages=2)
             cards = build_tmdb_collection_cards(films, user=self.request.user)
 
+        paginator = Paginator(cards, self.paginate_by)
+        page_number = self.request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+        params = self.request.GET.copy()
+        params.pop("page", None)
+
         context.update(
             {
-                "films": cards,
+                "films": page_obj,
+                "page_obj": page_obj,
+                "is_paginated": page_obj.has_other_pages(),
+                "params": f"&{params.urlencode()}" if params else "",
                 "recommend_type": recommend_type,
                 "recommend_title": title,
             }
