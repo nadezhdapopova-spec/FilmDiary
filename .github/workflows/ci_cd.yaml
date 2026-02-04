@@ -50,7 +50,9 @@ jobs:
         mkdir -p ./static
 
     - name: Run tests
-      run: python manage.py test -v 2 --failfast
+      run:
+        python manage.py test calendar_events films reviews users -v 2 --failfast
+        pytest tests/ -v --failfast
 
   build:
     needs: test

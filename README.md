@@ -469,7 +469,7 @@ pytest --cov=. --cov-report=html
 
 Проект развёртывается на удалённом сервере с помощью Docker Compose и GitHub Actions.
 
-**Адрес сервера с развернутым приложением:** http://diploma.creepysnakes.su/
+**Адрес сервера с развернутым приложением:** https://diploma.creepysnakes.su/
 
 ### Архитектура
 
