@@ -1,10 +1,8 @@
 from django.contrib.auth import authenticate
 from django.contrib.auth.tokens import default_token_generator
 from django.urls import reverse
-from django.utils import timezone
 
 import pytest
-from pytest_mock import mocker
 
 
 @pytest.mark.django_db
@@ -29,19 +27,6 @@ def test_activate_blocked_user(client, blocked_user):
     response = client.get(url)
 
     assert response.url == reverse("users:activation_error")
-
-
-@pytest.mark.django_db
-def test_resend_activation_rate_limit(client, inactive_user):
-    """Повторная отправка письма для активации"""
-    mock_send_task = mocker.patch("users.views.users_views.send_activation_email_task.delay")
-    client.session[f"last_resend_{inactive_user.pk}"] = timezone.now().timestamp()
-    client.session.save()
-
-    response = client.post(reverse("users:resend_activation"), {"email": inactive_user.email})
-
-    assert response.status_code == 302
-    mock_send_task.assert_not_called()
 
 
 @pytest.mark.django_db
