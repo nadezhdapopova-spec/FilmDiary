@@ -32,3 +32,10 @@ def blocked_user(db):
         username="blocked",
         is_blocked=True,
     )
+
+
+@pytest.fixture(autouse=True)
+def mock_celery_tasks(mocker):
+    """Автоматически мокает ВСЕ Celery .delay() вызовы в тестах"""
+    mocker.patch("celery.app.task.Task.delay")
+    mocker.patch("celery.app.task.Task.apply_async")
