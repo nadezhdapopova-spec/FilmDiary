@@ -84,7 +84,7 @@ DATABASES = {
         "NAME": os.getenv("DB_NAME"),
         "USER": os.getenv("DB_USER"),
         "PASSWORD": os.getenv("DB_PASSWORD"),
-        "HOST": os.getenv("DB_HOST"),
+        "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": os.getenv("DB_PORT"),
         "CONN_MAX_AGE": 0,  # закрываем после КАЖДОГО запроса, каждое соединение свежее
         "OPTIONS": {

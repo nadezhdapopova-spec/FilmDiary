@@ -29,7 +29,9 @@ def send_activation_email_task(self, user_id, email, activation_url):
         )
         logger.info("EmailTask OK: user=%s task=%s", user_id, self.request.id)
         return "OK"
-
+    except User.DoesNotExist:
+        logger.error(f"User {user_id} missing, skipping task")
+        return
     except Exception as exc:
         logger.exception("EmailTask FAIL: user=%s task=%s", user_id, self.request.id)
         raise self.retry(exc=exc, countdown=10)  # повторная попытка отправки, если SMTP упал
@@ -55,6 +57,8 @@ def send_confirm_email_task(self, user_id: str, new_email: str, confirm_url: str
             html_message=html_message,
         )
         return "OK"
-
+    except User.DoesNotExist:
+        logger.error(f"User {user_id} missing, skipping task")
+        return
     except Exception as exc:
         raise self.retry(exc=exc, countdown=10)  # повторная попытка отправки
