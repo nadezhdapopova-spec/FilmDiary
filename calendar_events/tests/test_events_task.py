@@ -14,6 +14,7 @@ def test_send_daily_reminders_sends_and_marks(mocker, user, film):
     user.save()
 
     fake_now_utc = datetime(2026, 2, 3, 9, 10, tzinfo=timezone.utc)
+    mocker.patch("django.utils.timezone.now", return_value=fake_now_utc)
     mocker.patch("calendar_events.tasks.timezone.now", return_value=fake_now_utc)
     planned_date = fake_now_utc.date()
     event = CalendarEvent.objects.create(
