@@ -86,6 +86,20 @@ header.topbar.glass-card::before {
   text-overflow: unset;
 }
 
+.title-short {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .title-full {
+    display: none;
+  }
+
+  .title-short {
+    display: inline;
+  }
+}
+
 /* общие настройки контейнера */
 .neon-logo {
   line-height: 1.35;
