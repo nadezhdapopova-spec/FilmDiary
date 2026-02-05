@@ -341,3 +341,9 @@
     opacity: 1;
   }
 }
+
+@media (max-width: 576px) {
+  .movie-grid .movie-card {
+    max-width: none;
+  }
+}
