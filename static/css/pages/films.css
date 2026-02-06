@@ -340,6 +340,10 @@
 }
 
 @media (max-width: 576px) {
+  .page-shell {
+    padding: 1rem 0.6rem;
+  }
+
   .movie-grid .movie-card {
     max-width: none;
   }
