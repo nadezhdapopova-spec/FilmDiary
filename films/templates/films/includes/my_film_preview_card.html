@@ -28,7 +28,6 @@
         </div>
 
         {% if review %}
-{#          <div class="movie-badge movie-badge--rating">{{ review.user_rating|floatformat:1 }}</div>#}
           {% include 'films/includes/rating.html' with film=review %}
         {% endif %}
       </div>

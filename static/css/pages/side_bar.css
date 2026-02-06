@@ -178,6 +178,18 @@
 
 /* ========== Offcanvas (мобайл) ========== */
 
+.glass-offcanvas {
+  background: linear-gradient(
+    145deg,
+    rgba(24, 32, 70, 0.96),
+    rgba(24, 32, 70, 0.82)
+  );
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid rgba(255,255,255,0.18);
+  color: #fff;
+}
+
 .glass-offcanvas .offcanvas-header {
   border-bottom: 1px solid rgba(255,255,255,0.08);
 }
@@ -191,4 +203,28 @@
 
 .glass-offcanvas .offcanvas-body {
   padding-top: 1.0rem;
+}
+
+/* ссылки внутри mobile меню */
+.glass-offcanvas .side-link {
+  color: rgba(255,255,255,0.9);
+}
+
+/* floating mobile button */
+
+.mobile-menu-btn {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  z-index: 2000;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  font-size: 24px;
+  color: #fff;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: rgba(24,32,70,0.8);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.45);
 }
