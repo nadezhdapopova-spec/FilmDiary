@@ -63,7 +63,7 @@ class CustomUserAdmin(UserAdmin):
 
 
 @admin.register(MessageFeedback)
-class ReviewAdmin(admin.ModelAdmin):
+class MessageFeedback(admin.ModelAdmin):
     """Добавляет сообщения Обратной связи в админ-панель"""
 
     list_display = ("id", "name", "email", "message", "created_at")
