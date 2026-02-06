@@ -1,0 +1,34 @@
+/* ========================================
+   ГЛОБАЛЬНЫЕ СТИЛИ — для всех страниц
+   ======================================== */
+
+/* Курсор и выделение текста */
+body {
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Интерактивные элементы */
+a[href],
+button,
+input[type="submit"],
+input[type="button"],
+[onclick],
+.btn-icon,
+.auth-btn,
+.save-plan-btn,
+.cancel-plan-btn {
+  cursor: pointer !important;
+  user-select: auto !important;
+  -webkit-user-select: auto !important;
+  -moz-user-select: auto !important;
+}
+
+/* Сохраняем выделение для форм */
+input, textarea {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}

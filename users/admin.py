@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 from django.utils.html import format_html
 
-from users.models import CustomUser
+from users.models import CustomUser, MessageFeedback
 
 
 @admin.register(CustomUser)
@@ -60,3 +60,11 @@ class CustomUserAdmin(UserAdmin):
         if obj.avatar:
             return format_html('<img src="{}" width="100" style="border-radius:10px;" />', obj.avatar.url)
         return "—"
+
+
+@admin.register(MessageFeedback)
+class ReviewAdmin(admin.ModelAdmin):
+    """Добавляет сообщения Обратной связи в админ-панель"""
+
+    list_display = ("id", "name", "email", "message", "created_at")
+    search_fields = ("name", "email")

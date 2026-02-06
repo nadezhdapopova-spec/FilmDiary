@@ -1,4 +1,5 @@
 /* theme.css */
+@import "pages/base.css";
 @import "core/variables.css";
 @import "core/layout.css";
 @import "core/buttons.css";
