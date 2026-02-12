@@ -30,8 +30,7 @@
   border: 1px solid rgba(255,255,255,0.06);
 }
 
-.movie-grid .movie-card,
-.movie-grid .movie-card * {
+.movie-grid .movie-card {
   max-width: 260px;
   width: 100%;
   user-select: none;
