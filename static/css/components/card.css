@@ -28,3 +28,9 @@
   font-weight: 800;
   color: #fff;
 }
+
+@media (max-width: 576px) {
+  .movie-card.glass-card {
+    padding: 0.8rem;
+  }
+}
