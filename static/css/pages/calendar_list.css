@@ -391,3 +391,109 @@
   cursor: not-allowed;
   transform: none;
 }
+
+
+@media (max-width: 576px) {
+
+  /* Контейнер */
+  .calendar-page {
+    padding: 12px 10px;
+    max-width: 100%;
+  }
+
+  /* Header: переводим в колонку */
+  .calendar-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .calendar-header h1 {
+    font-size: 20px;
+  }
+
+  /* View switch: уменьшаем кнопки и делаем перенос */
+  .view-switch {
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px;
+  }
+
+  .view-switch button,
+  .view-switch a {
+    padding: 6px 10px;
+    font-size: 14px;
+  }
+
+  /* Date group: меньше padding и gap */
+  .date-group {
+    padding: 14px 12px;
+    margin-bottom: 20px;
+  }
+
+  .date-title {
+    font-size: 16px;
+    margin-bottom: 10px;
+  }
+
+  /* Event card: упрощаем flex, уменьшаем gap */
+  .event-card {
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  .event-title {
+    font-size: 15px;
+  }
+
+  .event-note {
+    font-size: 13px;
+  }
+
+  /* Actions */
+  .event-actions {
+    gap: 8px;
+  }
+
+  .event-actions a,
+  .event-actions button {
+    font-size: 16px;
+  }
+
+  /* Buttons в модальных окнах */
+  .btn-cancel,
+  .btn-confirm {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  /* Pagination: уменьшаем gap и размеры кнопок */
+  .calendar-pagination {
+    gap: 10px;
+  }
+
+  .page-btn {
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+
+  /* Баннер CTA */
+  .calendar-section.cta-text {
+    font-size: 1.1rem;
+    line-height: 1.2;
+  }
+
+  .auth-btn .link-text {
+    display: none; /* скрываем текст рядом с иконкой */
+  }
+
+  /* Мобильная кнопка меню поверх всех слоёв */
+  .calendar-page ~ .mobile-menu-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1050; /* выше большинства элементов на странице */
+  }
+}
