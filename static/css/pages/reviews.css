@@ -29,12 +29,9 @@
   font-weight: 500;
 }
 
-@media (max-width: 420px) {
-  .sort-btn {
-    font-size: 0; /* скрывает текст */
-  }
 
-  .sort-btn::after {
-    font-size: 1rem;
+@media (max-width: 420px) {
+  .sort-text {
+    display: none;
   }
 }

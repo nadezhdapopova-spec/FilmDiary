@@ -348,4 +348,18 @@
   .movie-grid .movie-card {
     max-width: none;
   }
+
+  .movie-card__poster-wrapper {
+    padding-top: 0;       /* отключаем трюк с padding */
+    height: auto;
+  }
+
+  .movie-poster,
+  .no-poster {
+    position: relative;   /* убираем absolute */
+    inset: auto;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 2 / 3;  /* сохраняем пропорции */
+  }
 }
