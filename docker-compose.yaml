@@ -34,7 +34,7 @@ services:
       - fd_static_volume:/app/staticfiles:ro
       - fd_web_media:/app/media:ro
       - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - ${CERTIFICATE_DIR}:/serv/certs:ro
+      - ${CERTIFICATE_DIR}:/etc/certs:ro
     depends_on:
       - web
   db:
